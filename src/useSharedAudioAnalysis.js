@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 
-export function useSharedAudioAnalysis(mp3File, useMic, bins, smoothing, isPlaying) {
+export function useSharedAudioAnalysis(mp3File, useMic, bins, smoothing, isPlaying, minDecibels, maxDecibels) {
     const audioContextRef = useRef(null);
     const analyserRef = useRef(null);
     const dataArrayRef = useRef(null);
@@ -9,23 +9,25 @@ export function useSharedAudioAnalysis(mp3File, useMic, bins, smoothing, isPlayi
 
     useEffect(() => {
         if ((!mp3File && !useMic) || !isPlaying) return;
-    
+
         let audioContext, analyser, source;
-    
+
         const setupAudio = async () => {
             audioContext = new (window.AudioContext || window.AudioContext)({ latencyHint: 'interactive' });
             analyser = audioContext.createAnalyser();
             analyser.fftSize = bins;
             analyser.smoothingTimeConstant = smoothing;
-    
+            analyser.minDecibels = minDecibels;
+            analyser.maxDecibels = maxDecibels;
+
             audioContextRef.current = audioContext;
             analyserRef.current = analyser;
             const data = new Uint8Array(analyser.frequencyBinCount);
             dataArrayRef.current = data;
             setDataArray(data);
-    
+
             setSampleRate(audioContext.sampleRate);
-    
+
             if (useMic) {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 source = audioContext.createMediaStreamSource(stream);
@@ -33,29 +35,28 @@ export function useSharedAudioAnalysis(mp3File, useMic, bins, smoothing, isPlayi
                 const audioElement = new Audio(mp3File);
                 audioElement.crossOrigin = "anonymous";
                 source = audioContext.createMediaElementSource(audioElement);
-                
+
                 audioElement.addEventListener('canplaythrough', () => {
                     audioElement.play();
                 });
                 analyser.connect(audioContext.destination);
             }
-    
+
             source.connect(analyser);
         };
-    
+
         setupAudio();
-    
+
         return () => {
             if (audioContext) {
                 audioContext.close();
             }
             if (source && source instanceof MediaStreamAudioSourceNode) {
                 const tracks = source.mediaStream.getTracks();
-                tracks.forEach(track => track.stop()); 
+                tracks.forEach(track => track.stop());
             }
         };
-    }, [mp3File, useMic, bins, smoothing, isPlaying]);
-    
+    }, [mp3File, useMic, bins, smoothing, isPlaying, minDecibels, maxDecibels]);
 
     return { analyser: analyserRef.current, dataArray, sampleRate };
 }

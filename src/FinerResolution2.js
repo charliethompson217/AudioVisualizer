@@ -1,10 +1,9 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useSharedAudioAnalysis } from './useSharedAudioAnalysis.js';
 
-export default function FinerResolution2({ mp3File, useMic, bins, smoothing, isPlaying, showLabels, showScroll }) {
+export default function FinerResolution2({ mp3File, useMic, bins, smoothing, isPlaying, showLabels, showScroll, minDecibels, maxDecibels}) {
     const sketchRef = useRef();
-    const { analyser, dataArray, sampleRate } = useSharedAudioAnalysis(mp3File, useMic, bins, smoothing, isPlaying);
-    const [frequency, setFrequency] = useState(null);
+    const { analyser, dataArray, sampleRate } = useSharedAudioAnalysis(mp3File, useMic, bins, smoothing, isPlaying, minDecibels, maxDecibels);
 
     useEffect(() => {
         if (!analyser || !dataArray) return;
@@ -39,7 +38,6 @@ export default function FinerResolution2({ mp3File, useMic, bins, smoothing, isP
                 ];
                 const baseNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
                 const noteHues = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
-                const barWidth = p.width / noteFrequencies.length;
                 const minFreq = noteFrequencies[0] * 0.97;
                 const maxFreq = noteFrequencies[noteFrequencies.length - 1] * 1.03;
                 const logScale = (freq) => {
@@ -65,9 +63,11 @@ export default function FinerResolution2({ mp3File, useMic, bins, smoothing, isP
                     }
                 
                     const hue = noteHues[closestNoteIndex % 12];
+
+                    const alpha = p.map(energy, 0, 255, 50, 255);
                 
-                    p.stroke(p.color(`hsl(${hue}, 100%, ${lightness}%)`));
-                
+                    p.stroke(p.color(`hsla(${hue}, 100%, ${lightness}%, ${alpha/255})`));
+                    p.strokeWeight(1);
                     const x = logScale(freq);
                     const normalizedEnergy = p.map(energy, 0, 255, 0, middle);
                 
@@ -95,7 +95,6 @@ export default function FinerResolution2({ mp3File, useMic, bins, smoothing, isP
                         p.line(p.mouseX, 0, p.mouseX, p.height);
                 
                         const freq = Math.pow(10, p.map(p.mouseX, 0, p.width, Math.log10(minFreq), Math.log10(maxFreq)));
-                        setFrequency(freq.toFixed(2));
                 
                         let closestNoteIndex = 0;
                         for (let i = 0; i < noteFrequencies.length; i++) {

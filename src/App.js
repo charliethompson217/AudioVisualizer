@@ -9,9 +9,11 @@ export default function App() {
     const [bins, setBins] = useState(32768);
     const [smoothing, setSmoothing] = useState(0.8);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [minDecibels, setMinDecibels] = useState(-100);
+    const [maxDecibels, setMaxDecibels] = useState(-30);
     const [showLabels, setShowLabels] = useState(true);
     const [showScroll, setShowScroll] = useState(true);
-    const [selectedInstrument, setSelectedInstrument] = useState('Instrument');
+    const [selectedInstrument, setSelectedInstrument] = useState('none');
 
     function handleStartStop() {
         if (isPlaying) {
@@ -36,33 +38,37 @@ export default function App() {
     const filteredSongs = selectedInstrument === 'all'
         ? songList
         : songList.filter(song => song.instrument === selectedInstrument);
+    
+    const sortedSongs = filteredSongs.sort((a, b) => a.title.localeCompare(b.title));
 
     return (
         <div className="App">
             <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <label>
-                    Instrument:
+                <label hidden={isPlaying}>
                     <select
                         value={selectedInstrument}
                         onChange={(e) => setSelectedInstrument(e.target.value)}
-                        disabled={isPlaying}
+                        hidden={isPlaying}
                     >
+                        <option value="">Select an Instrument</option>
                         <option value="piano">Piano</option>
                         <option value="violin">Violin</option>
                         <option value="guitar">Guitar</option>
                         <option value="harp">Harp</option>
                         <option value="saxophone">Saxophone</option>
                         <option value="clarinet">Clarinet</option>
+                        <option value="drums">Drums</option>
+                        <option value="cello">Cello</option>
                         
                     </select>
                 </label>
 
                 <select
                     onChange={handleSongSelection}
-                    disabled={isPlaying}
+                    hidden={isPlaying}
                 >
                     <option value="">Select a Song</option>
-                    {filteredSongs.map((song, index) => (
+                    {sortedSongs.map((song, index) => (
                         <option key={index} value={song.file}>
                             {song.title}
                         </option>
@@ -73,7 +79,7 @@ export default function App() {
                         setUseMic(true);
                         handleStartStop();
                     }}
-                    disabled={isPlaying}
+                    hidden={isPlaying}
                 >
                     Use Mic
                 </button>
@@ -81,15 +87,15 @@ export default function App() {
                     type="file"
                     accept="audio/mp3,audio/wav,audio/ogg"
                     onChange={handleFileUpload}
-                    disabled={isPlaying}
+                    hidden={isPlaying}
                 />
 
-                <label>
+                <label hidden={isPlaying}>
                     Bins:
                     <select
                         value={bins}
                         onChange={(e) => setBins(parseInt(e.target.value, 10))}
-                        disabled={isPlaying}
+                        hidden={isPlaying}
                     >
                         {[16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768].map(
                             (power) => (
@@ -101,7 +107,36 @@ export default function App() {
                     </select>
                 </label>
 
-                <label>
+                <label hidden={isPlaying}>
+                    Min Decibels:
+                    {minDecibels} dB
+                    <input
+                        type="range"
+                        min="-120"
+                        max="0"
+                        step="1"
+                        value={minDecibels}
+                        onChange={(e) => setMinDecibels(parseFloat(e.target.value))}
+                        style={{ color: 'white', WebkitAppearance: 'none' }}
+                    />
+                </label>
+
+                <label hidden={isPlaying}>
+                    Max Decibels:
+                    {maxDecibels} dB
+                    <input
+                        type="range"
+                        min="-120"
+                        max="0"
+                        step="1"
+                        value={maxDecibels}
+                        onChange={(e) => setMaxDecibels(parseFloat(e.target.value))}
+                        style={{ color: 'white', WebkitAppearance: 'none' }}
+                        hidden={isPlaying}
+                    />
+                </label>
+
+                <label hidden={isPlaying}>
                     Smoothing:
                     <input
                         type="range"
@@ -110,12 +145,12 @@ export default function App() {
                         step="0.01"
                         value={smoothing}
                         onChange={(e) => setSmoothing(parseFloat(e.target.value))}
-                        style={{ color: 'white', webkitAppearance: 'none' }}
-                        disabled={isPlaying}
+                        style={{ color: 'white', WebkitAppearance: 'none' }}
+                        hidden={isPlaying}
                     />
                 </label>
 
-                <label>
+                <label hidden={isPlaying}>
                     Labels
                     <input
                         type="checkbox"
@@ -124,7 +159,7 @@ export default function App() {
                     />
                 </label>
 
-                <label>
+                <label hidden={isPlaying}>
                     Bar
                     <input
                         type="checkbox"
@@ -146,6 +181,8 @@ export default function App() {
                 isPlaying={isPlaying}
                 showLabels={showLabels}
                 showScroll={showScroll}
+                minDecibels={minDecibels}
+                maxDecibels={maxDecibels}
             />
         </div>
     );
