@@ -57,7 +57,7 @@ Node.js is a JavaScript runtime that allows you to run JavaScript on the server 
    - Open Command Prompt (`cmd`) or PowerShell.
    - Run the following commands to verify that Node.js and npm are installed:
 
-     ```bash
+     ```
      node -v
      npm -v
      ```
@@ -80,7 +80,7 @@ Node.js is a JavaScript runtime that allows you to run JavaScript on the server 
    - Open Terminal.
    - Run the following commands:
 
-     ```bash
+     ```
      node -v
      npm -v
      ```
@@ -95,7 +95,7 @@ The script explains what it will do and then pauses before it does it. Read abou
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 2. **Install Node.js**:
-```bash
+```
 brew update
 brew install node
 ```
@@ -116,7 +116,7 @@ sudo apt install nodejs npm
 
 4. **Verify Installation**:
 
- ```bash
+ ```
  node -v
  npm -v
  ```
@@ -130,13 +130,13 @@ You need to clone the project repository from GitHub to your local machine.
    - **Windows**: Download and install Git from [git-scm.com](https://git-scm.com/download/win).
    - **macOS**: Install via Homebrew:
 
-     ```bash
+     ```
      brew install git
      ```
 
    - **Debian/Ubuntu**:
 
-     ```bash
+     ```
      sudo apt install git
      ```
 
@@ -144,7 +144,7 @@ You need to clone the project repository from GitHub to your local machine.
 
    Open your terminal (Command Prompt or PowerShell on Windows) and run:
 
-   ```bash
+   ```
    git clone https://github.com/charliethompson217/AudioVisualizer.git
    ```
 3.	**Navigate to the Project Directory**
@@ -211,6 +211,51 @@ Once the development server is running, you can access the application through y
 - You can interact with the visualization:
   - Hover over frequencies to see exact values and corresponding notes.
   - Adjust parameters in real-time (some may require restarting the visualization).
+
+
+## Contributing
+1. **Fork the Repository:**
+   - Navigate to the AudioVisualizer GitHub repository and click the “Fork” button at the top-right corner. This will create a copy of the repository under your own GitHub account.
+3. **Clone the Forked Repository:**
+   - Open your terminal and run the following command to clone your forked repository to your local machine:
+     ```
+     git clone https://github.com/YOUR_USERNAME/AudioVisualizer.git
+     ```
+5. **Create a New Branch:**
+   - Navigate to the project directory:
+    ```
+    cd AudioVisualizer
+    ```
+   - Create and switch to a new branch for your feature or bugfix:
+    ```
+    git checkout -b your-branch-name
+    ```
+7. **Make Your Changes:**
+   - Make your code changes, improvements, or bug fixes.
+9. **Commit and Push Your Changes:**
+    - this will list all modified files
+      ```
+      git status
+      ```
+    - this will add all of your changes
+    ```
+    git add --all
+    ```
+    - alternatively add files one at a time
+      ```
+      git add path/to/file
+      ```
+   - git will now include these files in your commit
+   - commit your changes with a descriptive message:
+    ```
+    git commit -m "Description of your changes"
+    ```
+    - push your changes to your forked repository:
+    ```
+    git push origin your-branch-name
+    ```
+11. **Open a Pull Request:**
+  - Go to your forked repository on GitHub and click the “Compare & pull request” button.
 
 ## License
 
