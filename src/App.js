@@ -18,6 +18,7 @@ export default function App() {
     const [showScroll, setShowScroll] = useState(true);  // Boolean: controls whether the frequency scroll bar is shown
     const [selectedInstrument, setSelectedInstrument] = useState('none');  // Tracks the currently selected instrument filter
     const [pianoEnabled, setPianoEnabled] = useState(false);  // Boolean: enables or disables piano keyboard input
+    const [brightnessPower, setBrightnessPower] = useState(1); // Initial Brightness Power
 
     // State for harmonic amplitudes (1-8 harmonics)
     const [harmonicAmplitudes, setHarmonicAmplitudes] = useState({
@@ -380,6 +381,7 @@ export default function App() {
                     DECAY_TIME={decayTime}  // Pass ADSR decay time
                     SUSTAIN_LEVEL={sustainLevel}  // Pass ADSR sustain level
                     RELEASE_TIME={releaseTime}  // Pass ADSR release time
+                    brightnessPower={brightnessPower}
                 />
             ) : null}
         </div>

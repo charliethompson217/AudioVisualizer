@@ -19,13 +19,12 @@ export default function Visualizer({
     minDecibels,   // Minimum decibel value for the analyser node
     maxDecibels,   // Maximum decibel value for the analyser node
     pianoEnabled,   // Boolean: If true, enable piano keyboard control
-    // constants for the note generator
     harmonicAmplitudes,
-    // Constants for the ADSR (Attack, Decay, Sustain, Release) envelope applied to each note
-    ATTACK_TIME = 0.01,   // Time taken to reach the peak amplitude after a note is pressed
-    DECAY_TIME = 0.3,     // Time taken to fall from the peak amplitude to the sustain level
-    SUSTAIN_LEVEL = 0.2,  // Level at which the note will be sustained as long as the key is held
-    RELEASE_TIME = 0.5,   // Time taken to drop to zero after the key is released
+    ATTACK_TIME = 0.01,
+    DECAY_TIME = 0.3,
+    SUSTAIN_LEVEL = 0.2,
+    RELEASE_TIME = 0.5,
+    brightnessPower = 1,
 }) {
     const sketchRef = useRef();  // Ref to attach the p5.js canvas
     const { analyser, dataArray, sampleRate } = useAudioAnalysis(
@@ -33,32 +32,38 @@ export default function Visualizer({
     );
 
     useEffect(() => {
-        if (!analyser || !dataArray) return;  // Wait for analyser and frequency data to be ready
+        if (!analyser || !dataArray) return;
 
-        // The sketch function defines the p5.js sketch (draws visuals on the canvas)
         const sketch = (p) => {
-            let canvas;  // Stores the p5.js canvas reference
-            let vw = Math.min(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-            let vh = Math.min(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-            const canvasWidth = 0.99 * vw;  // Set canvas width as 99% of viewport width
-            const canvasHeight = 0.95 * vh;  // Set canvas height as 95% of viewport height
+            let canvas;
+            let slider;  // Variable to store the slider reference
+            let brightness = brightnessPower;
 
-            // p5.js setup function: initializes the canvas
             p.setup = () => {
-                canvas = p.createCanvas(canvasWidth, canvasHeight);  // Create a p5.js canvas
-                canvas.parent(sketchRef.current);  // Attach the canvas to the provided DOM element
+                let vw = Math.min(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+                let vh = Math.min(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+                const canvasWidth = 0.99 * vw;
+                const canvasHeight = 0.95 * vh;
+
+                p.pixelDensity(3);
+                canvas = p.createCanvas(canvasWidth, canvasHeight);
+                canvas.parent(sketchRef.current);
+
+                // Create the slider for brightness power in the top right corner
+                slider = p.createSlider(0, 2, brightnessPower, 0.01);  // Slider range 1 to 2 with 0.01 steps
+                slider.position(canvasWidth - 150, 10);  // Place slider in the top-right corner
+                slider.style('width', '140px');
+                slider.input(() => {
+                    brightness = slider.value();  // Update brightness power when slider changes
+                });
             };
 
-            // p5.js draw function: called repeatedly to render the visualization
             p.draw = () => {
-                p.background(0);  // Set the background color to black
+                p.background(0);
 
-                // Get frequency data from the analyser and fill dataArray with FFT data
                 analyser.getByteFrequencyData(dataArray);
-                
-                const middle = p.height / 2;  // Midpoint of the canvas height (used for drawing lines)
-                
-                // Predefined note frequencies (C0 to C8, musical scale)
+                const middle = p.height / 2;
+
                 const noteFrequencies = [
                     16.35, 17.32, 18.35, 19.45, 20.60, 21.83, 23.12, 24.50, 25.96, 27.50, 29.14, 30.87, 
                     32.70, 34.65, 36.71, 38.89, 41.20, 43.65, 46.25, 49.00, 51.91, 55.00, 58.27, 61.74, 
@@ -71,83 +76,67 @@ export default function Visualizer({
                     4186.01 // C8
                 ];
 
-                // Corresponding hues (color) for each note in the musical scale (C, C#, D, D#, etc.)
                 const baseNotes = ["C", "C#", "D",  "D#",  "E",  "F",  "F#",  "G",  "G#",  "A", "A#", "B"];
-                const noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];  // HSL color values
+                const noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
 
-                // Define frequency range for visualization with slight margin (±3%)
                 const minFreq = noteFrequencies[0] * 0.97;
                 const maxFreq = noteFrequencies[noteFrequencies.length - 1] * 1.03;
 
-                // Logarithmic scale function: maps a frequency to an x-coordinate on the canvas
                 const logScale = (freq) => {
                     const minLog = Math.log10(minFreq);
                     const maxLog = Math.log10(maxFreq);
-                    const valueLog = Math.log10(freq);  // Calculate log10 of the frequency
-                    return p.map(valueLog, minLog, maxLog, 0, p.width);  // Map log value to canvas width
+                    const valueLog = Math.log10(freq);
+                    return p.map(valueLog, minLog, maxLog, 0, p.width);
                 };
 
-                // Iterate through the frequency data and draw the corresponding visualizations
                 for (let i = 0; i < dataArray.length; i++) {
-                    const freq = (i * sampleRate) / analyser.fftSize;  // Calculate frequency for each FFT bin
-                    if (freq > maxFreq) break;  // Stop if the frequency exceeds the visualized range
+                    const freq = (i * sampleRate) / analyser.fftSize;
+                    if (freq > maxFreq) break;
 
-                    const energy = dataArray[i];  // Get the energy (amplitude) for this frequency bin
+                    const energy = dataArray[i];
 
-                    // Find the closest musical note frequency to the current frequency
                     let closestNoteIndex = 0;
                     for (let j = 0; j < noteFrequencies.length; j++) {
                         if (Math.abs(noteFrequencies[j] - freq) < Math.abs(noteFrequencies[closestNoteIndex] - freq)) {
-                            closestNoteIndex = j;  // Update the closest note index
+                            closestNoteIndex = j;
                         }
                     }
 
-                    const hue = noteHues[closestNoteIndex % 12];  // Determine the color (hue) based on note
+                    const hue = noteHues[closestNoteIndex % 12];
+                    const lightness = p.map(energy ** brightness, 0, 255 ** brightness, 0, 50);
+                    const alpha = p.map(energy ** brightness, 0, 255 ** brightness, 0, 255);
 
-                    // Calculate brightness based on squared energy (stronger energy = brighter color)
-                    const lightness = p.map(energy * energy, 0, 255 * 255, 0, 50);
-                    const alpha = p.map(energy * energy, 0, 255 * 255, 0, 255);  // Alpha transparency based on energy
-                    
-                    // Set stroke color (HSLA: Hue, Saturation, Lightness, Alpha)
                     p.stroke(p.color(`hsla(${hue}, 100%, ${lightness}%, ${alpha / 255})`));
-                    p.strokeWeight(1);  // Set the line weight (thickness)
+                    p.strokeWeight(1);
 
-                    // Map frequency to an x-coordinate using a logarithmic scale for even spacing of notes
                     const x = logScale(freq);
-
-                    // Map energy to the length of the line (drawn from the center of the canvas)
                     const normalizedEnergy = p.map(energy, 0, 255, 0, middle);
 
-                    // Draw lines extending from the middle of the canvas, representing the frequency amplitude
-                    p.line(x, middle, x, middle - normalizedEnergy);  // Line extending upwards
-                    p.line(x, middle, x, middle + normalizedEnergy);  // Line extending downwards
+                    p.line(x, middle, x, middle - normalizedEnergy);
+                    p.line(x, middle, x, middle + normalizedEnergy);
                 }
 
-                // Optionally show labels for musical notes on the x-axis
                 if (showLabels) {
                     for (let i = 0; i < noteFrequencies.length; i++) {
-                        const x = logScale(noteFrequencies[i]);  // Map note frequency to x-coordinate
-                        const rowHeight = 20;  // Set height for each row of note labels
-                        const rowOffset = i % 12;  // Calculate offset based on note (C, C#, D, etc.)
-                        const y = middle - rowHeight * (rowOffset + 1) + 6 * rowHeight;  // Position labels vertically
-                        const noteName = `${baseNotes[i % 12]}${Math.floor(i / 12)}`;  // Generate note name (e.g., C4)
+                        const x = logScale(noteFrequencies[i]);
+                        const rowHeight = 20;
+                        const rowOffset = i % 12;
+                        const y = middle - rowHeight * (rowOffset + 1) + 6 * rowHeight;
+                        const noteName = `${baseNotes[i % 12]}${Math.floor(i / 12)}`;
 
-                        p.fill(255);  // Set text color to white
-                        p.textAlign(p.CENTER, p.BOTTOM);  // Align text to the center
-                        p.text(noteName, x, y);  // Draw the note label
+                        p.fill(255);
+                        p.textAlign(p.CENTER, p.BOTTOM);
+                        p.text(noteName, x, y);
                     }
                 }
 
-                // If the user enables scrolling, draw a cursor along the frequency spectrum
                 if (showScroll) {
                     if (p.mouseX >= 0 && p.mouseX <= p.width) {
-                        p.stroke(255, 255, 255);  // Set cursor color to white
-                        p.line(p.mouseX, 0, p.mouseX, p.height);  // Draw a vertical line at the mouse position
+                        p.stroke(255, 255, 255);
+                        p.line(p.mouseX, 0, p.mouseX, p.height);
 
-                        // Convert the x-coordinate to a frequency using the inverse of the logarithmic scale
                         const freq = Math.pow(10, p.map(p.mouseX, 0, p.width, Math.log10(minFreq), Math.log10(maxFreq)));
 
-                        // Find the closest musical note to the current frequency
                         let closestNoteIndex = 0;
                         for (let i = 0; i < noteFrequencies.length; i++) {
                             if (Math.abs(noteFrequencies[i] - freq) < Math.abs(noteFrequencies[closestNoteIndex] - freq)) {
@@ -156,25 +145,22 @@ export default function Visualizer({
                         }
                         const closestNote = `${baseNotes[closestNoteIndex % 12]}${Math.floor(closestNoteIndex / 12)}`;
 
-                        // Display the frequency and note information near the cursor
-                        p.fill(255);  // Set text color to white
-                        p.noStroke();  // Disable stroke for the text
-                        p.textAlign(p.LEFT, p.BOTTOM);  // Align text to the left
-                        p.text(`${freq.toFixed(2)} Hz`, p.mouseX + 10, p.mouseY - 20);  // Display frequency
-                        p.text(`${closestNote}`, p.mouseX + 10, p.mouseY - 5);  // Display the closest note
+                        p.fill(255);
+                        p.noStroke();
+                        p.textAlign(p.LEFT, p.BOTTOM);
+                        p.text(`${freq.toFixed(2)} Hz`, p.mouseX + 10, p.mouseY - 20);
+                        p.text(`${closestNote}`, p.mouseX + 10, p.mouseY - 5);
                     }
                 }
             };
         };
 
-        // Initialize the p5.js sketch
         new window.p5(sketch);
 
-        // Clean-up function to disconnect the analyser when the component is unmounted
         return () => {
             if (analyser) analyser.disconnect();
         };
-    }, [analyser, dataArray]);  // Effect runs when analyser or dataArray changes
+    }, [analyser, dataArray]);
 
-    return <div ref={sketchRef}></div>;  // Render the canvas container
+    return <div ref={sketchRef}></div>;
 }
