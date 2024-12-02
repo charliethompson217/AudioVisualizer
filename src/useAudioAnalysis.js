@@ -1,6 +1,4 @@
-// useAudioAnalysis.js
-
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { parseMidi } from 'midi-file';
 import Synthesizer from './Synthesizer';
 
@@ -24,17 +22,43 @@ export function useAudioAnalysis(
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
   const synthesizerRef = useRef(null);
-  const octaveRef = useRef(4); // Default octave is 4
-  const volumeRef = useRef(1.0); // Default volume is 1.0 (max)
-  const midiVolumeRef = useRef(1.0); // Separate volume for MIDI files
-  const activeNotesRef = useRef(new Set()); // Track all active notes to ensure they are stopped
+  const octaveRef = useRef(4);
+  const volumeRef = useRef(1.0);
+  const midiVolumeRef = useRef(1.0);
+  const activeKeysRef = useRef(new Set());
   const [dataArray, setDataArray] = useState(null);
   const [sampleRate, setSampleRate] = useState(44100);
+  const audioElementRef = useRef(null);
+  const [duration, setDuration] = useState(0);
 
-  // Initialize Audio Context and Analyser Node
   useEffect(() => {
-    if (!isPlaying && !pianoEnabled) {
-      // Clean up if not playing and piano is not enabled
+    if (isPlaying && analyserRef.current) {
+      analyserRef.current.fftSize = bins;
+      analyserRef.current.smoothingTimeConstant = smoothing;
+      analyserRef.current.minDecibels = minDecibels;
+      analyserRef.current.maxDecibels = maxDecibels;
+    }
+  }, [bins, smoothing, minDecibels, maxDecibels, isPlaying]);
+
+  useEffect(() => {
+    if (synthesizerRef.current) {
+      synthesizerRef.current.updateHarmonicAmplitudes(harmonicAmplitudes);
+    }
+  }, [harmonicAmplitudes]);
+
+  useEffect(() => {
+    if (synthesizerRef.current) {
+      synthesizerRef.current.updateADSR({
+        attackTime: ATTACK_TIME,
+        decayTime: DECAY_TIME,
+        sustainLevel: SUSTAIN_LEVEL,
+        releaseTime: RELEASE_TIME,
+      });
+    }
+  }, [ATTACK_TIME, DECAY_TIME, SUSTAIN_LEVEL, RELEASE_TIME]);
+
+  useEffect(() => {
+    if (!isPlaying) {
       if (audioContextRef.current) {
         audioContextRef.current.close();
         audioContextRef.current = null;
@@ -57,7 +81,6 @@ export function useAudioAnalysis(
 
       const analyser = audioContext.createAnalyser();
       analyserRef.current = analyser;
-
       setSampleRate(audioContext.sampleRate);
     }
 
@@ -75,7 +98,6 @@ export function useAudioAnalysis(
       synthesizerRef.current = synthesizer;
     }
 
-    // Set up data array for analyser
     const analyser = analyserRef.current;
     analyser.fftSize = bins;
     analyser.smoothingTimeConstant = smoothing;
@@ -107,6 +129,14 @@ export function useAudioAnalysis(
       source.connect(analyserRef.current);
       analyserRef.current.connect(audioContextRef.current.destination);
       audioElement.play();
+      audioElement.addEventListener('loadedmetadata', () => {
+        setDuration(audioElement.duration);
+      });
+      audioElement.addEventListener('ended', () => {
+        // Handle end of playback if needed
+      });
+      // Store audioElement in ref
+      audioElementRef.current = audioElement;
     }
 
     return () => {
@@ -117,65 +147,15 @@ export function useAudioAnalysis(
       if (fileURL) {
         URL.revokeObjectURL(fileURL);
       }
+      // Stop all active notes on cleanup
+      if (synthesizerRef.current) {
+        synthesizerRef.current.stopAllNotes();
+      }
     };
   }, [isPlaying, pianoEnabled, mp3File, useMic]);
 
-  // Update analyser properties in real-time
   useEffect(() => {
-    if (analyserRef.current) {
-      analyserRef.current.minDecibels = minDecibels;
-      if (minDecibels > maxDecibels) {
-        analyserRef.current.maxDecibels = minDecibels;
-      }
-    }
-  }, [minDecibels]);
-
-  useEffect(() => {
-    if (analyserRef.current) {
-      analyserRef.current.maxDecibels = maxDecibels;
-      if (maxDecibels < minDecibels) {
-        analyserRef.current.minDecibels = maxDecibels;
-      }
-    }
-  }, [maxDecibels]);
-
-  useEffect(() => {
-    if (analyserRef.current) {
-      analyserRef.current.smoothingTimeConstant = smoothing;
-    }
-  }, [smoothing]);
-
-  useEffect(() => {
-    if (analyserRef.current) {
-      analyserRef.current.fftSize = bins;
-      const newDataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-      dataArrayRef.current = newDataArray;
-      setDataArray(newDataArray);
-    }
-  }, [bins]);
-
-  // Update synthesizer parameters in real-time
-  useEffect(() => {
-    if (synthesizerRef.current) {
-      synthesizerRef.current.updateHarmonicAmplitudes(harmonicAmplitudes);
-    }
-  }, [harmonicAmplitudes]);
-
-  useEffect(() => {
-    if (synthesizerRef.current) {
-      synthesizerRef.current.updateADSR({
-        attackTime: ATTACK_TIME,
-        decayTime: DECAY_TIME,
-        sustainLevel: SUSTAIN_LEVEL,
-        releaseTime: RELEASE_TIME,
-      });
-    }
-  }, [ATTACK_TIME, DECAY_TIME, SUSTAIN_LEVEL, RELEASE_TIME]);
-
-  // Handle MIDI file playback
-  // Handle MIDI file playback
-  useEffect(() => {
-    if (!midiFile || !synthesizerRef.current) return;
+    if (!midiFile || !synthesizerRef.current || !isPlaying) return;
 
     const fetchMidiFile = async () => {
       try {
@@ -207,7 +187,7 @@ export function useAudioAnalysis(
 
     function playMidi(parsedMidi) {
       const ticksPerBeat = parsedMidi.header.ticksPerBeat;
-      let microsecondsPerBeat = 500000; // Default tempo (120 BPM)
+      let microsecondsPerBeat = 500000;
 
       parsedMidi.tracks.forEach((track) => {
         let trackTime = 0;
@@ -230,84 +210,39 @@ export function useAudioAnalysis(
             (event.type === 'noteOn' && event.velocity === 0)
           ) {
             setTimeout(() => {
-              synthesizerRef.current.noteOff(event.noteNumber, true);
+              synthesizerRef.current.noteOff(event.noteNumber);
             }, delay * 1000);
-          } else if (event.type === 'controller') {
-            if (event.controllerType === 64) {
-              const sustainOn = event.value >= 64;
-              if (sustainOn) {
-                synthesizerRef.current.applySustain();
-              } else {
-                synthesizerRef.current.releaseSustain();
-              }
-            } else if (event.controllerType === 7) {
-              midiVolumeRef.current = event.value / 127;
-            }
-          } else if (event.type === 'programChange') {
-            synthesizerRef.current.changeInstrument(event.programNumber);
-          } else if (event.type === 'pitchBend') {
-            synthesizerRef.current.bendPitch(event.value);
           }
         });
       });
     }
-  }, [midiFile]);
+  }, [midiFile, isPlaying]);
 
-  // Handle keyboard input for the virtual piano
   useEffect(() => {
-    if (!pianoEnabled || !synthesizerRef.current) return;
-
-    const pianoKeys = ['z', 's', 'x', 'd', 'c', 'v', 'g', 'b', 'h', 'n', 'j', 'm'];
-    const keyNoteMapping = {
-      z: 0,
-      s: 1,
-      x: 2,
-      d: 3,
-      c: 4,
-      v: 5,
-      g: 6,
-      b: 7,
-      h: 8,
-      n: 9,
-      j: 10,
-      m: 11,
-    };
+    if (!pianoEnabled || !synthesizerRef.current || !isPlaying) return;
 
     const handleKeyDown = (event) => {
       if (event.repeat) return;
       event.preventDefault();
-      if (event.key === 'ArrowUp') {
-        volumeRef.current = Math.min(volumeRef.current + 0.05, 1.0);
-      } else if (event.key === 'ArrowDown') {
-        volumeRef.current = Math.max(volumeRef.current - 0.05, 0);
+
+      if (event.key === 'ArrowLeft') {
+        octaveRef.current = Math.max(-1, octaveRef.current - 1);
       } else if (event.key === 'ArrowRight') {
-        activeNotesRef.current.forEach((noteNumber) =>
-          synthesizerRef.current.noteOff(noteNumber)
-        );
-        activeNotesRef.current.clear();
-        octaveRef.current = Math.min(octaveRef.current + 1, 9);
-      } else if (event.key === 'ArrowLeft') {
-        activeNotesRef.current.forEach((noteNumber) =>
-          synthesizerRef.current.noteOff(noteNumber)
-        );
-        activeNotesRef.current.clear();
-        octaveRef.current = Math.max(octaveRef.current - 1, 1);
-      } else if (event.key === 'Shift') {
-        synthesizerRef.current.applySustain();
-      } else if (pianoKeys.includes(event.key)) {
-        const noteNumber = 60 + keyNoteMapping[event.key] + 12 * (octaveRef.current - 4);
-        synthesizerRef.current.noteOn(noteNumber);
-        activeNotesRef.current.add(noteNumber);
+        octaveRef.current = Math.min(9, octaveRef.current + 1);
+      } else {
+        const noteNumber = mapKeyToNoteNumber(event.key);
+        if (noteNumber !== null) {
+          synthesizerRef.current.noteOn(noteNumber);
+          activeKeysRef.current.add(event.key);
+        }
       }
     };
 
     const handleKeyUp = (event) => {
-      if (event.key === 'Shift') {
-        synthesizerRef.current.releaseSustain();
-      } else if (pianoKeys.includes(event.key)) {
-        const noteNumber = 60 + keyNoteMapping[event.key] + 12 * (octaveRef.current - 4);
+      const noteNumber = mapKeyToNoteNumber(event.key);
+      if (noteNumber !== null) {
         synthesizerRef.current.noteOff(noteNumber);
-        activeNotesRef.current.delete(noteNumber);
+        activeKeysRef.current.delete(event.key);
       }
     };
 
@@ -317,8 +252,66 @@ export function useAudioAnalysis(
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      if (synthesizerRef.current) {
+        synthesizerRef.current.stopAllNotes();
+      }
     };
-  }, [pianoEnabled]);
+  }, [pianoEnabled, isPlaying]);
 
-  return { analyser: analyserRef.current, dataArray, sampleRate };
+  const keyNoteMapping = {
+    z: 0,
+    s: 1,
+    x: 2,
+    d: 3,
+    c: 4,
+    v: 5,
+    g: 6,
+    b: 7,
+    h: 8,
+    n: 9,
+    j: 10,
+    m: 11,
+  };
+
+  function mapKeyToNoteNumber(key) {
+    if (key in keyNoteMapping) {
+      // Calculate the MIDI note number based on the current octave
+      return 60 + keyNoteMapping[key] + 12 * (octaveRef.current - 4);
+    }
+    return null;
+  }
+
+  // Control functions
+  const play = useCallback(() => {
+    if (audioElementRef.current) {
+      audioElementRef.current.play();
+    }
+  }, []);
+
+  const pause = useCallback(() => {
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+    }
+  }, []);
+
+  const seek = useCallback((time) => {
+    if (audioElementRef.current) {
+      audioElementRef.current.currentTime = time;
+    }
+  }, []);
+
+  const getCurrentTime = useCallback(() => {
+    return audioElementRef.current ? audioElementRef.current.currentTime : 0;
+  }, []);
+
+  return {
+    analyser: analyserRef.current,
+    dataArray,
+    sampleRate,
+    duration,
+    play,
+    pause,
+    seek,
+    getCurrentTime,
+  };
 }

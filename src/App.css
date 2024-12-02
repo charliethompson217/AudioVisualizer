@@ -11,6 +11,56 @@ body {
   flex-direction: column;
 }
 
+input[type='range'],
+input[type='range']::-webkit-slider-runnable-track,
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background: none;
+}
+input[type='range']::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  width: 200px;
+  height: 5px; /* equal to height of slider-thumb::before */
+  background: #FFF;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  position: relative;
+  height: 20px;
+  width: 20px;
+  margin-top: -8px; /* don't change this */
+  background: rgb(0, 85, 255);
+  border-radius: 50%;
+  border: none;
+}
+input[type='range']::-webkit-slider-thumb::before {
+  -webkit-appearance: none;
+  position: absolute;
+  content: '';
+  height: 5px; /* equal to height of runnable track */
+  width: 500px; /* make this bigger than the widest range input element */
+  left: -502px; /* this should be -2px - width */
+  top: 8px; /* don't change this */
+  background: rgb(0, 85, 255);
+}
+
+.seek-slider input[type='range'] {
+  width: 500px;
+}
+
+.seek-slider input[type='range']::-webkit-slider-runnable-track {
+  width: 500px;
+}
+
+.seek-slider input[type='range']::-webkit-slider-thumb::before {
+  width: 500px;
+  left: -502px;
+}
+
+select {
+  -webkit-appearance: none;
+}
+
 .main-container {
   padding: 20px;
 }
@@ -77,8 +127,7 @@ body {
   right: 0;
   top: 0;
   padding: 20px;
-  background-color: rgba(0, 0, 0, 0.9);
-  border-left: 1px solid #444;
+  margin-top: 120px;
 }
 
 .harmonic-sliders-container label {
@@ -91,4 +140,15 @@ body {
 .harmonic-slider {
   margin-left: 10px;
   width: 150px;
+}
+
+
+.SongTitle{
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+}
+
+.spectrograph {
+  margin-top: 100px;
 }

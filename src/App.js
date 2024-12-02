@@ -1,12 +1,11 @@
-// App.js
-
-import React, { useState } from 'react';
-import Visualizer from './Visualizer';
-import songList from './songList';
+import React, { useState, useEffect } from 'react';
+import SpectrographVisualizer from './SpectrographVisualizer';
 import './App.css';
 import KeyboardSVG from './KeyboardSVG';
-import Waveform from './Waveform';
+import Waveform from './WaveformVisualizer.js';
 import { useAudioAnalysis } from './useAudioAnalysis.js';
+import songList from './songList';
+
 
 export default function App() {
   // React state hooks to manage various input parameters and settings for the audio visualization
@@ -21,8 +20,34 @@ export default function App() {
   const [showLabels, setShowLabels] = useState(true);
   const [showScroll, setShowScroll] = useState(true);
   const [selectedInstrument, setSelectedInstrument] = useState('none');
-  const [pianoEnabled, setPianoEnabled] = useState(false);
+  const [pianoEnabled, setPianoEnabled] = useState(true);
   const [brightnessPower, setBrightnessPower] = useState(1);
+
+  const [showWaveform, setShowWaveform] = useState(true);
+  const [showSpectrograph, setShowSpectrograph] = useState(true);
+
+  const [currentSongName, setCurrentSongName] = useState('');
+  const [isPaused, setIsPaused] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  // Base URL for accessing MP3 files hosted on S3
+  const S3_BASE_URL = 'https://audio-visualizer-zongs.s3.us-east-2.amazonaws.com/songs';
+
+  function handleSongSelection(e) {
+    const selectedSongPath = e.target.value;
+    const url = `${S3_BASE_URL}/${selectedSongPath}`;
+    const songName = e.target.options[e.target.selectedIndex].text;
+    setCurrentSongName( selectedSongPath.split('%')[0].charAt(0).toUpperCase() + selectedSongPath.split('%')[0].slice(1)+ " - " + songName);
+    if (url.endsWith('.mid')) {
+      setMidiFile(url);
+      setMp3File(null);
+      setPianoEnabled(true);
+    } else {
+      setMp3File(url);
+      setMidiFile(null);
+    }
+  }
+
 
   // State for harmonic amplitudes (1-8 harmonics)
   const [harmonicAmplitudes, setHarmonicAmplitudes] = useState({
@@ -49,9 +74,6 @@ export default function App() {
   const [sustainLevel, setSustainLevel] = useState(0.2);
   const [releaseTime, setReleaseTime] = useState(0.5);
 
-  // Base URL for accessing MP3 files hosted on S3
-  const S3_BASE_URL = 'https://audio-visualizer-zongs.s3.us-east-2.amazonaws.com/songs';
-
   // Instantiate the audio analysis using the custom hook
   const audioAnalysis = useAudioAnalysis(
     mp3File,
@@ -70,6 +92,18 @@ export default function App() {
     releaseTime
   );
 
+  useEffect(() => {
+    let interval;
+    if (isPlaying && !isPaused && audioAnalysis.duration) {
+      interval = setInterval(() => {
+        setCurrentTime(audioAnalysis.getCurrentTime());
+      }, 500);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlaying, isPaused, audioAnalysis]);
+
   /**
    * Toggles the audio playback state.
    */
@@ -81,18 +115,13 @@ export default function App() {
     }
   }
 
-  /**
-   * Handles song selection from the dropdown, sets the selected MP3 or MIDI file URL.
-   */
-  function handleSongSelection(e) {
-    const selectedSongPath = e.target.value;
-    const url = `${S3_BASE_URL}/${selectedSongPath}`;
-    if (url.endsWith('.mid')) {
-      setMidiFile(url);
-      setMp3File(null);
+  function handlePauseResume() {
+    if (isPaused) {
+      setIsPaused(false);
+      audioAnalysis.play();
     } else {
-      setMp3File(url);
-      setMidiFile(null);
+      setIsPaused(true);
+      audioAnalysis.pause();
     }
   }
 
@@ -102,10 +131,12 @@ export default function App() {
   function handleFileUpload(e) {
     const file = e.target.files[0];
     if (file) {
+      setCurrentSongName(file.name.split('.')[0]);
       const fileName = file.name.toLowerCase();
       if (fileName.endsWith('.mid') || fileName.endsWith('.midi')) {
         setMidiFile(file);
         setMp3File(null);
+        setPianoEnabled(true);
       } else if (
         fileName.endsWith('.mp3') ||
         fileName.endsWith('.wav') ||
@@ -137,113 +168,120 @@ export default function App() {
   return (
     <div className="App">
       <div className="main-container">
+      <div className='SongTitle'>{isPlaying && <h1>{currentSongName}</h1>}</div>
         {/* Controls adjustable in real-time */}
         <div className="controls-row">
           {/* Select input for FFT bin size */}
-          <label className="control-label">
-            FFT Size:
-            <select
-              className="control-select"
-              value={bins}
-              onChange={(e) => setBins(parseInt(e.target.value, 10))}
-            >
-              {[16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768].map((power) => (
-                <option key={power} value={power}>
-                  {power}
-                </option>
-              ))}
-            </select>
-          </label>
+          { !isPlaying && (
+            <label className="control-label">
+              FFT Size:
+              <select
+                className="control-select"
+                value={bins}
+                onChange={(e) => setBins(parseInt(e.target.value, 10))}
+              >
+                {[16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768].map((power) => (
+                  <option key={power} value={power}>
+                    {power}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
           {/* Slider input for minimum decibel threshold */}
-          <label className="control-label">
-            Min Decibels:
-            <span>{minDecibels} dB</span>
-            <input
-              className="control-slider"
-              type="range"
-              min="-120"
-              max={maxDecibels} // Ensure minDecibels cannot exceed maxDecibels
-              step="1"
-              value={minDecibels}
-              onChange={(e) => {
-                const value = parseFloat(e.target.value);
-                setMinDecibels(value);
-                if (value > maxDecibels) {
-                  setMaxDecibels(value);
-                }
-              }}
-            />
-          </label>
+            <label className="control-label">
+              Min Decibels:
+              <span>{minDecibels} dB</span>
+              <input
+                className="control-slider"
+                type="range"
+                min="-120"
+                max={0}
+                step="1"
+                value={minDecibels}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  if (value < maxDecibels) {
+                    setMinDecibels(value);
+                  }
+                }}
+              />
+            </label>
 
           {/* Slider input for maximum decibel threshold */}
-          <label className="control-label">
-            Max Decibels:
-            <span>{maxDecibels} dB</span>
-            <input
-              className="control-slider"
-              type="range"
-              min={minDecibels} // Ensure maxDecibels cannot be less than minDecibels
-              max="0"
-              step="1"
-              value={maxDecibels}
-              onChange={(e) => {
-                const value = parseFloat(e.target.value);
-                setMaxDecibels(value);
-                if (value < minDecibels) {
-                  setMinDecibels(value);
-                }
-              }}
-            />
-          </label>
+            <label className="control-label">
+              Max Decibels:
+              <span>{maxDecibels} dB</span>
+              <input
+                className="control-slider"
+                type="range"
+                min={-120}
+                max="0"
+                step="1"
+                value={maxDecibels}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  if (value > minDecibels) {
+                    setMaxDecibels(value);
+                  }
+                }}
+              />
+            </label>
 
           {/* Slider input for FFT smoothing factor */}
-          <label className="control-label">
-            Smoothing:
-            <input
-              className="control-slider"
-              type="range"
-              min="0.0"
-              max="1.0"
-              step="0.01"
-              value={smoothing}
-              onChange={(e) => setSmoothing(parseFloat(e.target.value))}
-            />
-          </label>
+            <label className="control-label">
+              Smoothing:
+              <input
+                className="control-slider"
+                type="range"
+                min="0.0"
+                max="1.0"
+                step="0.01"
+                value={smoothing}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  if (value > 0) {
+                    setSmoothing(parseFloat(value))}
+                  }
+                }
+              />
+            </label>
 
           {/* Checkbox input to toggle showing note labels */}
-          <label className="control-label">
-            Labels
-            <input
-              className="control-checkbox"
-              type="checkbox"
-              checked={showLabels}
-              onChange={() => setShowLabels(!showLabels)}
-            />
-          </label>
+            <label className="control-label">
+              Labels
+              <input
+                className="control-checkbox"
+                type="checkbox"
+                checked={showLabels}
+                onChange={() => setShowLabels(!showLabels)}
+              />
+            </label>
 
           {/* Checkbox input to toggle showing the scroll bar */}
-          <label className="control-label">
-            Bar
-            <input
-              className="control-checkbox"
-              type="checkbox"
-              checked={showScroll}
-              onChange={() => setShowScroll(!showScroll)}
-            />
-          </label>
+            <label className="control-label">
+              Bar
+              <input
+                className="control-checkbox"
+                type="checkbox"
+                checked={showScroll}
+                onChange={() => setShowScroll(!showScroll)}
+              />
+            </label>
 
           {/* Checkbox input to enable piano keyboard input */}
-          <label className="control-label">
-            Piano
-            <input
-              className="control-checkbox"
-              type="checkbox"
-              checked={pianoEnabled}
-              onChange={() => setPianoEnabled(!pianoEnabled)}
-            />
-          </label>
-
+          {(!isPlaying) && (
+            <label className="control-label">
+              Piano
+              <input
+                className="control-checkbox"
+                type="checkbox"
+                checked={pianoEnabled}
+                onChange={() => setPianoEnabled(!pianoEnabled)}
+              />
+            </label>
+          )}
           {/* Harmonic amplitude sliders */}
           {(pianoEnabled || midiFile) && (
             <div className="harmonic-sliders-container">
@@ -348,6 +386,8 @@ export default function App() {
                   <option value="clarinet">Clarinet</option>
                   <option value="drums">Drums</option>
                   <option value="cello">Cello</option>
+                  <option value="flute">Flute</option>
+                  <option value="trumpet">Trumpet</option>
                   <option value="test">Test Files</option>
                   <option value="midi">MIDI</option>
                 </select>
@@ -375,8 +415,32 @@ export default function App() {
                   onChange={handleFileUpload}
                 />
               </label>
+              {/* visualization toggles */}
+              {!isPlaying && (
+                <>
+                  <label className="control-label">
+                    Waveform
+                    <input
+                      className="control-checkbox"
+                      type="checkbox"
+                      checked={showWaveform}
+                      onChange={() => setShowWaveform(!showWaveform)}
+                    />
+                  </label>
+                  <label className="control-label">
+                    Spectrograph
+                    <input
+                      className="control-checkbox"
+                      type="checkbox"
+                      checked={showSpectrograph}
+                      onChange={() => setShowSpectrograph(!showSpectrograph)}
+                    />
+                  </label>
+                </>
+              )}
             </div>
           </div>
+          
         )}
 
         {/* Start/Stop and Use Mic buttons */}
@@ -397,6 +461,37 @@ export default function App() {
           <button className="control-button" onClick={handleStartStop}>
             {isPlaying ? 'Stop' : 'Play'}
           </button>
+          {isPlaying && (
+            <>
+              <button className="control-button" onClick={handlePauseResume}>
+                {isPaused ? 'Resume' : 'Pause'}
+              </button>
+              {audioAnalysis.duration > 0 && (
+                <div className="seek-slider">
+                  <label>
+                    {String(Math.floor(currentTime / 60)).padStart(2, '0')}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}
+                    <input
+                      type="range"
+                      min="0"
+                      max={audioAnalysis.duration}
+                      step="0.01"
+                      value={currentTime}
+                      onChange={(e) => {
+                        const time = parseFloat(e.target.value);
+                        audioAnalysis.seek(time);
+                        setCurrentTime(time);
+                        audioAnalysis.pause();
+                        audioAnalysis.play();
+                        setIsPaused(false);
+                      }}
+                      style={{paddingLeft: "10px", paddingRight: "10px"}}
+                    />
+                    {String(Math.floor(audioAnalysis.duration / 60)).padStart(2, '0')}:{String(Math.floor(audioAnalysis.duration % 60)).padStart(2, '0')}
+                  </label>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Only show keyboard when piano is enabled */}
@@ -407,18 +502,20 @@ export default function App() {
         )}
       </div>
 
-      {/* Render the frequency visualization component when audio is playing */}
-      {isPlaying || pianoEnabled ? (
-        <div>
-          <Waveform audioAnalysis={audioAnalysis} />
-          <Visualizer
-            showLabels={showLabels}
-            showScroll={showScroll}
-            brightnessPower={brightnessPower}
-            audioAnalysis={audioAnalysis}
-          />
+      {/* Render the visualization component when audio is playing */}
+      {(isPlaying) && (
+        <div className='Visualizers-Container'>
+          {showWaveform && <Waveform audioAnalysis={audioAnalysis} />}
+          {showSpectrograph && (
+            <SpectrographVisualizer
+              showLabels={showLabels}
+              showScroll={showScroll}
+              brightnessPower={brightnessPower}
+              audioAnalysis={audioAnalysis}
+            />
+          )}
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
