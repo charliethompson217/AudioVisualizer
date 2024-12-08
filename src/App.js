@@ -311,7 +311,7 @@ export default function App() {
                   Attack Time: {attackTime.toFixed(2)}s
                   <input
                     type="range"
-                    min="0"
+                    min="0.01"
                     max="2"
                     step="0.01"
                     value={attackTime}
@@ -325,7 +325,7 @@ export default function App() {
                   Decay Time: {decayTime.toFixed(2)}s
                   <input
                     type="range"
-                    min="0"
+                    min="0.01"
                     max="2"
                     step="0.01"
                     value={decayTime}
@@ -339,7 +339,7 @@ export default function App() {
                   Sustain Level: {sustainLevel.toFixed(2)}
                   <input
                     type="range"
-                    min="0"
+                    min="0.01"
                     max="1"
                     step="0.01"
                     value={sustainLevel}
@@ -353,7 +353,7 @@ export default function App() {
                   Release Time: {releaseTime.toFixed(2)}s
                   <input
                     type="range"
-                    min="0"
+                    min="0.01"
                     max="2"
                     step="0.01"
                     value={releaseTime}

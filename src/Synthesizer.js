@@ -26,6 +26,10 @@ export default class Synthesizer {
   }
 
   noteOn(noteNumber, velocity = 127, isMidi = false) {
+    if (this.activeNotes.has(noteNumber)) {
+      this.noteOff(noteNumber);
+    }
+
     const frequency = this.midiNoteToFrequency(noteNumber);
     const volume = (velocity / 127) * (isMidi ? this.getMidiVolume() : this.getVolume());
 
@@ -37,24 +41,28 @@ export default class Synthesizer {
     }
     gainNode.connect(this.audioContext.destination);
 
-    const oscillators = [];
-    for (const [harmonic, amplitude] of Object.entries(this.harmonicAmplitudes)) {
-      if (amplitude > 0) {
-        const oscillator = this.audioContext.createOscillator();
-        oscillator.frequency.value = frequency * harmonic;
-        oscillator.type = 'sine';
+    const harmonicCount = Math.max(...Object.keys(this.harmonicAmplitudes).map(Number));
+    const real = new Float32Array(harmonicCount + 1);
+    const imag = new Float32Array(harmonicCount + 1);
 
-        const harmonicGain = this.audioContext.createGain();
-        harmonicGain.gain.value = amplitude;
+    for (const harmonicStr in this.harmonicAmplitudes) {
+      const harmonic = parseInt(harmonicStr);
+      const amplitude = this.harmonicAmplitudes[harmonicStr];
 
-        oscillator.connect(harmonicGain);
-        harmonicGain.connect(gainNode);
-
-        oscillator.start();
-
-        oscillators.push(oscillator);
-      }
+      // Introduce a phase shift to each harmonic
+      const phase = Math.PI / 2; // 90 degrees phase shift
+      real[harmonic] = amplitude * Math.cos(phase);
+      imag[harmonic] = amplitude * Math.sin(phase);
     }
+
+    const periodicWave = this.audioContext.createPeriodicWave(real, imag);
+
+    const oscillator = this.audioContext.createOscillator();
+    oscillator.frequency.value = frequency;
+    oscillator.setPeriodicWave(periodicWave);
+
+    oscillator.connect(gainNode);
+    oscillator.start();
 
     // Apply ADSR envelope
     const now = this.audioContext.currentTime;
@@ -68,11 +76,10 @@ export default class Synthesizer {
 
     // Store active note with unique identifier
     const noteId = `${noteNumber}_${performance.now()}`;
-    this.activeNotes.set(noteId, { noteNumber, gainNode, oscillators });
+    this.activeNotes.set(noteId, { noteNumber, gainNode, oscillator });
   }
 
   noteOff(noteNumber) {
-    // Stop all instances of the noteNumber
     for (const [noteId, note] of this.activeNotes.entries()) {
       if (note.noteNumber === noteNumber) {
         const now = this.audioContext.currentTime;
@@ -80,9 +87,11 @@ export default class Synthesizer {
         note.gainNode.gain.setValueAtTime(note.gainNode.gain.value, now);
         note.gainNode.gain.linearRampToValueAtTime(0, now + this.releaseTime);
 
+        // Stop oscillator after release time
+        note.oscillator.stop(now + this.releaseTime);
+
         // Clean up after release phase
         setTimeout(() => {
-          note.oscillators.forEach((oscillator) => oscillator.stop());
           note.gainNode.disconnect();
           this.activeNotes.delete(noteId);
         }, (this.releaseTime + 0.1) * 1000);
@@ -98,9 +107,11 @@ export default class Synthesizer {
       note.gainNode.gain.setValueAtTime(note.gainNode.gain.value, now);
       note.gainNode.gain.linearRampToValueAtTime(0, now + this.releaseTime);
 
+      // Stop oscillator after release
+      note.oscillator.stop(now + this.releaseTime);
+
       // Clean up after release phase
       setTimeout(() => {
-        note.oscillators.forEach((oscillator) => oscillator.stop());
         note.gainNode.disconnect();
         this.activeNotes.delete(noteId);
       }, (this.releaseTime + 0.1) * 1000);
