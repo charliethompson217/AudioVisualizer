@@ -16,7 +16,11 @@ export function useAudioAnalysis(
   ATTACK_TIME = 0.01,
   DECAY_TIME = 0.3,
   SUSTAIN_LEVEL = 0.2,
-  RELEASE_TIME = 0.5
+  RELEASE_TIME = 0.5,
+  vibratoDepth = 0,
+  vibratoRate = 0,
+  tremoloDepth = 0,
+  tremoloRate = 0
 ) {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -26,6 +30,8 @@ export function useAudioAnalysis(
   const volumeRef = useRef(1.0);
   const midiVolumeRef = useRef(1.0);
   const activeKeysRef = useRef(new Set());
+  
+
   const [dataArray, setDataArray] = useState(null);
   const [sampleRate, setSampleRate] = useState(44100);
   const audioElementRef = useRef(null);
@@ -56,6 +62,17 @@ export function useAudioAnalysis(
       });
     }
   }, [ATTACK_TIME, DECAY_TIME, SUSTAIN_LEVEL, RELEASE_TIME]);
+
+  useEffect(() => {
+    if (synthesizerRef.current) {
+      synthesizerRef.current.updateVibratoAndTremolo({
+        vibratoDepth,
+        vibratoRate,
+        tremoloDepth,
+        tremoloRate,
+      });
+    }
+  }, [vibratoDepth, vibratoRate, tremoloDepth, tremoloRate]);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -94,6 +111,10 @@ export function useAudioAnalysis(
         analyserNode: analyserRef.current,
         getVolume: () => volumeRef.current,
         getMidiVolume: () => midiVolumeRef.current,
+        vibratoDepth,
+        vibratoRate,
+        tremoloDepth,
+        tremoloRate,
       });
       synthesizerRef.current = synthesizer;
     }

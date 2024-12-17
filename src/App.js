@@ -74,6 +74,12 @@ export default function App() {
   const [sustainLevel, setSustainLevel] = useState(0.2);
   const [releaseTime, setReleaseTime] = useState(0.5);
 
+  // Add vibrato and tremolo state variables
+  const [vibratoDepth, setVibratoDepth] = useState(0);
+  const [vibratoRate, setVibratoRate] = useState(0);
+  const [tremoloDepth, setTremoloDepth] = useState(0);
+  const [tremoloRate, setTremoloRate] = useState(0);
+
   // Instantiate the audio analysis using the custom hook
   const audioAnalysis = useAudioAnalysis(
     mp3File,
@@ -89,7 +95,11 @@ export default function App() {
     attackTime,
     decayTime,
     sustainLevel,
-    releaseTime
+    releaseTime,
+    vibratoDepth,
+    vibratoRate,
+    tremoloDepth,
+    tremoloRate,
   );
 
   useEffect(() => {
@@ -358,6 +368,65 @@ export default function App() {
                     step="0.01"
                     value={releaseTime}
                     onChange={(e) => setReleaseTime(parseFloat(e.target.value))}
+                    className="harmonic-slider"
+                  />
+                </label>
+              </div>
+              <br />
+              {/* Vibrato Sliders */}
+              <div>
+                <label>
+                  Vibrato Depth: {vibratoDepth.toFixed(2)}
+                  <input
+                    type="range"
+                    min="0.0"
+                    max="100.0"
+                    step="0.1"
+                    value={vibratoDepth}
+                    onChange={(e) => setVibratoDepth(parseFloat(e.target.value))}
+                    className="harmonic-slider"
+                  />
+                </label>
+              </div>
+              <div>
+                <label>
+                  Vibrato Rate: {vibratoRate.toFixed(2)} Hz
+                  <input
+                    type="range"
+                    min="0.0"
+                    max="20.0"
+                    step="0.1"
+                    value={vibratoRate}
+                    onChange={(e) => setVibratoRate(parseFloat(e.target.value))}
+                    className="harmonic-slider"
+                  />
+                </label>
+              </div>
+              {/* Tremolo Sliders */}
+              <div>
+                <label>
+                  Tremolo Depth: {tremoloDepth.toFixed(2)}
+                  <input
+                    type="range"
+                    min="0.0"
+                    max="1.0"
+                    step="0.01"
+                    value={tremoloDepth}
+                    onChange={(e) => setTremoloDepth(parseFloat(e.target.value))}
+                    className="harmonic-slider"
+                  />
+                </label>
+              </div>
+              <div>
+                <label>
+                  Tremolo Rate: {tremoloRate.toFixed(2)} Hz
+                  <input
+                    type="range"
+                    min="0.0"
+                    max="20.0"
+                    step="0.1"
+                    value={tremoloRate}
+                    onChange={(e) => setTremoloRate(parseFloat(e.target.value))}
                     className="harmonic-slider"
                   />
                 </label>
