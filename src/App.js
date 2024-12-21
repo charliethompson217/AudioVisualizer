@@ -4,7 +4,8 @@ import './App.css';
 import KeyboardSVG from './KeyboardSVG';
 import Waveform from './WaveformVisualizer.js';
 import { useAudioAnalysis } from './useAudioAnalysis.js';
-import songList from './songList';
+import songList from './songList.js';
+import PianoRoll from './PianoRoll.js';
 
 
 export default function App() {
@@ -581,6 +582,13 @@ export default function App() {
               showScroll={showScroll}
               brightnessPower={brightnessPower}
               audioAnalysis={audioAnalysis}
+            />
+          )}
+          {midiFile && (
+            <PianoRoll
+              notes={audioAnalysis.midiNotes}
+              currentTime={currentTime}
+              isPlaying={isPlaying}
             />
           )}
         </div>
