@@ -54,33 +54,34 @@ const KeyboardSVG = () => {
         {/* Arrow keys */}
         {/* + Volume (Up Arrow) */}
         <g>
-          <rect x={720} y={120} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
-          <text x={720 + keyWidth / 2} y={120 + keyHeight / 2} fill="white">↑</text>
+          <rect x={570} y={120} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
+          <text x={570 + keyWidth / 2} y={120 + keyHeight / 2} fill="white">↑</text>
         </g>
 
         {/* - Volume (Down Arrow) */}
         <g>
-          <rect x={720} y={180} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
-          <text x={720 + keyWidth / 2} y={180 + keyHeight / 2} fill="white">↓</text>
+          <rect x={570} y={180} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
+          <text x={570 + keyWidth / 2} y={180 + keyHeight / 2} fill="white">↓</text>
         </g>
 
         {/* + Octave (Right Arrow) */}
         <g>
-          <rect x={780} y={180} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
-          <text x={780 + keyWidth / 2} y={180 + keyHeight / 2} fill="white">→</text>
+          <rect x={630} y={180} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
+          <text x={630 + keyWidth / 2} y={180 + keyHeight / 2} fill="white">→</text>
         </g>
 
         {/* - Octave (Left Arrow) */}
         <g>
-          <rect x={660} y={180} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
-          <text x={660 + keyWidth / 2} y={180 + keyHeight / 2} fill="white">←</text>
+          <rect x={510} y={180} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
+          <text x={510 + keyWidth / 2} y={180 + keyHeight / 2} fill="white">←</text>
         </g>
 
         {/* Labels */}
-        <text x={720 + keyWidth / 2} y={100} fill="white">+ Volume</text>
-        <text x={720 + keyWidth / 2} y={240} fill="white">- Volume</text>
-        <text x={820 + keyWidth / 2} y={240} fill="white">+ Octave</text>
-        <text x={620 + keyWidth / 2} y={240} fill="white">- Octave</text>
+        <text x={570 + keyWidth / 2} y={100} fill="white">+ Volume</text>
+        <text x={570 + keyWidth / 2} y={240} fill="white">- Volume</text>
+        <text x={670 + keyWidth / 2} y={240} fill="white">+ Octave</text>
+        <text x={470 + keyWidth / 2} y={240} fill="white">- Octave</text>
+
       </g>
     </svg>
   );

@@ -24,6 +24,14 @@ export default function SpectrographVisualizer({
   const showLabelsRef = useRef(showLabels);
   const showScrollRef = useRef(showScroll);
 
+  const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+  useEffect(() => {
+    const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Update refs when slider values change
   useEffect(() => {
     brightnessRef.current = brightness;
@@ -213,7 +221,7 @@ export default function SpectrographVisualizer({
         p5InstanceRef.current = null;
       }
     };
-  }, [analyser]);
+  }, [analyser, windowSize]);
 
   return (
     <div>

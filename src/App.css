@@ -70,7 +70,7 @@ select {
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
-  margin-bottom: 100px;
+  margin-bottom: 20px;
 }
 
 .control-label, .instrument-label {
@@ -139,7 +139,7 @@ select {
 
 .harmonic-slider {
   margin-left: 10px;
-  width: 150px;
+  width: 450px;
 }
 
 
@@ -151,4 +151,12 @@ select {
 
 .spectrograph {
   margin-top: 100px;
+}
+
+.Visualizers-Container{
+  margin-top: 200px;
+}
+
+.Piano-Roll-Time-Scale{
+  width: 800px;
 }

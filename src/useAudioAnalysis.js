@@ -36,6 +36,7 @@ export function useAudioAnalysis(
   const [sampleRate, setSampleRate] = useState(44100);
   const audioElementRef = useRef(null);
   const [duration, setDuration] = useState(0);
+  const [midiNotes, setMidiNotes] = useState([]);
 
   useEffect(() => {
     if (isPlaying && analyserRef.current) {
@@ -199,10 +200,46 @@ export function useAudioAnalysis(
       reader.onload = (e) => {
         const arrayBuffer = e.target.result;
         const parsedMidi = parseMidi(new Uint8Array(arrayBuffer));
+        setMidiNotes(buildNotes(parsedMidi));
         playMidi(parsedMidi);
       };
       reader.readAsArrayBuffer(fileBlob);
     };
+
+    function buildNotes(parsedMidi) {
+      const notesResult = [];
+      const ticksPerBeat = parsedMidi.header.ticksPerBeat || 480;
+      let microsecondsPerBeat = 500000;
+      parsedMidi.tracks.forEach((track) => {
+        let currentTime = 0;
+        const activeMap = {};
+        track.forEach((event) => {
+          currentTime += event.deltaTime;
+          if (event.meta && event.type === 'setTempo') {
+            microsecondsPerBeat = event.microsecondsPerBeat;
+          }
+          const secondsPerTick = microsecondsPerBeat / 1_000_000 / ticksPerBeat;
+          const eventTimeSec = currentTime * secondsPerTick;
+          if (event.type === 'noteOn' && event.velocity > 0) {
+            activeMap[event.noteNumber] = eventTimeSec;
+          } else if (
+            event.type === 'noteOff' ||
+            (event.type === 'noteOn' && event.velocity === 0)
+          ) {
+            const startTime = activeMap[event.noteNumber];
+            if (startTime !== undefined) {
+              notesResult.push({
+                noteNumber: event.noteNumber,
+                startSec: startTime,
+                durationSec: eventTimeSec - startTime,
+              });
+              delete activeMap[event.noteNumber];
+            }
+          }
+        });
+      });
+      return notesResult;
+    }
 
     fetchMidiFile();
 
@@ -250,6 +287,9 @@ export function useAudioAnalysis(
         octaveRef.current = Math.max(-1, octaveRef.current - 1);
       } else if (event.key === 'ArrowRight') {
         octaveRef.current = Math.min(9, octaveRef.current + 1);
+      } else if (event.key === ' ') {
+        synthesizerRef.current.stopAllNotes();
+        return;
       } else {
         const noteNumber = mapKeyToNoteNumber(event.key);
         if (noteNumber !== null) {
@@ -334,5 +374,6 @@ export function useAudioAnalysis(
     pause,
     seek,
     getCurrentTime,
+    midiNotes,
   };
 }
