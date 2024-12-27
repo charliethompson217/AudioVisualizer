@@ -7,6 +7,13 @@ import { useAudioAnalysis } from './useAudioAnalysis.js';
 import songList from './songList.js';
 import PianoRoll from './PianoRoll.js';
 
+import { Amplify } from 'aws-amplify';
+import { get, post } from 'aws-amplify/api';
+import awsExports from './aws-exports';
+Amplify.configure(awsExports);
+
+import { parseMidi } from 'midi-file';
+import CryptoJS from 'crypto-js'; // replace crypto with crypto-js
 
 export default function App() {
   // React state hooks to manage various input parameters and settings for the audio visualization
@@ -20,9 +27,7 @@ export default function App() {
   const [maxDecibels, setMaxDecibels] = useState(-30);
   const [showLabels, setShowLabels] = useState(true);
   const [showScroll, setShowScroll] = useState(true);
-  const [selectedInstrument, setSelectedInstrument] = useState('none');
   const [pianoEnabled, setPianoEnabled] = useState(true);
-  const [brightnessPower, setBrightnessPower] = useState(1);
 
   const [showWaveform, setShowWaveform] = useState(true);
   const [showSpectrograph, setShowSpectrograph] = useState(true);
@@ -31,24 +36,47 @@ export default function App() {
   const [isPaused, setIsPaused] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
 
-  // Base URL for accessing MP3 files hosted on S3
-  const S3_BASE_URL = 'https://audio-visualizer-zongs.s3.us-east-2.amazonaws.com/songs';
+  const [midiNotes, setMidiNotes] = useState(null);
+  const [isConverting, setIsConverting] = useState(false);
+  const [conversionComplete, setConversionComplete] = useState(true);
+  const [warning, setWarning] = useState(null);
 
-  function handleSongSelection(e) {
-    const selectedSongPath = e.target.value;
-    const url = `${S3_BASE_URL}/${selectedSongPath}`;
-    const songName = e.target.options[e.target.selectedIndex].text;
-    setCurrentSongName( selectedSongPath.split('%')[0].charAt(0).toUpperCase() + selectedSongPath.split('%')[0].slice(1)+ " - " + songName);
-    if (url.endsWith('.mid')) {
-      setMidiFile(url);
-      setMp3File(null);
-      setPianoEnabled(true);
-    } else {
-      setMp3File(url);
-      setMidiFile(null);
-    }
+  function buildNotes(parsedMidi) {
+    console.log("buildNotes");
+    console.log(parsedMidi);
+    const notesResult = [];
+    const ticksPerBeat = parsedMidi.header.ticksPerBeat || 480;
+    let microsecondsPerBeat = 500000;
+    parsedMidi.tracks.forEach((track) => {
+      let currentTime = 0;
+      const activeMap = {};
+      track.forEach((event) => {
+        currentTime += event.deltaTime;
+        if (event.meta && event.type === 'setTempo') {
+          microsecondsPerBeat = event.microsecondsPerBeat;
+        }
+        const secondsPerTick = microsecondsPerBeat / 1_000_000 / ticksPerBeat;
+        const eventTimeSec = currentTime * secondsPerTick;
+        if (event.type === 'noteOn' && event.velocity > 0) {
+          activeMap[event.noteNumber] = eventTimeSec;
+        } else if (
+          event.type === 'noteOff' ||
+          (event.type === 'noteOn' && event.velocity === 0)
+        ) {
+          const startTime = activeMap[event.noteNumber];
+          if (startTime !== undefined) {
+            notesResult.push({
+              noteNumber: event.noteNumber,
+              startSec: startTime,
+              durationSec: eventTimeSec - startTime,
+            });
+            delete activeMap[event.noteNumber];
+          }
+        }
+      });
+    });
+    return notesResult;
   }
-
 
   // State for harmonic amplitudes (1-8 harmonics)
   const [harmonicAmplitudes, setHarmonicAmplitudes] = useState({
@@ -80,6 +108,90 @@ export default function App() {
   const [vibratoRate, setVibratoRate] = useState(0);
   const [tremoloDepth, setTremoloDepth] = useState(0);
   const [tremoloRate, setTremoloRate] = useState(0);
+
+  // Add preset definitions
+  const presets = {
+    None: {
+      harmonicAmplitudes: {
+        1: 1.0,
+        2: 0.0,
+        3: 0.0,
+        4: 0.0,
+        5: 0.0,
+        6: 0.0,
+        7: 0.0,
+        8: 0.0,
+      },
+      attackTime: 0.01,
+      decayTime: 0.3,
+      sustainLevel: 0.2,
+      releaseTime: 0.5,
+      vibratoDepth: 0,
+      vibratoRate: 0,
+      tremoloDepth: 0,
+      tremoloRate: 0,
+    },
+    Piano: {
+      harmonicAmplitudes: {
+        1: 1.0,
+        2: 0.5,
+        3: 0.2,
+        4: 0.1,
+        5: 0.05,
+        6: 0.01,
+        7: 0.005,
+        8: 0.001,
+      },
+      attackTime: 0.01,
+      decayTime: 0.3,
+      sustainLevel: 0.2,
+      releaseTime: 0.5,
+      vibratoDepth: 0,
+      vibratoRate: 0,
+      tremoloDepth: 0,
+      tremoloRate: 0,
+    },
+    Violin: {
+      harmonicAmplitudes: {
+        1: 1.0,
+        2: 0.7,
+        3: 0.4,
+        4: 0.3,
+        5: 0.15,
+        6: 0.07,
+        7: 0.03,
+        8: 0.01,
+      },
+      attackTime: 1.30,
+      decayTime: 1.0,
+      sustainLevel: 0.6,
+      releaseTime: 0.5,
+      vibratoDepth: 0,
+      vibratoRate: 0,
+      tremoloDepth: 0,
+      tremoloRate: 0,
+    },
+    // Add more presets as needed
+  };
+
+  // Add state for selected preset
+  const [selectedPreset, setSelectedPreset] = useState('None');
+
+  // Add useEffect to apply preset settings
+  useEffect(() => {
+    if (presets[selectedPreset]) {
+      const preset = presets[selectedPreset];
+      setHarmonicAmplitudes(preset.harmonicAmplitudes);
+      setAttackTime(preset.attackTime);
+      setDecayTime(preset.decayTime);
+      setSustainLevel(preset.sustainLevel);
+      setReleaseTime(preset.releaseTime);
+      setVibratoDepth(preset.vibratoDepth);
+      setVibratoRate(preset.vibratoRate);
+      setTremoloDepth(preset.tremoloDepth);
+      setTremoloRate(preset.tremoloRate);
+    }
+  }, [selectedPreset]);
 
   // Instantiate the audio analysis using the custom hook
   const audioAnalysis = useAudioAnalysis(
@@ -139,41 +251,134 @@ export default function App() {
   /**
    * Handles file uploads via file input (mp3, wav, ogg, midi), sets the file to be visualized.
    */
+  async function handleConvertMp3(mp3File, hash) {
+    console.log("handleConvertMp3");
+    setIsConverting(true);
+    setConversionComplete(false);
+    try {
+      let initialResponse = await fetch(
+        'https://song-upload-bucket.s3.amazonaws.com/converted/'
+          + hash + '.mid'
+      );
+
+      if (!initialResponse.ok) {
+        console.log("Requesting upload URL");
+        const restOperation = post({
+          apiName: 'basicPitchApi',
+          path: `/convert/song`,
+          options: {
+            body: {
+              objectName: hash + '.mp3',
+              contentType: mp3File.type,
+            },
+          },
+        });
+        const { body } = await restOperation.response;
+        const response = await body.json();
+        if (response.error) {
+            console.error('Error Requesting Upload URL: ', response.error);
+            setWarning(response.error);
+            return;
+        }
+        const presignedUrl = response.url;
+  
+        console.log("Uploading MP3 to S3");
+        // upload to s3
+        await fetch(presignedUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': mp3File.type,
+          },
+          body: mp3File,
+        });
+  
+        console.log("Waiting 60 seconds for file conversion");
+        // wait 60 seconds
+        await new Promise((resolve) => setTimeout(resolve, 60000));
+  
+        // fetch the converted .mid file
+        let convertedFileResponse;
+        let attempts = 0;
+        const maxAttempts = 10;
+        const delay = 10000; // 10 seconds
+  
+        while (attempts < maxAttempts) {
+          convertedFileResponse = await fetch(
+            'https://song-upload-bucket.s3.amazonaws.com/converted/'
+              + hash + '.mid'
+          );
+  
+          if (convertedFileResponse.ok) {
+            console.log("Attempt Succeded");
+            break;
+          }
+          console.log("Attempt Failed Trying again in 10 seconds");
+          attempts++;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+  
+        if (!convertedFileResponse.ok) {
+          throw new Error('Failed to fetch the converted MIDI file.');
+        }
+  
+        const blob = await convertedFileResponse.blob();
+        const arrayBuffer = await blob.arrayBuffer();
+        console.log("Parsing MIDI");
+        const parsedMidi = parseMidi(new Uint8Array(arrayBuffer));
+        console.log("Building Notes");
+        const notes = buildNotes(parsedMidi);
+        console.log("Finished Conversion");
+        setMidiNotes(notes);
+        setIsConverting(false);
+        setConversionComplete(true);
+      } else {
+        const blob = await initialResponse.blob();
+        const arrayBuffer = await blob.arrayBuffer();
+        console.log("Parsing MIDI");
+        const parsedMidi = parseMidi(new Uint8Array(arrayBuffer));
+        console.log("Building Notes");
+        const notes = buildNotes(parsedMidi);
+        console.log("Finished Conversion");
+        setMidiNotes(notes);
+        setIsConverting(false);
+        setConversionComplete(true);
+      }
+      
+    } catch (error) {
+      console.error('Conversion failed:', error);
+      setWarning('Conversion failed. Please try again.');
+    }
+  }
+
+  async function computeFileHash(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
+    const hash = CryptoJS.SHA256(wordArray).toString(CryptoJS.enc.Hex);
+    return hash;
+  }
+
   function handleFileUpload(e) {
     const file = e.target.files[0];
     if (file) {
       setCurrentSongName(file.name.split('.')[0]);
       const fileName = file.name.toLowerCase();
-      if (fileName.endsWith('.mid') || fileName.endsWith('.midi')) {
-        setMidiFile(file);
-        setMp3File(null);
-        setPianoEnabled(true);
-      } else if (
-        fileName.endsWith('.mp3') ||
-        fileName.endsWith('.wav') ||
-        fileName.endsWith('.ogg')
-      ) {
-        setMp3File(file);
-        setMidiFile(null);
-      }
+      computeFileHash(file).then((hash) => {
+        if (fileName.endsWith('.mid') || fileName.endsWith('.midi')) {
+          setMidiFile(file);
+          setMp3File(null);
+          setPianoEnabled(true);
+        } else if (
+          fileName.endsWith('.mp3') ||
+          fileName.endsWith('.wav') ||
+          fileName.endsWith('.ogg')
+        ) {
+          setMp3File(file);
+          setMidiFile(null);
+          handleConvertMp3(file, hash);
+        }
+      });
     }
   }
-
-  /**
-   * Filters the song list based on the selected instrument category.
-   */
-  const filteredSongs =
-    selectedInstrument === 'all' || selectedInstrument === ''
-      ? songList
-      : songList.filter((song) => song.instrument === selectedInstrument);
-
-  /**
-   * Sorts songs either numerically by title (for 'test' files) or alphabetically by title for other instruments.
-   */
-  const sortedSongs =
-    selectedInstrument === 'test'
-      ? filteredSongs.sort((a, b) => parseFloat(a.title) - parseFloat(b.title))
-      : filteredSongs.sort((a, b) => a.title.localeCompare(b.title));
 
   // Render the main UI for the app
   return (
@@ -293,9 +498,81 @@ export default function App() {
               />
             </label>
           )}
-          {/* Harmonic amplitude sliders */}
-          {(pianoEnabled || midiFile) && (
+        </div>
+        {/* Controls that cannot be adjusted during playback */}
+        {!isPlaying && (
+          <div>
+              {/* File input for uploading local audio files (mp3, wav, ogg, midi) */}
+              <label>
+                mp3, wav, ogg, midi -
+                <input
+                  className="file-input"
+                  type="file"
+                  accept="audio/mp3,audio/wav,audio/ogg,audio/midi"
+                  onChange={handleFileUpload}
+                />
+              </label>
+              {/* visualization toggles */}
+              {!isPlaying && (
+                <>
+                  <label className="control-label">
+                    Waveform
+                    <input
+                      className="control-checkbox"
+                      type="checkbox"
+                      checked={showWaveform}
+                      onChange={() => setShowWaveform(!showWaveform)}
+                    />
+                  </label>
+                  <label className="control-label">
+                    Spectrograph
+                    <input
+                      className="control-checkbox"
+                      type="checkbox"
+                      checked={showSpectrograph}
+                      onChange={() => setShowSpectrograph(!showSpectrograph)}
+                    />
+                  </label>
+                </>
+              )}
+            </div>
+        )}
+        {/* Harmonic amplitude sliders */}
+        {(pianoEnabled || midiFile) && (
             <div className="harmonic-sliders-container">
+              {/* Add radio menu in the UI */}
+                  <div className="preset-options">
+                    <label>
+                      <input
+                        type="radio"
+                        name="preset"
+                        value="None"
+                        checked={selectedPreset === 'None'}
+                        onChange={(e) => setSelectedPreset(e.target.value)}
+                      />
+                      None
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="preset"
+                        value="Piano"
+                        checked={selectedPreset === 'Piano'}
+                        onChange={(e) => setSelectedPreset(e.target.value)}
+                      />
+                      Piano
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="preset"
+                        value="Violin"
+                        checked={selectedPreset === 'Violin'}
+                        onChange={(e) => setSelectedPreset(e.target.value)}
+                      />
+                      Violin
+                    </label>
+                  </div>
               {[1, 2, 3, 4, 5, 6, 7, 8].map((harmonic) => (
                 <div key={harmonic}>
                   <label>
@@ -434,84 +711,6 @@ export default function App() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Controls that cannot be adjusted during playback */}
-        {!isPlaying && (
-          <div>
-            <div className="song-selection-row">
-              {/* Dropdown to select an instrument category for filtering songs */}
-              <label className="instrument-label">
-                <select
-                  className="control-select"
-                  value={selectedInstrument}
-                  onChange={(e) => setSelectedInstrument(e.target.value)}
-                >
-                  <option value="">Select an Instrument</option>
-                  <option value="piano">Piano</option>
-                  <option value="violin">Violin</option>
-                  <option value="guitar">Guitar</option>
-                  <option value="harp">Harp</option>
-                  <option value="saxophone">Saxophone</option>
-                  <option value="clarinet">Clarinet</option>
-                  <option value="drums">Drums</option>
-                  <option value="cello">Cello</option>
-                  <option value="flute">Flute</option>
-                  <option value="trumpet">Trumpet</option>
-                  <option value="test">Test Files</option>
-                  <option value="midi">MIDI</option>
-                </select>
-              </label>
-
-              {/* Dropdown to select a specific song from the filtered list */}
-              <select className="control-select" onChange={handleSongSelection}>
-                <option value="">Select a Song</option>
-                {sortedSongs.map((song, index) => (
-                  <option
-                    key={index}
-                    value={encodeURIComponent(`${song.instrument}/${song.file}`)}
-                  >
-                    {song.title}
-                  </option>
-                ))}
-              </select>
-              {/* File input for uploading local audio files (mp3, wav, ogg, midi) */}
-              <label>
-                mp3, wav, ogg, midi -
-                <input
-                  className="file-input"
-                  type="file"
-                  accept="audio/mp3,audio/wav,audio/ogg,audio/midi"
-                  onChange={handleFileUpload}
-                />
-              </label>
-              {/* visualization toggles */}
-              {!isPlaying && (
-                <>
-                  <label className="control-label">
-                    Waveform
-                    <input
-                      className="control-checkbox"
-                      type="checkbox"
-                      checked={showWaveform}
-                      onChange={() => setShowWaveform(!showWaveform)}
-                    />
-                  </label>
-                  <label className="control-label">
-                    Spectrograph
-                    <input
-                      className="control-checkbox"
-                      type="checkbox"
-                      checked={showSpectrograph}
-                      onChange={() => setShowSpectrograph(!showSpectrograph)}
-                    />
-                  </label>
-                </>
-              )}
-            </div>
-          </div>
-          
-        )}
 
         {/* Start/Stop and Use Mic buttons */}
         <div className="controls-row">
@@ -528,7 +727,13 @@ export default function App() {
               Use Mic
             </button>
           )}
-          <button className="control-button" onClick={handleStartStop}>
+          {isConverting && <div>Loading...</div>}
+          {warning && <div>{warning}</div>}
+          <button
+            className="control-button"
+            onClick={handleStartStop}
+            disabled={!conversionComplete && mp3File}
+          >
             {isPlaying ? 'Stop' : 'Play'}
           </button>
           {isPlaying && (
@@ -580,13 +785,19 @@ export default function App() {
             <SpectrographVisualizer
               showLabels={showLabels}
               showScroll={showScroll}
-              brightnessPower={brightnessPower}
               audioAnalysis={audioAnalysis}
             />
           )}
-          {midiFile && (
+          {audioAnalysis.midiNotes && !midiNotes && (
             <PianoRoll
               notes={audioAnalysis.midiNotes}
+              currentTime={currentTime}
+              isPlaying={isPlaying}
+            />
+          )}
+          {midiNotes && (
+            <PianoRoll
+              notes={midiNotes}
               currentTime={currentTime}
               isPlaying={isPlaying}
             />
