@@ -48,7 +48,7 @@ export default function Waveform({ audioAnalysis }) {
 
         p.push();
         p.translate(
-          -p.width * (currentStretchFactor - 1), // Adjusted to pin the right side
+          -p.width * (currentStretchFactor - 1),
           -baseHeight * (currentVerticalStretchFactor - 1) / 2
         );
         p.scale(currentStretchFactor, currentVerticalStretchFactor);
@@ -83,6 +83,9 @@ export default function Waveform({ audioAnalysis }) {
 
   return (
     <div>
+      {/* Waveform Canvas */}
+      <div ref={sketchRef} style={{ width: '100%' }}></div>
+
       {/* Slider for Horizontal Stretch Factor */}
       <div style={{ margin: '20px 40px' }}>
         <label htmlFor="horizontalStretchSlider">
@@ -116,9 +119,6 @@ export default function Waveform({ audioAnalysis }) {
           style={{ width: '100%' }}
         />
       </div>
-      
-      {/* Waveform Canvas */}
-      <div ref={sketchRef} style={{ width: '100%' }}></div>
     </div>
   );
 }

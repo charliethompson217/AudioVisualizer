@@ -7,7 +7,6 @@ ec2 = boto3.client('ec2')
 
 def handler(event, context):
 
-    # lambda trigger for getting item from s3 bucket
     if 'Records' in event and 's3' in event['Records'][0]:
         s3 = boto3.client('s3')
         bucket_name = event['Records'][0]['s3']['bucket']['name']

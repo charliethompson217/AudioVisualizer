@@ -13,7 +13,7 @@ import awsExports from './aws-exports';
 Amplify.configure(awsExports);
 
 import { parseMidi } from 'midi-file';
-import CryptoJS from 'crypto-js'; // replace crypto with crypto-js
+import CryptoJS from 'crypto-js';
 
 export default function App() {
   // React state hooks to manage various input parameters and settings for the audio visualization
@@ -41,7 +41,9 @@ export default function App() {
   const [conversionComplete, setConversionComplete] = useState(true);
   const [warning, setWarning] = useState(null);
 
-  function buildNotes(parsedMidi) {
+  const [generateMIDI, setGenerateMIDI] = useState(false);
+
+  function buildNotes(parsedMidi, offsetTime = 0.5) {
     console.log("buildNotes");
     console.log(parsedMidi);
     const notesResult = [];
@@ -56,7 +58,7 @@ export default function App() {
           microsecondsPerBeat = event.microsecondsPerBeat;
         }
         const secondsPerTick = microsecondsPerBeat / 1_000_000 / ticksPerBeat;
-        const eventTimeSec = currentTime * secondsPerTick;
+        const eventTimeSec = currentTime * secondsPerTick + offsetTime;
         if (event.type === 'noteOn' && event.velocity > 0) {
           activeMap[event.noteNumber] = eventTimeSec;
         } else if (
@@ -80,12 +82,12 @@ export default function App() {
 
   // State for harmonic amplitudes (1-8 harmonics)
   const [harmonicAmplitudes, setHarmonicAmplitudes] = useState({
-    1: 1.0,
-    2: 0.5,
-    3: 0.2,
-    4: 0.1,
-    5: 0.05,
-    6: 0.01,
+    1: 1.000,
+    2: 0.500,
+    3: 0.200,
+    4: 0.100,
+    5: 0.050,
+    6: 0.010,
     7: 0.005,
     8: 0.001,
   });
@@ -93,6 +95,25 @@ export default function App() {
   function handleHarmonicChange(harmonic, value) {
     setHarmonicAmplitudes((prevAmplitudes) => ({
       ...prevAmplitudes,
+      [harmonic]: value,
+    }));
+  }
+
+  // State for harmonic phases (1-8 harmonics)
+  const [harmonicPhases, setHarmonicPhases] = useState({
+    1: 6.20,
+    2: 4.60,
+    3: 3.20,
+    4: 1.60,
+    5: 0.80,
+    6: 0.40,
+    7: 0.20,
+    8: 0.00,
+  });
+
+  function handleHarmonicPhaseChange(harmonic, value) {
+    setHarmonicPhases((prevPhases) => ({
+      ...prevPhases,
       [harmonic]: value,
     }));
   }
@@ -193,6 +214,17 @@ export default function App() {
     }
   }, [selectedPreset]);
 
+  // Add useEffect to start conversion if "Generate MIDI" is checked after uploading the file
+  useEffect(() => {
+    if (generateMIDI && mp3File) {
+      computeFileHash(mp3File).then((hash) => {
+        handleConvertMp3(mp3File, hash);
+      });
+    } else {
+      setMidiNotes(null);
+    }
+  }, [generateMIDI, mp3File]);
+
   // Instantiate the audio analysis using the custom hook
   const audioAnalysis = useAudioAnalysis(
     mp3File,
@@ -204,7 +236,8 @@ export default function App() {
     minDecibels,
     maxDecibels,
     pianoEnabled,
-    harmonicAmplitudes,
+    harmonicAmplitudes, // Ensure this is never empty
+    harmonicPhases, // Pass harmonicPhases to useAudioAnalysis
     attackTime,
     decayTime,
     sustainLevel,
@@ -374,7 +407,10 @@ export default function App() {
         ) {
           setMp3File(file);
           setMidiFile(null);
-          handleConvertMp3(file, hash);
+          
+          if (generateMIDI) {
+            handleConvertMp3(file, hash);
+          }
         }
       });
     }
@@ -385,120 +421,6 @@ export default function App() {
     <div className="App">
       <div className="main-container">
       <div className='SongTitle'>{isPlaying && <h1>{currentSongName}</h1>}</div>
-        {/* Controls adjustable in real-time */}
-        <div className="controls-row">
-          {/* Select input for FFT bin size */}
-          { !isPlaying && (
-            <label className="control-label">
-              FFT Size:
-              <select
-                className="control-select"
-                value={bins}
-                onChange={(e) => setBins(parseInt(e.target.value, 10))}
-              >
-                {[16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768].map((power) => (
-                  <option key={power} value={power}>
-                    {power}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-
-          {/* Slider input for minimum decibel threshold */}
-            <label className="control-label">
-              Min Decibels:
-              <span>{minDecibels} dB</span>
-              <input
-                className="control-slider"
-                type="range"
-                min="-120"
-                max={0}
-                step="1"
-                value={minDecibels}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (value < maxDecibels) {
-                    setMinDecibels(value);
-                  }
-                }}
-              />
-            </label>
-
-          {/* Slider input for maximum decibel threshold */}
-            <label className="control-label">
-              Max Decibels:
-              <span>{maxDecibels} dB</span>
-              <input
-                className="control-slider"
-                type="range"
-                min={-120}
-                max="0"
-                step="1"
-                value={maxDecibels}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (value > minDecibels) {
-                    setMaxDecibels(value);
-                  }
-                }}
-              />
-            </label>
-
-          {/* Slider input for FFT smoothing factor */}
-            <label className="control-label">
-              Smoothing:
-              <input
-                className="control-slider"
-                type="range"
-                min="0.0"
-                max="1.0"
-                step="0.01"
-                value={smoothing}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  if (value > 0) {
-                    setSmoothing(parseFloat(value))}
-                  }
-                }
-              />
-            </label>
-
-          {/* Checkbox input to toggle showing note labels */}
-            <label className="control-label">
-              Labels
-              <input
-                className="control-checkbox"
-                type="checkbox"
-                checked={showLabels}
-                onChange={() => setShowLabels(!showLabels)}
-              />
-            </label>
-
-          {/* Checkbox input to toggle showing the scroll bar */}
-            <label className="control-label">
-              Bar
-              <input
-                className="control-checkbox"
-                type="checkbox"
-                checked={showScroll}
-                onChange={() => setShowScroll(!showScroll)}
-              />
-            </label>
-
-          {/* Checkbox input to enable piano keyboard input */}
-          {(!isPlaying) && (
-            <label className="control-label">
-              Piano
-              <input
-                className="control-checkbox"
-                type="checkbox"
-                checked={pianoEnabled}
-                onChange={() => setPianoEnabled(!pianoEnabled)}
-              />
-            </label>
-          )}
-        </div>
         {/* Controls that cannot be adjusted during playback */}
         {!isPlaying && (
           <div>
@@ -533,11 +455,212 @@ export default function App() {
                       onChange={() => setShowSpectrograph(!showSpectrograph)}
                     />
                   </label>
+                  <label className="control-label">
+                    Generate MIDI
+                    <input
+                      className="control-checkbox"
+                      type="checkbox"
+                      checked={generateMIDI}
+                      onChange={() => setGenerateMIDI(!generateMIDI)}
+                    />
+                  </label>
                 </>
               )}
             </div>
         )}
-        {/* Harmonic amplitude sliders */}
+
+        {/* Start/Stop and Use Mic buttons */}
+        <div className="controls-row">
+          {!isPlaying && (
+            <button
+              className="control-button"
+              onClick={() => {
+                setUseMic(true);
+                setMp3File(null);
+                setMidiFile(null);
+                handleStartStop();
+              }}
+            >
+              Use Mic
+            </button>
+          )}
+          {isConverting && <div>Loading...</div>}
+          {warning && <div>{warning}</div>}
+          <button
+            className="control-button"
+            onClick={handleStartStop}
+            disabled={!conversionComplete && mp3File}
+          >
+            {isPlaying ? 'Stop' : 'Play'}
+          </button>
+          {isPlaying && (
+            <>
+              <button className="control-button" onClick={handlePauseResume}>
+                {isPaused ? 'Resume' : 'Pause'}
+              </button>
+              {audioAnalysis.duration > 0 && (
+                <div className="seek-slider">
+                  <label>
+                    {String(Math.floor(currentTime / 60)).padStart(2, '0')}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}
+                    <input
+                      type="range"
+                      min="0"
+                      max={audioAnalysis.duration}
+                      step="0.001"
+                      value={currentTime}
+                      onChange={(e) => {
+                        const time = parseFloat(e.target.value);
+                        audioAnalysis.seek(time);
+                        setCurrentTime(time);
+                        audioAnalysis.pause();
+                        audioAnalysis.play();
+                        setIsPaused(false);
+                      }}
+                      style={{paddingLeft: "10px", paddingRight: "10px"}}
+                    />
+                    {String(Math.floor(audioAnalysis.duration / 60)).padStart(2, '0')}:{String(Math.floor(audioAnalysis.duration % 60)).padStart(2, '0')}
+                  </label>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Only show keyboard when piano is enabled */}
+        {pianoEnabled && (
+          <div className="keyboard-container">
+            <KeyboardSVG />
+          </div>
+        )}
+      </div>
+
+      {/* Render the visualization component when audio is playing */}
+      {isPlaying && (
+        <div className='Visualizers-Container'>
+          {showSpectrograph && (
+            <>
+              <>
+                <div className="controls-row">
+                  {/* Select input for FFT bin size */}
+                    <label className="control-label">
+                      FFT Size:
+                      <select
+                        className="control-select"
+                        value={bins}
+                        onChange={(e) => setBins(parseInt(e.target.value, 10))}
+                      >
+                        {[32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768].map((power) => (
+                          <option key={power} value={power}>
+                            {power}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                  {/* Slider input for minimum decibel threshold */}
+                    <label className="control-label">
+                      Min Decibels:
+                      <span>{minDecibels} dB</span>
+                      <input
+                        className="control-slider"
+                        type="range"
+                        min="-120"
+                        max={0}
+                        step="1"
+                        value={minDecibels}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (value < maxDecibels) {
+                            setMinDecibels(value);
+                          }
+                        }}
+                      />
+                    </label>
+
+                  {/* Slider input for maximum decibel threshold */}
+                    <label className="control-label">
+                      Max Decibels:
+                      <span>{maxDecibels} dB</span>
+                      <input
+                        className="control-slider"
+                        type="range"
+                        min={-120}
+                        max="0"
+                        step="1"
+                        value={maxDecibels}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (value > minDecibels) {
+                            setMaxDecibels(value);
+                          }
+                        }}
+                      />
+                    </label>
+
+                  {/* Slider input for FFT smoothing factor */}
+                    <label className="control-label">
+                      Smoothing:
+                      <input
+                        className="control-slider"
+                        type="range"
+                        min="0.000"
+                        max="1.00"
+                        step="0.001"
+                        value={smoothing}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          if (value > 0) {
+                            setSmoothing(parseFloat(value))}
+                          }
+                        }
+                      />
+                    </label>
+
+                  {/* Checkbox input to toggle showing note labels */}
+                    <label className="control-label">
+                      Labels
+                      <input
+                        className="control-checkbox"
+                        type="checkbox"
+                        checked={showLabels}
+                        onChange={() => setShowLabels(!showLabels)}
+                      />
+                    </label>
+
+                  {/* Checkbox input to toggle showing the scroll bar */}
+                    <label className="control-label">
+                      Bar
+                      <input
+                        className="control-checkbox"
+                        type="checkbox"
+                        checked={showScroll}
+                        onChange={() => setShowScroll(!showScroll)}
+                      />
+                    </label>
+
+                  {/* Checkbox input to enable piano keyboard input */}
+                  {(!isPlaying) && (
+                    <label className="control-label">
+                      Piano
+                      <input
+                        className="control-checkbox"
+                        type="checkbox"
+                        checked={pianoEnabled}
+                        onChange={() => setPianoEnabled(!pianoEnabled)}
+                      />
+                    </label>
+                  )}
+                </div>
+              </>
+              <SpectrographVisualizer
+                showLabels={showLabels}
+                showScroll={showScroll}
+                audioAnalysis={audioAnalysis}
+              />
+            </>
+          )}
+          {/* Harmonic amplitude sliders */}
+          {showWaveform && <Waveform audioAnalysis={audioAnalysis} />}
         {(pianoEnabled || midiFile) && (
             <div className="harmonic-sliders-container">
               {/* Add radio menu in the UI */}
@@ -577,12 +700,12 @@ export default function App() {
                 <div key={harmonic}>
                   <label>
                     Harmonic {harmonic}:{' '}
-                    {harmonicAmplitudes[harmonic].toFixed(2)}
+                    {harmonicAmplitudes[harmonic].toFixed(4)}
                     <input
                       type="range"
-                      min="0.0"
-                      max="1.0"
-                      step="0.01"
+                      min="0.000"
+                      max="1.00"
+                      step="0.001"
                       value={harmonicAmplitudes[harmonic]}
                       onChange={(e) =>
                         handleHarmonicChange(harmonic, parseFloat(e.target.value))
@@ -593,15 +716,35 @@ export default function App() {
                 </div>
               ))}
               <br />
+              {/* Harmonic Phase Sliders */}
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((harmonic) => (
+                  <div key={harmonic}>
+                    <label>
+                      Harmonic {harmonic} Phase Offset: {harmonicPhases[harmonic].toFixed(4)} rad
+                      <input
+                        type="range"
+                        min="0.000"
+                        max={`${Math.PI * 2}`}
+                        step="0.001"
+                        value={harmonicPhases[harmonic]}
+                        onChange={(e) =>
+                          handleHarmonicPhaseChange(harmonic, parseFloat(e.target.value))
+                        }
+                        className="harmonic-slider"
+                      />
+                    </label>
+                  </div>
+                ))}
+              <br />
               {/* ADSR sliders */}
               <div>
                 <label>
-                  Attack Time: {attackTime.toFixed(2)}s
+                  Attack Time: {attackTime.toFixed(4)}s
                   <input
                     type="range"
-                    min="0.01"
+                    min="0.001"
                     max="2"
-                    step="0.01"
+                    step="0.001"
                     value={attackTime}
                     onChange={(e) => setAttackTime(parseFloat(e.target.value))}
                     className="harmonic-slider"
@@ -610,12 +753,12 @@ export default function App() {
               </div>
               <div>
                 <label>
-                  Decay Time: {decayTime.toFixed(2)}s
+                  Decay Time: {decayTime.toFixed(4)}s
                   <input
                     type="range"
-                    min="0.01"
+                    min="0.001"
                     max="2"
-                    step="0.01"
+                    step="0.001"
                     value={decayTime}
                     onChange={(e) => setDecayTime(parseFloat(e.target.value))}
                     className="harmonic-slider"
@@ -624,12 +767,12 @@ export default function App() {
               </div>
               <div>
                 <label>
-                  Sustain Level: {sustainLevel.toFixed(2)}
+                  Sustain Level: {sustainLevel.toFixed(4)}
                   <input
                     type="range"
-                    min="0.01"
+                    min="0.001"
                     max="1"
-                    step="0.01"
+                    step="0.001"
                     value={sustainLevel}
                     onChange={(e) => setSustainLevel(parseFloat(e.target.value))}
                     className="harmonic-slider"
@@ -638,12 +781,12 @@ export default function App() {
               </div>
               <div>
                 <label>
-                  Release Time: {releaseTime.toFixed(2)}s
+                  Release Time: {releaseTime.toFixed(4)}s
                   <input
                     type="range"
-                    min="0.01"
+                    min="0.001"
                     max="2"
-                    step="0.01"
+                    step="0.001"
                     value={releaseTime}
                     onChange={(e) => setReleaseTime(parseFloat(e.target.value))}
                     className="harmonic-slider"
@@ -654,12 +797,12 @@ export default function App() {
               {/* Vibrato Sliders */}
               <div>
                 <label>
-                  Vibrato Depth: {vibratoDepth.toFixed(2)}
+                  Vibrato Depth: {vibratoDepth.toFixed(4)}
                   <input
                     type="range"
-                    min="0.0"
-                    max="100.0"
-                    step="0.1"
+                    min="0.000"
+                    max="100.00"
+                    step="0.001"
                     value={vibratoDepth}
                     onChange={(e) => setVibratoDepth(parseFloat(e.target.value))}
                     className="harmonic-slider"
@@ -668,12 +811,12 @@ export default function App() {
               </div>
               <div>
                 <label>
-                  Vibrato Rate: {vibratoRate.toFixed(2)} Hz
+                  Vibrato Rate: {vibratoRate.toFixed(4)} Hz
                   <input
                     type="range"
-                    min="0.0"
-                    max="20.0"
-                    step="0.1"
+                    min="0.000"
+                    max="20.00"
+                    step="0.001"
                     value={vibratoRate}
                     onChange={(e) => setVibratoRate(parseFloat(e.target.value))}
                     className="harmonic-slider"
@@ -683,12 +826,12 @@ export default function App() {
               {/* Tremolo Sliders */}
               <div>
                 <label>
-                  Tremolo Depth: {tremoloDepth.toFixed(2)}
+                  Tremolo Depth: {tremoloDepth.toFixed(4)}
                   <input
                     type="range"
-                    min="0.0"
-                    max="1.0"
-                    step="0.01"
+                    min="0.000"
+                    max="1.00"
+                    step="0.001"
                     value={tremoloDepth}
                     onChange={(e) => setTremoloDepth(parseFloat(e.target.value))}
                     className="harmonic-slider"
@@ -697,108 +840,30 @@ export default function App() {
               </div>
               <div>
                 <label>
-                  Tremolo Rate: {tremoloRate.toFixed(2)} Hz
+                  Tremolo Rate: {tremoloRate.toFixed(4)} Hz
                   <input
                     type="range"
-                    min="0.0"
-                    max="20.0"
-                    step="0.1"
+                    min="0.000"
+                    max="20.00"
+                    step="0.001"
                     value={tremoloRate}
                     onChange={(e) => setTremoloRate(parseFloat(e.target.value))}
                     className="harmonic-slider"
                   />
                 </label>
               </div>
+              <br />
             </div>
           )}
-
-        {/* Start/Stop and Use Mic buttons */}
-        <div className="controls-row">
-          {!isPlaying && (
-            <button
-              className="control-button"
-              onClick={() => {
-                setUseMic(true);
-                setMp3File(null);
-                setMidiFile(null);
-                handleStartStop();
-              }}
-            >
-              Use Mic
-            </button>
-          )}
-          {isConverting && <div>Loading...</div>}
-          {warning && <div>{warning}</div>}
-          <button
-            className="control-button"
-            onClick={handleStartStop}
-            disabled={!conversionComplete && mp3File}
-          >
-            {isPlaying ? 'Stop' : 'Play'}
-          </button>
-          {isPlaying && (
-            <>
-              <button className="control-button" onClick={handlePauseResume}>
-                {isPaused ? 'Resume' : 'Pause'}
-              </button>
-              {audioAnalysis.duration > 0 && (
-                <div className="seek-slider">
-                  <label>
-                    {String(Math.floor(currentTime / 60)).padStart(2, '0')}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}
-                    <input
-                      type="range"
-                      min="0"
-                      max={audioAnalysis.duration}
-                      step="0.01"
-                      value={currentTime}
-                      onChange={(e) => {
-                        const time = parseFloat(e.target.value);
-                        audioAnalysis.seek(time);
-                        setCurrentTime(time);
-                        audioAnalysis.pause();
-                        audioAnalysis.play();
-                        setIsPaused(false);
-                      }}
-                      style={{paddingLeft: "10px", paddingRight: "10px"}}
-                    />
-                    {String(Math.floor(audioAnalysis.duration / 60)).padStart(2, '0')}:{String(Math.floor(audioAnalysis.duration % 60)).padStart(2, '0')}
-                  </label>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Only show keyboard when piano is enabled */}
-        {pianoEnabled && (
-          <div className="keyboard-container">
-            <KeyboardSVG />
-          </div>
-        )}
-      </div>
-
-      {/* Render the visualization component when audio is playing */}
-      {(isPlaying) && (
-        <div className='Visualizers-Container'>
-          {showWaveform && <Waveform audioAnalysis={audioAnalysis} />}
-          {showSpectrograph && (
-            <SpectrographVisualizer
-              showLabels={showLabels}
-              showScroll={showScroll}
-              audioAnalysis={audioAnalysis}
-            />
-          )}
-          {audioAnalysis.midiNotes && !midiNotes && (
+          {audioAnalysis.midiNotes.length > 0 && (
             <PianoRoll
               notes={audioAnalysis.midiNotes}
-              currentTime={currentTime}
               isPlaying={isPlaying}
             />
           )}
           {midiNotes && (
             <PianoRoll
               notes={midiNotes}
-              currentTime={currentTime}
               isPlaying={isPlaying}
             />
           )}

@@ -12,7 +12,8 @@ export function useAudioAnalysis(
   minDecibels,
   maxDecibels,
   pianoEnabled,
-  harmonicAmplitudes = {},
+  harmonicAmplitudes = { 1: 1.0 },
+  harmonicPhases = {},
   ATTACK_TIME = 0.01,
   DECAY_TIME = 0.3,
   SUSTAIN_LEVEL = 0.2,
@@ -27,10 +28,10 @@ export function useAudioAnalysis(
   const dataArrayRef = useRef(null);
   const synthesizerRef = useRef(null);
   const octaveRef = useRef(4);
-  const volumeRef = useRef(1.0);
-  const midiVolumeRef = useRef(1.0);
+  const volumeRef = useRef(1);
+  const midiVolumeRef = useRef(0.3);
   const activeKeysRef = useRef(new Set());
-  
+  const gainNodeRef = useRef(null);
 
   const [dataArray, setDataArray] = useState(null);
   const [sampleRate, setSampleRate] = useState(44100);
@@ -52,6 +53,12 @@ export function useAudioAnalysis(
       synthesizerRef.current.updateHarmonicAmplitudes(harmonicAmplitudes);
     }
   }, [harmonicAmplitudes]);
+
+  useEffect(() => {
+    if (synthesizerRef.current) {
+      synthesizerRef.current.updateHarmonicPhases(harmonicPhases);
+    }
+  }, [harmonicPhases]);
 
   useEffect(() => {
     if (synthesizerRef.current) {
@@ -88,6 +95,10 @@ export function useAudioAnalysis(
       if (synthesizerRef.current) {
         synthesizerRef.current = null;
       }
+      if (gainNodeRef.current) {
+        gainNodeRef.current.disconnect();
+        gainNodeRef.current = null;
+      }
       return;
     }
 
@@ -100,18 +111,32 @@ export function useAudioAnalysis(
       const analyser = audioContext.createAnalyser();
       analyserRef.current = analyser;
       setSampleRate(audioContext.sampleRate);
+
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = volumeRef.current;
+      gainNodeRef.current = gainNode;
+
+      // Connect analyser to GainNode only if not using microphone
+      if (!useMic) {
+        analyser.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+      }
     }
 
     if (!synthesizerRef.current) {
+      const validHarmonicAmplitudes = harmonicAmplitudes && Object.keys(harmonicAmplitudes).length > 0
+        ? harmonicAmplitudes
+        : { 1: 1.0 };
+
       const synthesizer = new Synthesizer(audioContextRef.current, {
-        harmonicAmplitudes,
+        harmonicAmplitudes: validHarmonicAmplitudes,
+        harmonicPhases,
         attackTime: ATTACK_TIME,
         decayTime: DECAY_TIME,
         sustainLevel: SUSTAIN_LEVEL,
         releaseTime: RELEASE_TIME,
         analyserNode: analyserRef.current,
         getVolume: () => volumeRef.current,
-        getMidiVolume: () => midiVolumeRef.current,
         vibratoDepth,
         vibratoRate,
         tremoloDepth,
@@ -119,6 +144,9 @@ export function useAudioAnalysis(
       });
       synthesizerRef.current = synthesizer;
     }
+
+    // Update GainNode when volume changes
+    gainNodeRef.current.gain.value = volumeRef.current;
 
     const analyser = analyserRef.current;
     analyser.fftSize = bins;
@@ -177,6 +205,20 @@ export function useAudioAnalysis(
   }, [isPlaying, pianoEnabled, mp3File, useMic]);
 
   useEffect(() => {
+    if (isPlaying && !useMic && analyserRef.current && gainNodeRef.current) {
+      analyserRef.current.connect(gainNodeRef.current);
+      gainNodeRef.current.connect(audioContextRef.current.destination);
+    } else if (useMic && analyserRef.current && gainNodeRef.current) {
+      try {
+        analyserRef.current.disconnect(gainNodeRef.current);
+        gainNodeRef.current.disconnect(audioContextRef.current.destination);
+      } catch (error) {
+        console.warn('Disconnect failed:', error);
+      }
+    }
+  }, [useMic, isPlaying]);
+
+  useEffect(() => {
     if (!midiFile || !synthesizerRef.current || !isPlaying) return;
 
     const fetchMidiFile = async () => {
@@ -221,17 +263,18 @@ export function useAudioAnalysis(
           const secondsPerTick = microsecondsPerBeat / 1_000_000 / ticksPerBeat;
           const eventTimeSec = currentTime * secondsPerTick;
           if (event.type === 'noteOn' && event.velocity > 0) {
-            activeMap[event.noteNumber] = eventTimeSec;
+            activeMap[event.noteNumber] = { startTime: eventTimeSec, velocity: event.velocity }; // Store velocity
           } else if (
             event.type === 'noteOff' ||
             (event.type === 'noteOn' && event.velocity === 0)
           ) {
-            const startTime = activeMap[event.noteNumber];
-            if (startTime !== undefined) {
+            const note = activeMap[event.noteNumber];
+            if (note) {
               notesResult.push({
                 noteNumber: event.noteNumber,
-                startSec: startTime,
-                durationSec: eventTimeSec - startTime,
+                startSec: note.startTime,
+                durationSec: eventTimeSec - note.startTime,
+                velocity: note.velocity, // Add velocity
               });
               delete activeMap[event.noteNumber];
             }
@@ -287,6 +330,10 @@ export function useAudioAnalysis(
         octaveRef.current = Math.max(-1, octaveRef.current - 1);
       } else if (event.key === 'ArrowRight') {
         octaveRef.current = Math.min(9, octaveRef.current + 1);
+      } else if (event.key === 'ArrowUp') {
+        volumeRef.current = Math.min(2, volumeRef.current + 0.1); // Increase volume
+      } else if (event.key === 'ArrowDown') {
+        volumeRef.current = Math.max(0.0, volumeRef.current - 0.1); // Decrease volume
       } else if (event.key === ' ') {
         synthesizerRef.current.stopAllNotes();
         return;
@@ -319,6 +366,13 @@ export function useAudioAnalysis(
     };
   }, [pianoEnabled, isPlaying]);
 
+  useEffect(() => {
+    // Update GainNode whenever volumeRef changes
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = volumeRef.current;
+    }
+  }, [volumeRef.current]);
+
   const keyNoteMapping = {
     z: 0,
     s: 1,
@@ -342,7 +396,6 @@ export function useAudioAnalysis(
     return null;
   }
 
-  // Control functions
   const play = useCallback(() => {
     if (audioElementRef.current) {
       audioElementRef.current.play();
