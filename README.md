@@ -27,6 +27,7 @@ This application is a React-based web app that allows users to visualize audio i
 - **ADSR Envelope Control**: Modify the Attack, Decay, Sustain, and Release parameters of the envelope generator.
 - **Virtual Piano Keyboard**: Play notes using your computer keyboard with octave and volume controls.
 - **MIDI File Support**: Play and visualize MIDI files.
+- **Piano Roll**: Visualize MIDI notes in real-time while a song is playing. This leverages [Spotify’s Basic Pitch model](https://github.com/spotify/basic-pitch.git) to convert audio to MIDI
 
 ## Prerequisites
 
