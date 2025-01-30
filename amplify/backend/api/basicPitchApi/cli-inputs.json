@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/convert/{hash}": {
+      "name": "/convert/{hash}",
+      "lambdaFunction": "basicPitchLambda",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

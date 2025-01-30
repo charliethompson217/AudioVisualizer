@@ -23,6 +23,8 @@
 *.zip
 */songs
 .vscode/
+venv/
+amplify/team-provider-info.json
 
 npm-debug.log*
 yarn-debug.log*
