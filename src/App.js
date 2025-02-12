@@ -4,7 +4,6 @@ import './App.css';
 import KeyboardSVG from './KeyboardSVG';
 import Waveform from './WaveformVisualizer.js';
 import { useAudioAnalysis } from './useAudioAnalysis.js';
-import songList from './songList.js';
 import PianoRoll from './PianoRoll.js';
 
 import { Amplify } from 'aws-amplify';
@@ -14,6 +13,9 @@ Amplify.configure(awsExports);
 
 import { parseMidi } from 'midi-file';
 import CryptoJS from 'crypto-js';
+import RMS from './RMS';
+import ChromavectorCircleGraph from './ChromavectorCircleGraph.js';
+import ChromevectorLineGraph from './ChromevectorLineGraph.js';
 
 export default function App() {
   // React state hooks to manage various input parameters and settings for the audio visualization
@@ -31,6 +33,10 @@ export default function App() {
 
   const [showWaveform, setShowWaveform] = useState(true);
   const [showSpectrograph, setShowSpectrograph] = useState(true);
+  const [chromaCircle, setChromaCircle] = useState(true);
+  const [chromaLine, setChromaLine] = useState(true);
+  const [rms, setRms] = useState(true);
+  const [generateMIDI, setGenerateMIDI] = useState(false);
 
   const [currentSongName, setCurrentSongName] = useState('');
   const [isPaused, setIsPaused] = useState(false);
@@ -41,7 +47,6 @@ export default function App() {
   const [conversionComplete, setConversionComplete] = useState(true);
   const [warning, setWarning] = useState(null);
 
-  const [generateMIDI, setGenerateMIDI] = useState(false);
 
   function buildNotes(parsedMidi, offsetTime = 0.5) {
     console.log("buildNotes");
@@ -253,12 +258,12 @@ export default function App() {
     if (isPlaying && !isPaused && audioAnalysis.duration) {
       interval = setInterval(() => {
         setCurrentTime(audioAnalysis.getCurrentTime());
-      }, 500);
+      }, 500); // Update every 500ms
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPlaying, isPaused, audioAnalysis]);
+  }, [isPlaying, isPaused, audioAnalysis.duration, audioAnalysis.getCurrentTime]);
 
   /**
    * Toggles the audio playback state.
@@ -325,9 +330,7 @@ export default function App() {
           body: mp3File,
         });
   
-        console.log("Waiting 60 seconds for file conversion");
-        // wait 60 seconds
-        await new Promise((resolve) => setTimeout(resolve, 60000));
+        console.log("Waiting 10 seconds for file conversion");
   
         // fetch the converted .mid file
         let convertedFileResponse;
@@ -420,7 +423,7 @@ export default function App() {
   return (
     <div className="App">
       <div className="main-container">
-      <div className='SongTitle'>{isPlaying && <h1>{currentSongName}</h1>}</div>
+      <div className='SongTitle'>{isPlaying && <h1 style={{color: 'white'}}>{currentSongName}</h1>}</div>
         {/* Controls that cannot be adjusted during playback */}
         {!isPlaying && (
           <div>
@@ -455,6 +458,18 @@ export default function App() {
                       onChange={() => setShowSpectrograph(!showSpectrograph)}
                     />
                   </label>
+                  {/* Checkbox input to enable piano keyboard input */}
+                  {(!isPlaying) && (
+                    <label className="control-label">
+                      Synthesizer
+                      <input
+                        className="control-checkbox"
+                        type="checkbox"
+                        checked={pianoEnabled}
+                        onChange={() => setPianoEnabled(!pianoEnabled)}
+                      />
+                    </label>
+                  )}
                   <label className="control-label">
                     Generate MIDI
                     <input
@@ -462,6 +477,33 @@ export default function App() {
                       type="checkbox"
                       checked={generateMIDI}
                       onChange={() => setGenerateMIDI(!generateMIDI)}
+                    />
+                  </label>
+                  <label className="control-label">
+                    Chroma Circle Graph
+                    <input
+                      className="control-checkbox"
+                      type="checkbox"
+                      checked={chromaCircle}
+                      onChange={() => setChromaCircle(!chromaCircle)}
+                    />
+                  </label>
+                  <label className="control-label">
+                    Chroma Line Graph
+                    <input
+                      className="control-checkbox"
+                      type="checkbox"
+                      checked={chromaLine}
+                      onChange={() => setChromaLine(!chromaLine)}
+                    />
+                  </label>
+                  <label className="control-label">
+                    RMS
+                    <input
+                      className="control-checkbox"
+                      type="checkbox"
+                      checked={rms}
+                      onChange={() => setRms(!rms)}
                     />
                   </label>
                 </>
@@ -533,6 +575,13 @@ export default function App() {
           </div>
         )}
       </div>
+        
+        { chromaCircle && (<ChromavectorCircleGraph chroma={audioAnalysis.chroma} isPlaying={isPlaying}/>)}
+        { chromaLine && (<ChromevectorLineGraph chroma={audioAnalysis.chroma} isPlaying={isPlaying}/>)}
+        { rms && (<RMS rms={audioAnalysis.rms} isPlaying={isPlaying}/>)}
+
+        
+      
 
       {/* Render the visualization component when audio is playing */}
       {isPlaying && (
@@ -540,7 +589,8 @@ export default function App() {
           {showSpectrograph && (
             <>
               <>
-                <div className="controls-row">
+              <h2>Spectrograph</h2>
+                <div className="controls-row has-border">
                   {/* Select input for FFT bin size */}
                     <label className="control-label">
                       FFT Size:
@@ -637,19 +687,6 @@ export default function App() {
                         onChange={() => setShowScroll(!showScroll)}
                       />
                     </label>
-
-                  {/* Checkbox input to enable piano keyboard input */}
-                  {(!isPlaying) && (
-                    <label className="control-label">
-                      Piano
-                      <input
-                        className="control-checkbox"
-                        type="checkbox"
-                        checked={pianoEnabled}
-                        onChange={() => setPianoEnabled(!pianoEnabled)}
-                      />
-                    </label>
-                  )}
                 </div>
               </>
               <SpectrographVisualizer
@@ -662,7 +699,8 @@ export default function App() {
           {/* Harmonic amplitude sliders */}
           {showWaveform && <Waveform audioAnalysis={audioAnalysis} />}
         {(pianoEnabled || midiFile) && (
-            <div className="harmonic-sliders-container">
+            <div className="synthesizer-settings">
+              <h2>Synthesizer Settings</h2>
               {/* Add radio menu in the UI */}
                   <div className="preset-options">
                     <label>

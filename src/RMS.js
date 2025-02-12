@@ -1,0 +1,92 @@
+import React, { useRef, useEffect, useState } from 'react';
+
+export default function RMS({ rms, isPlaying }) {
+  const sketchRef = useRef();
+  const p5InstanceRef = useRef(null);
+  const [history, setHistory] = useState([]);
+  const historyRef = useRef([]);
+
+  useEffect(() => {
+    historyRef.current = history;
+  }, [history]);
+
+  useEffect(() => {
+    if (typeof rms === 'number') {
+      setHistory(prev => {
+        let newHistory = [...prev, rms];
+        if (newHistory.length > 100) {
+          newHistory.shift();
+        }
+        if (rms == 0){
+            newHistory  = new Array(100).fill(0);
+        }
+        return newHistory;
+      });
+    }
+  }, [rms]);
+
+  useEffect(() => {
+    const sketch = (p) => {
+      let canvas;
+      let width;
+      const baseHeight = 400;
+
+      p.setup = () => {
+        width = sketchRef.current.offsetWidth;
+        canvas = p.createCanvas(width, baseHeight);
+        canvas.parent(sketchRef.current);
+        p.pixelDensity(window.devicePixelRatio || 1);
+        p.frameRate(120);
+      };
+
+      p.windowResized = () => {
+        width = sketchRef.current.offsetWidth;
+        p.resizeCanvas(width, baseHeight);
+      };
+
+      p.draw = () => {
+        p.background(0);
+        const currentHistory = historyRef.current;
+        
+        if (currentHistory.length === 0) return;
+
+        p.stroke(100, 100, 100);
+        p.strokeWeight(2);
+        p.noFill();
+        p.beginShape();
+        
+        currentHistory.forEach((value, i) => {
+          let x;
+          if (currentHistory.length === 1) {
+            x = width;
+          } else {
+            x = (i / (currentHistory.length - 1)) * width;
+          }
+          const y = baseHeight - (value * baseHeight);
+          p.vertex(x, y);
+        });
+        
+        p.endShape();
+      };
+    };
+
+    p5InstanceRef.current = new window.p5(sketch);
+
+    return () => {
+      if (p5InstanceRef.current) {
+        p5InstanceRef.current.remove();
+        p5InstanceRef.current = null;
+      }
+    };
+  }, []);
+
+return (
+
+    <div>
+        {isPlaying && (
+            <h2>Root Mean Square (RMS)</h2>
+        )}
+      <div ref={sketchRef} style={{ width: '100%' }}></div>
+    </div>
+  );
+}

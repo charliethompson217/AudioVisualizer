@@ -226,6 +226,7 @@ export default function SpectrographVisualizer({
   return (
     <div>
       {/* Sliders */}
+      <div className="has-border" style={{width: '90%'}}>
       <div style={{ margin: '20px 40px' }}>
         <label htmlFor="minFreqSlider">
           Min Frequency Semitone: {minSemitone}
@@ -286,6 +287,8 @@ export default function SpectrographVisualizer({
           style={{ width: '100%' }}
         />
       </div>
+      </div>
+
       {/* Spectrograph Canvas */}
       <div className="spectrograph" ref={sketchRef}></div>
     </div>
