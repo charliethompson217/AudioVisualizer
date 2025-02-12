@@ -94,6 +94,7 @@ export default function PianoRoll({ notes, isPlaying }) {
 
   return (
     <div ref={containerRef} style={{ width: '100%', overflow: 'auto' }}>
+      <h2>Piano Roll</h2>
       <div>
         <label>Time Scale</label>
         <input

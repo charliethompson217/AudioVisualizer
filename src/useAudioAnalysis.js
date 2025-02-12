@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { parseMidi } from 'midi-file';
 import Synthesizer from './Synthesizer';
+import Meyda from 'meyda';
 
 export function useAudioAnalysis(
   mp3File,
@@ -28,16 +29,18 @@ export function useAudioAnalysis(
   const dataArrayRef = useRef(null);
   const synthesizerRef = useRef(null);
   const octaveRef = useRef(4);
-  const volumeRef = useRef(1);
-  const midiVolumeRef = useRef(0.3);
+  const volumeRef = useRef(0.5);
   const activeKeysRef = useRef(new Set());
   const gainNodeRef = useRef(null);
+  const meydaAnalyzerRef = useRef(null);
 
   const [dataArray, setDataArray] = useState(null);
   const [sampleRate, setSampleRate] = useState(44100);
   const audioElementRef = useRef(null);
   const [duration, setDuration] = useState(0);
   const [midiNotes, setMidiNotes] = useState([]);
+  const [chroma, setChroma] = useState([]);
+  const [rms, setRms] = useState(0);
 
   useEffect(() => {
     if (isPlaying && analyserRef.current) {
@@ -189,6 +192,20 @@ export function useAudioAnalysis(
       audioElementRef.current = audioElement;
     }
 
+    if (analyserRef.current && Meyda) {
+      meydaAnalyzerRef.current = Meyda.createMeydaAnalyzer({
+        audioContext: audioContextRef.current,
+        source: analyserRef.current,
+        bufferSize: 512,
+        featureExtractors: ['chroma', 'rms'],
+        callback: (features) => {
+          setChroma(features.chroma || []);
+          setRms(features.rms || 0);
+        },
+      });
+      meydaAnalyzerRef.current.start();
+    }
+
     return () => {
       if (source && source instanceof MediaStreamAudioSourceNode) {
         const tracks = source.mediaStream.getTracks();
@@ -200,6 +217,10 @@ export function useAudioAnalysis(
       // Stop all active notes on cleanup
       if (synthesizerRef.current) {
         synthesizerRef.current.stopAllNotes();
+      }
+      if (meydaAnalyzerRef.current) {
+        meydaAnalyzerRef.current.stop();
+        meydaAnalyzerRef.current = null;
       }
     };
   }, [isPlaying, pianoEnabled, mp3File, useMic]);
@@ -428,5 +449,7 @@ export function useAudioAnalysis(
     seek,
     getCurrentTime,
     midiNotes,
+    chroma,
+    rms,
   };
 }

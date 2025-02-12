@@ -82,43 +82,47 @@ export default function Waveform({ audioAnalysis }) {
   }, [analyser, dataArray]);
 
   return (
-    <div>
+    <div style={{ marginBottom: '200px' }}>
       {/* Waveform Canvas */}
-      <div ref={sketchRef} style={{ width: '100%' }}></div>
+      <h2>Waveform</h2>
+     
 
       {/* Slider for Horizontal Stretch Factor */}
-      <div style={{ margin: '20px 40px' }}>
-        <label htmlFor="horizontalStretchSlider">
-          Horizontal Stretch coefficient: {stretchFactor.toFixed(2)}x
-        </label>
-        <input
-          id="horizontalStretchSlider"
-          type="range"
-          min="0.5"
-          max="20"
-          step="0.01"
-          value={stretchFactor}
-          onChange={(e) => setStretchFactor(parseFloat(e.target.value))}
-          style={{ width: '100%' }}
-        />
+      <div className='has-border' style={{width: '90%'}}>
+        <div style={{ margin: '20px 40px' }}>
+          <label htmlFor="horizontalStretchSlider">
+            Horizontal Stretch coefficient: {stretchFactor.toFixed(2)}x
+          </label>
+          <input
+            id="horizontalStretchSlider"
+            type="range"
+            min="0.5"
+            max="20"
+            step="0.01"
+            value={stretchFactor}
+            onChange={(e) => setStretchFactor(parseFloat(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
+        
+        {/* Slider for Vertical Stretch Factor */}
+        <div style={{ margin: '20px 40px' }}>
+          <label htmlFor="verticalStretchSlider">
+            Vertical Stretch coefficient: {verticalStretchFactor.toFixed(2)}x
+          </label>
+          <input
+            id="verticalStretchSlider"
+            type="range"
+            min="0.5"
+            max="20"
+            step="0.01"
+            value={verticalStretchFactor}
+            onChange={(e) => setVerticalStretchFactor(parseFloat(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
       </div>
-      
-      {/* Slider for Vertical Stretch Factor */}
-      <div style={{ margin: '20px 40px' }}>
-        <label htmlFor="verticalStretchSlider">
-          Vertical Stretch coefficient: {verticalStretchFactor.toFixed(2)}x
-        </label>
-        <input
-          id="verticalStretchSlider"
-          type="range"
-          min="0.5"
-          max="20"
-          step="0.01"
-          value={verticalStretchFactor}
-          onChange={(e) => setVerticalStretchFactor(parseFloat(e.target.value))}
-          style={{ width: '100%' }}
-        />
-      </div>
+      <div ref={sketchRef} style={{ width: '100%' }}></div>
     </div>
   );
 }
