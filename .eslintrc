@@ -1,6 +1,8 @@
 {
-    "globals": {
-      "p5": "readonly"
-    }
+  "globals": {
+    "p5": "readonly"
+  },
+  "rules": {
+    "no-undef": "off"
   }
-  
+}

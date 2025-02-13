@@ -329,7 +329,7 @@ useEffect(() => {
                     </label>
                   )}
                   <label className="control-label">
-                    Generate MIDI Directly In Browser
+                    Generate MIDI directly in the browser
                     <input
                       type="checkbox"
                       checked={generateBrowserMIDI}
@@ -365,7 +365,7 @@ useEffect(() => {
                     </>
                   )}
                   <label className="control-label">
-                    Generate MIDI Serverside
+                    Generate MIDI on the server side
                     <input
                       type="checkbox"
                       checked={generateServerMIDI}
