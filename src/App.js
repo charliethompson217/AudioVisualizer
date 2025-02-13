@@ -5,17 +5,12 @@ import KeyboardSVG from './KeyboardSVG';
 import Waveform from './WaveformVisualizer.js';
 import { useAudioAnalysis } from './useAudioAnalysis.js';
 import PianoRoll from './PianoRoll.js';
-
-import { Amplify } from 'aws-amplify';
-import { get, post } from 'aws-amplify/api';
-import awsExports from './aws-exports';
-Amplify.configure(awsExports);
-
-import { parseMidi } from 'midi-file';
-import CryptoJS from 'crypto-js';
 import RMS from './RMS';
 import ChromavectorCircleGraph from './ChromavectorCircleGraph.js';
 import ChromevectorLineGraph from './ChromevectorLineGraph.js';
+import { convertToMidiBrowser } from './browserMidiConverter';
+import { convertToMidiServer } from './serverMidiConverter';
+
 
 export default function App() {
   // React state hooks to manage various input parameters and settings for the audio visualization
@@ -36,7 +31,6 @@ export default function App() {
   const [chromaCircle, setChromaCircle] = useState(true);
   const [chromaLine, setChromaLine] = useState(true);
   const [rms, setRms] = useState(true);
-  const [generateMIDI, setGenerateMIDI] = useState(false);
 
   const [currentSongName, setCurrentSongName] = useState('');
   const [isPaused, setIsPaused] = useState(false);
@@ -46,44 +40,51 @@ export default function App() {
   const [isConverting, setIsConverting] = useState(false);
   const [conversionComplete, setConversionComplete] = useState(true);
   const [warning, setWarning] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [generateBrowserMIDI, setGenerateBrowserMIDI] = useState(true);
+  const [generateServerMIDI, setGenerateServerMIDI] = useState(false);
+  const [onsetThreshold, setOnsetThreshold] = useState(0.3);
+  const [frameThreshold, setFrameThreshold] = useState(0.3);
+  const [minDurationSec, setMinDurationSec] = useState(0.1);
+
+useEffect(() => {
+  const convertMidi = async () => {
+    if (!mp3File || (!generateBrowserMIDI && !generateServerMIDI)) return;
+
+    setIsConverting(true);
+    setConversionComplete(false);
+    setWarning(null);
+
+    try {
+      let notes;
+      if (generateBrowserMIDI) {
+        notes = await convertToMidiBrowser(
+          mp3File,
+          setProgress,
+          onsetThreshold,
+          frameThreshold,
+          minDurationSec
+        );
+      } else {
+        notes = await convertToMidiServer(mp3File, setProgress);
+      }
+      
+      setMidiNotes(notes);
+      setConversionComplete(true);
+    } catch (error) {
+      console.error('Conversion failed:', error);
+      setWarning(error.message);
+      setConversionComplete(false);
+    } finally {
+      setIsConverting(false);
+    }
+  };
+
+  convertMidi();
+}, [mp3File, generateBrowserMIDI, generateServerMIDI, 
+   onsetThreshold, frameThreshold, minDurationSec]);
 
 
-  function buildNotes(parsedMidi, offsetTime = 0.5) {
-    console.log("buildNotes");
-    console.log(parsedMidi);
-    const notesResult = [];
-    const ticksPerBeat = parsedMidi.header.ticksPerBeat || 480;
-    let microsecondsPerBeat = 500000;
-    parsedMidi.tracks.forEach((track) => {
-      let currentTime = 0;
-      const activeMap = {};
-      track.forEach((event) => {
-        currentTime += event.deltaTime;
-        if (event.meta && event.type === 'setTempo') {
-          microsecondsPerBeat = event.microsecondsPerBeat;
-        }
-        const secondsPerTick = microsecondsPerBeat / 1_000_000 / ticksPerBeat;
-        const eventTimeSec = currentTime * secondsPerTick + offsetTime;
-        if (event.type === 'noteOn' && event.velocity > 0) {
-          activeMap[event.noteNumber] = eventTimeSec;
-        } else if (
-          event.type === 'noteOff' ||
-          (event.type === 'noteOn' && event.velocity === 0)
-        ) {
-          const startTime = activeMap[event.noteNumber];
-          if (startTime !== undefined) {
-            notesResult.push({
-              noteNumber: event.noteNumber,
-              startSec: startTime,
-              durationSec: eventTimeSec - startTime,
-            });
-            delete activeMap[event.noteNumber];
-          }
-        }
-      });
-    });
-    return notesResult;
-  }
 
   // State for harmonic amplitudes (1-8 harmonics)
   const [harmonicAmplitudes, setHarmonicAmplitudes] = useState({
@@ -100,25 +101,6 @@ export default function App() {
   function handleHarmonicChange(harmonic, value) {
     setHarmonicAmplitudes((prevAmplitudes) => ({
       ...prevAmplitudes,
-      [harmonic]: value,
-    }));
-  }
-
-  // State for harmonic phases (1-8 harmonics)
-  const [harmonicPhases, setHarmonicPhases] = useState({
-    1: 6.20,
-    2: 4.60,
-    3: 3.20,
-    4: 1.60,
-    5: 0.80,
-    6: 0.40,
-    7: 0.20,
-    8: 0.00,
-  });
-
-  function handleHarmonicPhaseChange(harmonic, value) {
-    setHarmonicPhases((prevPhases) => ({
-      ...prevPhases,
       [harmonic]: value,
     }));
   }
@@ -219,17 +201,6 @@ export default function App() {
     }
   }, [selectedPreset]);
 
-  // Add useEffect to start conversion if "Generate MIDI" is checked after uploading the file
-  useEffect(() => {
-    if (generateMIDI && mp3File) {
-      computeFileHash(mp3File).then((hash) => {
-        handleConvertMp3(mp3File, hash);
-      });
-    } else {
-      setMidiNotes(null);
-    }
-  }, [generateMIDI, mp3File]);
-
   // Instantiate the audio analysis using the custom hook
   const audioAnalysis = useAudioAnalysis(
     mp3File,
@@ -285,136 +256,24 @@ export default function App() {
     }
   }
 
-  /**
-   * Handles file uploads via file input (mp3, wav, ogg, midi), sets the file to be visualized.
-   */
-  async function handleConvertMp3(mp3File, hash) {
-    console.log("handleConvertMp3");
-    setIsConverting(true);
-    setConversionComplete(false);
-    try {
-      let initialResponse = await fetch(
-        'https://song-upload-bucket.s3.amazonaws.com/converted/'
-          + hash + '.mid'
-      );
-
-      if (!initialResponse.ok) {
-        console.log("Requesting upload URL");
-        const restOperation = post({
-          apiName: 'basicPitchApi',
-          path: `/convert/song`,
-          options: {
-            body: {
-              objectName: hash + '.mp3',
-              contentType: mp3File.type,
-            },
-          },
-        });
-        const { body } = await restOperation.response;
-        const response = await body.json();
-        if (response.error) {
-            console.error('Error Requesting Upload URL: ', response.error);
-            setWarning(response.error);
-            return;
-        }
-        const presignedUrl = response.url;
-  
-        console.log("Uploading MP3 to S3");
-        // upload to s3
-        await fetch(presignedUrl, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': mp3File.type,
-          },
-          body: mp3File,
-        });
-  
-        console.log("Waiting 10 seconds for file conversion");
-  
-        // fetch the converted .mid file
-        let convertedFileResponse;
-        let attempts = 0;
-        const maxAttempts = 10;
-        const delay = 10000; // 10 seconds
-  
-        while (attempts < maxAttempts) {
-          convertedFileResponse = await fetch(
-            'https://song-upload-bucket.s3.amazonaws.com/converted/'
-              + hash + '.mid'
-          );
-  
-          if (convertedFileResponse.ok) {
-            console.log("Attempt Succeded");
-            break;
-          }
-          console.log("Attempt Failed Trying again in 10 seconds");
-          attempts++;
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-  
-        if (!convertedFileResponse.ok) {
-          throw new Error('Failed to fetch the converted MIDI file.');
-        }
-  
-        const blob = await convertedFileResponse.blob();
-        const arrayBuffer = await blob.arrayBuffer();
-        console.log("Parsing MIDI");
-        const parsedMidi = parseMidi(new Uint8Array(arrayBuffer));
-        console.log("Building Notes");
-        const notes = buildNotes(parsedMidi);
-        console.log("Finished Conversion");
-        setMidiNotes(notes);
-        setIsConverting(false);
-        setConversionComplete(true);
-      } else {
-        const blob = await initialResponse.blob();
-        const arrayBuffer = await blob.arrayBuffer();
-        console.log("Parsing MIDI");
-        const parsedMidi = parseMidi(new Uint8Array(arrayBuffer));
-        console.log("Building Notes");
-        const notes = buildNotes(parsedMidi);
-        console.log("Finished Conversion");
-        setMidiNotes(notes);
-        setIsConverting(false);
-        setConversionComplete(true);
-      }
-      
-    } catch (error) {
-      console.error('Conversion failed:', error);
-      setWarning('Conversion failed. Please try again.');
-    }
-  }
-
-  async function computeFileHash(file) {
-    const arrayBuffer = await file.arrayBuffer();
-    const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
-    const hash = CryptoJS.SHA256(wordArray).toString(CryptoJS.enc.Hex);
-    return hash;
-  }
-
   function handleFileUpload(e) {
     const file = e.target.files[0];
     if (file) {
       setCurrentSongName(file.name.split('.')[0]);
       const fileName = file.name.toLowerCase();
-      computeFileHash(file).then((hash) => {
-        if (fileName.endsWith('.mid') || fileName.endsWith('.midi')) {
-          setMidiFile(file);
-          setMp3File(null);
-          setPianoEnabled(true);
-        } else if (
-          fileName.endsWith('.mp3') ||
-          fileName.endsWith('.wav') ||
-          fileName.endsWith('.ogg')
-        ) {
-          setMp3File(file);
-          setMidiFile(null);
-          
-          if (generateMIDI) {
-            handleConvertMp3(file, hash);
-          }
-        }
-      });
+      
+      if (fileName.endsWith('.mid') || fileName.endsWith('.midi')) {
+        setMidiFile(file);
+        setMp3File(null);
+        setPianoEnabled(true);
+      } else if (
+        fileName.endsWith('.mp3') ||
+        fileName.endsWith('.wav') ||
+        fileName.endsWith('.ogg')
+      ) {
+        setMp3File(file);
+        setMidiFile(null);
+      }
     }
   }
 
@@ -470,12 +329,51 @@ export default function App() {
                     </label>
                   )}
                   <label className="control-label">
-                    Generate MIDI
+                    Generate MIDI Directly In Browser
                     <input
-                      className="control-checkbox"
                       type="checkbox"
-                      checked={generateMIDI}
-                      onChange={() => setGenerateMIDI(!generateMIDI)}
+                      checked={generateBrowserMIDI}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setGenerateBrowserMIDI(checked);
+                        if (checked) setGenerateServerMIDI(false);
+                      }}
+                    />
+                  </label>
+                  {generateBrowserMIDI && (
+                    <>
+                      <label> Onset Threshold
+                        <input type="range" min="0" max="1" step="0.01" 
+                          value={onsetThreshold} 
+                          onChange={(e) => setOnsetThreshold(parseFloat(e.target.value))}
+                        />
+                      </label>
+                      <label>
+                        Frame Threshold
+                        <input type="range" min="0" max="1" step="0.01"
+                          value={frameThreshold}
+                          onChange={(e) => setFrameThreshold(parseFloat(e.target.value))}
+                        />
+                      </label>
+                      <label>
+                        Min Duration (sec)
+                        <input type="range" min="0" max="1" step="0.01"
+                          value={minDurationSec}
+                          onChange={(e) => setMinDurationSec(parseFloat(e.target.value))}
+                        />
+                      </label>
+                    </>
+                  )}
+                  <label className="control-label">
+                    Generate MIDI Serverside
+                    <input
+                      type="checkbox"
+                      checked={generateServerMIDI}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setGenerateServerMIDI(checked);
+                        if (checked) setGenerateBrowserMIDI(false);
+                      }}
                     />
                   </label>
                   <label className="control-label">
@@ -525,7 +423,12 @@ export default function App() {
               Use Mic
             </button>
           )}
-          {isConverting && <div>Loading...</div>}
+          {progress <100 && isConverting && (
+            <>
+              <p>Converting audio to MIDI... {progress.toFixed(2)}%</p>
+              <progress value={progress} max="100" />
+            </>
+          )}
           {warning && <div>{warning}</div>}
           <button
             className="control-button"
