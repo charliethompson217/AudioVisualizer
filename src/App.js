@@ -242,7 +242,6 @@ export default function App() {
     maxDecibels,
     pianoEnabled,
     harmonicAmplitudes, // Ensure this is never empty
-    harmonicPhases, // Pass harmonicPhases to useAudioAnalysis
     attackTime,
     decayTime,
     sustainLevel,
@@ -753,27 +752,7 @@ export default function App() {
                   </label>
                 </div>
               ))}
-              <br />
-              {/* Harmonic Phase Sliders */}
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((harmonic) => (
-                  <div key={harmonic}>
-                    <label>
-                      Harmonic {harmonic} Phase Offset: {harmonicPhases[harmonic].toFixed(4)} rad
-                      <input
-                        type="range"
-                        min="0.000"
-                        max={`${Math.PI * 2}`}
-                        step="0.001"
-                        value={harmonicPhases[harmonic]}
-                        onChange={(e) =>
-                          handleHarmonicPhaseChange(harmonic, parseFloat(e.target.value))
-                        }
-                        className="harmonic-slider"
-                      />
-                    </label>
-                  </div>
-                ))}
-              <br />
+              <br />                
               {/* ADSR sliders */}
               <div>
                 <label>
@@ -823,7 +802,7 @@ export default function App() {
                   <input
                     type="range"
                     min="0.001"
-                    max="2"
+                    max="5"
                     step="0.001"
                     value={releaseTime}
                     onChange={(e) => setReleaseTime(parseFloat(e.target.value))}
