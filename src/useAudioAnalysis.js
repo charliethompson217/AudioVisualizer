@@ -14,15 +14,14 @@ export function useAudioAnalysis(
   maxDecibels,
   pianoEnabled,
   harmonicAmplitudes = { 1: 1.0 },
-  harmonicPhases = {},
-  ATTACK_TIME = 0.01,
-  DECAY_TIME = 0.3,
-  SUSTAIN_LEVEL = 0.2,
-  RELEASE_TIME = 0.5,
-  vibratoDepth = 0,
-  vibratoRate = 0,
-  tremoloDepth = 0,
-  tremoloRate = 0
+  ATTACK_TIME,
+  DECAY_TIME,
+  SUSTAIN_LEVEL,
+  RELEASE_TIME,
+  vibratoDepth,
+  vibratoRate,
+  tremoloDepth,
+  tremoloRate
 ) {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -41,6 +40,7 @@ export function useAudioAnalysis(
   const [midiNotes, setMidiNotes] = useState([]);
   const [chroma, setChroma] = useState([]);
   const [rms, setRms] = useState(0);
+  const timeoutsRef = useRef([]);
 
   useEffect(() => {
     if (isPlaying && analyserRef.current) {
@@ -57,11 +57,6 @@ export function useAudioAnalysis(
     }
   }, [harmonicAmplitudes]);
 
-  useEffect(() => {
-    if (synthesizerRef.current) {
-      synthesizerRef.current.updateHarmonicPhases(harmonicPhases);
-    }
-  }, [harmonicPhases]);
 
   useEffect(() => {
     if (synthesizerRef.current) {
@@ -133,7 +128,6 @@ export function useAudioAnalysis(
 
       const synthesizer = new Synthesizer(audioContextRef.current, {
         harmonicAmplitudes: validHarmonicAmplitudes,
-        harmonicPhases,
         attackTime: ATTACK_TIME,
         decayTime: DECAY_TIME,
         sustainLevel: SUSTAIN_LEVEL,
@@ -310,34 +304,41 @@ export function useAudioAnalysis(
     function playMidi(parsedMidi) {
       const ticksPerBeat = parsedMidi.header.ticksPerBeat;
       let microsecondsPerBeat = 500000;
-
+    
       parsedMidi.tracks.forEach((track) => {
         let trackTime = 0;
-
+    
         track.forEach((event) => {
           if (event.meta && event.type === 'setTempo') {
             microsecondsPerBeat = event.microsecondsPerBeat;
           }
-
+    
           trackTime += event.deltaTime;
           const delay =
             (trackTime / ticksPerBeat) * (microsecondsPerBeat / 1000000);
-
+    
           if (event.type === 'noteOn' && event.velocity > 0) {
-            setTimeout(() => {
-              synthesizerRef.current.noteOn(event.noteNumber, event.velocity, true);
+            const timeoutId = setTimeout(() => {
+              synthesizerRef.current?.noteOn(event.noteNumber, event.velocity, true);
             }, delay * 1000);
+            timeoutsRef.current.push(timeoutId);
           } else if (
             event.type === 'noteOff' ||
             (event.type === 'noteOn' && event.velocity === 0)
           ) {
-            setTimeout(() => {
-              synthesizerRef.current.noteOff(event.noteNumber);
+            const timeoutId = setTimeout(() => {
+              synthesizerRef.current?.noteOff(event.noteNumber);
             }, delay * 1000);
+            timeoutsRef.current.push(timeoutId);
           }
         });
       });
     }
+    
+    return () => {
+      timeoutsRef.current.forEach(clearTimeout);
+      timeoutsRef.current = [];
+    };
   }, [midiFile, isPlaying]);
 
   useEffect(() => {
