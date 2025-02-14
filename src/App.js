@@ -11,7 +11,7 @@ import ChromevectorLineGraph from './ChromevectorLineGraph.js';
 import { convertToMidiBrowser } from './browserMidiConverter';
 import { convertToMidiServer } from './serverMidiConverter';
 import SpectralCentroidGraph from './SpectralCentroidGraph.js';
-
+import { monomix, downsampleArray } from './audioBufferTools.js';
 
 export default function App() {
   // React state hooks to manage various input parameters and settings for the audio visualization
@@ -50,6 +50,78 @@ export default function App() {
   const [oscillatorType, setOscillatorType] = useState('custom');
   const [meydaBufferSize, setMeydaBufferSize] = useState(4096);
   const [spectralCentroidGraph, setSpectralCentroidGraph] = useState(true);
+
+  const [bpm, setBpm] = useState(null);
+  const [key, setKey] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  async function initializeEssentia() {
+    if (!window.EssentiaWASM) {
+      await new Promise(resolve => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/essentia.js@latest/dist/essentia-wasm.web.js';
+        script.onload = resolve;
+        document.head.appendChild(script);
+      });
+    }
+    
+    const wasmModule = await window.EssentiaWASM();
+    const essentia = new wasmModule.EssentiaJS(false);
+    
+    essentia.arrayToVector = wasmModule.arrayToVector;
+    
+    return essentia;
+  }
+
+  useEffect(() => {
+    if (!mp3File) return;
+
+    const processAudio = async () => {
+      try {
+        setIsProcessing(true);
+        const essentia = await initializeEssentia();
+        const arrayBuffer = await mp3File.arrayBuffer();
+        const audioContext = new AudioContext();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        
+        const monoAudio = monomix(audioBuffer);
+        
+        const targetSR = 22050;
+        const downsampled = downsampleArray(monoAudio, audioBuffer.sampleRate, targetSR);
+        
+        const vectorSignal = essentia.arrayToVector(downsampled);
+        
+        const keyData = essentia.KeyExtractor(
+          vectorSignal, true, 4096, 4096, 12, 3500, 60, 25, 0.2, 
+          'bgate', targetSR, 0.0001, 440, 'cosine', 'hann'
+        );
+
+        const bpmResult = essentia.PercivalBpmEstimator(
+          vectorSignal, 
+          2048,    // frameSize (larger window for 22.05kHz)
+          4096,    // frameSizeOSS (wider OSS analysis window)
+          256,     // hopSize (balance between resolution and compute)
+          128,     // hopSizeOSS (finer OSS resolution)
+          250,     // maxBPM (covers faster tempos)
+          40,      // minBPM (catches slower tempos)
+          targetSR // match actual sample rate
+        );
+
+        setBpm(Math.round(bpmResult.bpm));
+        setKey(`${keyData.key} ${keyData.scale}`);
+        
+        essentia.delete();
+        audioContext.close();
+      } catch (error) {
+        console.error('Audio processing failed:', error);
+        setWarning('Audio analysis failed. Please try another file.');
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    processAudio();
+}, [mp3File]);
 
 useEffect(() => {
   const convertMidi = async () => {
@@ -291,7 +363,16 @@ useEffect(() => {
   return (
     <div className="App">
       <div className="main-container">
-      <div className='SongTitle'>{isPlaying && <h1 style={{color: 'white'}}>{currentSongName}</h1>}</div>
+      <div className="SongTitle">
+        {currentSongName && <h1 style={{color: 'white'}}>{currentSongName}</h1>}
+        {isProcessing && <p>Analyzing audio...</p>}
+        {!isProcessing && bpm && key && (
+          <div className="audio-info">
+            <p>BPM: {Math.round(bpm)}</p>
+            <p>Key: {key}</p>
+          </div>
+        )}
+      </div>
         {/* Controls that cannot be adjusted during playback */}
         {!isPlaying && (
           <div>
