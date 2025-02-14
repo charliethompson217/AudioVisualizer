@@ -23,7 +23,7 @@ export function useAudioAnalysis(
   tremoloDepth,
   tremoloRate,
   oscillatorType,
-  meydaBufferSize = 2048
+  meydaBufferSize
 ) {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -34,6 +34,7 @@ export function useAudioAnalysis(
   const activeKeysRef = useRef(new Set());
   const gainNodeRef = useRef(null);
   const meydaAnalyzerRef = useRef(null);
+  const meydaBufferSizeRef = useRef(meydaBufferSize);
 
   const [dataArray, setDataArray] = useState(null);
   const [sampleRate, setSampleRate] = useState(44100);
@@ -44,6 +45,32 @@ export function useAudioAnalysis(
   const [rms, setRms] = useState(0);
   const timeoutsRef = useRef([]);
   const [spectralCentroid, setSpectralCentroid] = useState(0);
+
+  useEffect(() => {
+    meydaBufferSizeRef.current = meydaBufferSize;
+  }, [meydaBufferSize]);
+
+  useEffect(() => {
+    if (
+      meydaAnalyzerRef.current &&
+      audioContextRef.current &&
+      analyserRef.current
+    ) {
+      meydaAnalyzerRef.current.stop();
+      meydaAnalyzerRef.current = Meyda.createMeydaAnalyzer({
+        audioContext: audioContextRef.current,
+        source: analyserRef.current,
+        bufferSize: meydaBufferSizeRef.current,
+        featureExtractors: ['chroma', 'rms', 'spectralCentroid'],
+        callback: (features) => {
+          setChroma(features.chroma || []);
+          setRms(features.rms || 0);
+          setSpectralCentroid(features.spectralCentroid || 0);
+        },
+      });
+      meydaAnalyzerRef.current.start();
+    }
+  }, [meydaBufferSize]);
 
   useEffect(() => {
     if (synthesizerRef.current) {
@@ -195,12 +222,11 @@ export function useAudioAnalysis(
       // Store audioElement in ref
       audioElementRef.current = audioElement;
     }
-
     if (analyserRef.current && Meyda) {
       meydaAnalyzerRef.current = Meyda.createMeydaAnalyzer({
         audioContext: audioContextRef.current,
         source: analyserRef.current,
-        bufferSize: meydaBufferSize,
+        bufferSize: meydaBufferSizeRef.current,
         featureExtractors: ['chroma', 'rms', 'spectralCentroid'],
         callback: (features) => {
           setChroma(features.chroma || []);

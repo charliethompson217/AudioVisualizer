@@ -48,7 +48,7 @@ export default function App() {
   const [frameThreshold, setFrameThreshold] = useState(0.3);
   const [minDurationSec, setMinDurationSec] = useState(0.1);
   const [oscillatorType, setOscillatorType] = useState('custom');
-  const [meydaBufferSize, setMeydaBufferSize] = useState(2048);
+  const [meydaBufferSize, setMeydaBufferSize] = useState(4096);
   const [spectralCentroidGraph, setSpectralCentroidGraph] = useState(true);
 
 useEffect(() => {
@@ -230,6 +230,7 @@ useEffect(() => {
     tremoloDepth,
     tremoloRate,
     oscillatorType,
+    meydaBufferSize
   );
 
   useEffect(() => {
@@ -386,20 +387,6 @@ useEffect(() => {
                     />
                   </label>
                   <label className="control-label">
-                    Meyda Buffer Size
-                    <select
-                      value={meydaBufferSize}
-                      onChange={(e) => setMeydaBufferSize(parseInt(e.target.value, 10))}
-                      style={{paddingLeft: '5px', paddingRight: '5px'}}
-                    >
-                      {[512, 1024, 2048, 4096, 8192, 16384, 32768].map((size) => (
-                        <option key={size} value={size}>
-                          {size}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="control-label">
                     Chroma Circle Graph
                     <input
                       className="control-checkbox"
@@ -442,6 +429,20 @@ useEffect(() => {
 
         {/* Start/Stop and Use Mic buttons */}
         <div className="controls-row">
+        <label className="control-label">
+          Meyda Buffer Size
+          <select
+            value={meydaBufferSize}
+            onChange={(e) => setMeydaBufferSize(parseInt(e.target.value, 10))}
+            style={{paddingLeft: '5px', paddingRight: '5px'}}
+          >
+            {[512, 1024, 2048, 4096, 8192, 16384].map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
+        </label>
           {!isPlaying && (
             <button
               className="control-button"
