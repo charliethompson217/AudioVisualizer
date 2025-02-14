@@ -10,6 +10,7 @@ import ChromavectorCircleGraph from './ChromavectorCircleGraph.js';
 import ChromevectorLineGraph from './ChromevectorLineGraph.js';
 import { convertToMidiBrowser } from './browserMidiConverter';
 import { convertToMidiServer } from './serverMidiConverter';
+import SpectralCentroidGraph from './SpectralCentroidGraph.js';
 
 
 export default function App() {
@@ -48,6 +49,7 @@ export default function App() {
   const [minDurationSec, setMinDurationSec] = useState(0.1);
   const [oscillatorType, setOscillatorType] = useState('custom');
   const [meydaBufferSize, setMeydaBufferSize] = useState(2048);
+  const [spectralCentroidGraph, setSpectralCentroidGraph] = useState(true);
 
 useEffect(() => {
   const convertMidi = async () => {
@@ -424,6 +426,15 @@ useEffect(() => {
                       onChange={() => setRms(!rms)}
                     />
                   </label>
+                  <label className="control-label">
+                    Spectral Centroid Graph
+                    <input
+                      className="control-checkbox"
+                      type="checkbox"
+                      checked={spectralCentroidGraph}
+                      onChange={() => setSpectralCentroidGraph(!spectralCentroidGraph)}
+                    />
+                  </label>
                 </>
               )}
             </div>
@@ -500,11 +511,9 @@ useEffect(() => {
       </div>
         
         { chromaCircle && (<ChromavectorCircleGraph chroma={audioAnalysis.chroma} isPlaying={isPlaying}/>)}
+        { spectralCentroidGraph && (<SpectralCentroidGraph spectralCentroid={audioAnalysis.spectralCentroid} isPlaying={isPlaying}/>)}
         { chromaLine && (<ChromevectorLineGraph chroma={audioAnalysis.chroma} isPlaying={isPlaying}/>)}
         { rms && (<RMS rms={audioAnalysis.rms} isPlaying={isPlaying}/>)}
-
-        
-      
 
       {/* Render the visualization component when audio is playing */}
       {isPlaying && (

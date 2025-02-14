@@ -43,6 +43,7 @@ export function useAudioAnalysis(
   const [chroma, setChroma] = useState([]);
   const [rms, setRms] = useState(0);
   const timeoutsRef = useRef([]);
+  const [spectralCentroid, setSpectralCentroid] = useState(0);
 
   useEffect(() => {
     if (synthesizerRef.current) {
@@ -200,10 +201,11 @@ export function useAudioAnalysis(
         audioContext: audioContextRef.current,
         source: analyserRef.current,
         bufferSize: meydaBufferSize,
-        featureExtractors: ['chroma', 'rms'],
+        featureExtractors: ['chroma', 'rms', 'spectralCentroid'],
         callback: (features) => {
           setChroma(features.chroma || []);
           setRms(features.rms || 0);
+          setSpectralCentroid(features.spectralCentroid || 0);
         },
       });
       meydaAnalyzerRef.current.start();
@@ -461,5 +463,6 @@ export function useAudioAnalysis(
     midiNotes,
     chroma,
     rms,
+    spectralCentroid,
   };
 }
