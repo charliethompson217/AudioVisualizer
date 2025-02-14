@@ -46,6 +46,8 @@ export default function App() {
   const [onsetThreshold, setOnsetThreshold] = useState(0.3);
   const [frameThreshold, setFrameThreshold] = useState(0.3);
   const [minDurationSec, setMinDurationSec] = useState(0.1);
+  const [oscillatorType, setOscillatorType] = useState('custom');
+  const [meydaBufferSize, setMeydaBufferSize] = useState(2048);
 
 useEffect(() => {
   const convertMidi = async () => {
@@ -120,6 +122,7 @@ useEffect(() => {
   // Add preset definitions
   const presets = {
     None: {
+      oscillatorType: 'custom',
       harmonicAmplitudes: {
         1: 1.0,
         2: 0.0,
@@ -140,6 +143,7 @@ useEffect(() => {
       tremoloRate: 0,
     },
     Piano: {
+      oscillatorType: 'custom',
       harmonicAmplitudes: {
         1: 1.0,
         2: 0.5,
@@ -160,6 +164,7 @@ useEffect(() => {
       tremoloRate: 0,
     },
     Violin: {
+      oscillatorType: 'custom',
       harmonicAmplitudes: {
         1: 1.0,
         2: 0.7,
@@ -198,6 +203,7 @@ useEffect(() => {
       setVibratoRate(preset.vibratoRate);
       setTremoloDepth(preset.tremoloDepth);
       setTremoloRate(preset.tremoloRate);
+      setOscillatorType(preset.oscillatorType);
     }
   }, [selectedPreset]);
 
@@ -221,6 +227,7 @@ useEffect(() => {
     vibratoRate,
     tremoloDepth,
     tremoloRate,
+    oscillatorType,
   );
 
   useEffect(() => {
@@ -375,6 +382,20 @@ useEffect(() => {
                         if (checked) setGenerateBrowserMIDI(false);
                       }}
                     />
+                  </label>
+                  <label className="control-label">
+                    Meyda Buffer Size
+                    <select
+                      value={meydaBufferSize}
+                      onChange={(e) => setMeydaBufferSize(parseInt(e.target.value, 10))}
+                      style={{paddingLeft: '5px', paddingRight: '5px'}}
+                    >
+                      {[512, 1024, 2048, 4096, 8192, 16384, 32768].map((size) => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                   <label className="control-label">
                     Chroma Circle Graph
@@ -636,25 +657,50 @@ useEffect(() => {
                       Violin
                     </label>
                   </div>
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((harmonic) => (
-                <div key={harmonic}>
+                  
+              <div>
+                <div className="oscillator-type">
                   <label>
-                    Harmonic {harmonic}:{' '}
-                    {harmonicAmplitudes[harmonic].toFixed(4)}
-                    <input
-                      type="range"
-                      min="0.000"
-                      max="1.00"
-                      step="0.001"
-                      value={harmonicAmplitudes[harmonic]}
-                      onChange={(e) =>
-                        handleHarmonicChange(harmonic, parseFloat(e.target.value))
-                      }
-                      className="harmonic-slider"
-                    />
+                    Oscillator Type:
+                    <select 
+                      value={oscillatorType}
+                      onChange={(e) => setOscillatorType(e.target.value)}
+                    >
+                      <option value="custom">Custom harmonics</option>
+                      <option value="sine">Sine</option>
+                      <option value="square">Square</option>
+                      <option value="sawtooth">Sawtooth</option>
+                      <option value="triangle">Triangle</option>
+                    </select>
                   </label>
                 </div>
-              ))}
+
+                {oscillatorType === 'custom' && (
+                  <div className="harmonic-controls">
+                    {/* harmonic sliders */}
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((harmonic) => (
+                      <div key={harmonic}>
+                        <label>
+                          Harmonic {harmonic}:{' '}
+                          {harmonicAmplitudes[harmonic].toFixed(4)}
+                          <input
+                            type="range"
+                            min="0.000"
+                            max="1.00"
+                            step="0.001"
+                            value={harmonicAmplitudes[harmonic]}
+                            onChange={(e) =>
+                              handleHarmonicChange(harmonic, parseFloat(e.target.value))
+                            }
+                            className="harmonic-slider"
+                          />
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
               <br />                
               {/* ADSR sliders */}
               <div>

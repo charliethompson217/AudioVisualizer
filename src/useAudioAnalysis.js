@@ -21,7 +21,9 @@ export function useAudioAnalysis(
   vibratoDepth,
   vibratoRate,
   tremoloDepth,
-  tremoloRate
+  tremoloRate,
+  oscillatorType,
+  meydaBufferSize = 2048
 ) {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -41,6 +43,12 @@ export function useAudioAnalysis(
   const [chroma, setChroma] = useState([]);
   const [rms, setRms] = useState(0);
   const timeoutsRef = useRef([]);
+
+  useEffect(() => {
+    if (synthesizerRef.current) {
+      synthesizerRef.current.updateOscillatorType(oscillatorType);
+    }
+  }, [oscillatorType]);
 
   useEffect(() => {
     if (isPlaying && analyserRef.current) {
@@ -138,6 +146,7 @@ export function useAudioAnalysis(
         vibratoRate,
         tremoloDepth,
         tremoloRate,
+        oscillatorType: oscillatorType
       });
       synthesizerRef.current = synthesizer;
     }
@@ -190,7 +199,7 @@ export function useAudioAnalysis(
       meydaAnalyzerRef.current = Meyda.createMeydaAnalyzer({
         audioContext: audioContextRef.current,
         source: analyserRef.current,
-        bufferSize: 512,
+        bufferSize: meydaBufferSize,
         featureExtractors: ['chroma', 'rms'],
         callback: (features) => {
           setChroma(features.chroma || []);

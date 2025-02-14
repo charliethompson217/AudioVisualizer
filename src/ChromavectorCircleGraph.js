@@ -3,6 +3,12 @@ import React, { useRef, useEffect, useState } from 'react';
 export default function ChromavectorCircleGraph({chroma, isPlaying}) {
   const sketchRef = useRef();
   const p5InstanceRef = useRef(null);
+
+  const chromaRef = useRef(chroma);
+
+  useEffect(() => {
+    chromaRef.current = chroma;
+  }, [chroma]);
   
   useEffect(() => {
 
@@ -31,7 +37,7 @@ export default function ChromavectorCircleGraph({chroma, isPlaying}) {
         const noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
         const sliceAngle = p.TWO_PI / 12;
         const maxRadius = baseHeight / 2;
-        chroma.forEach((value, i) => {
+        chromaRef.current.forEach((value, i) => {
           const radius = maxRadius * (value * value);
           const startAngle = i * sliceAngle;
           p.fill(noteHues[i], 100, 100);
@@ -49,7 +55,7 @@ export default function ChromavectorCircleGraph({chroma, isPlaying}) {
         p5InstanceRef.current = null;
       }
     };
-  }, [chroma]);
+  }, []);
 
   return (
     <div >

@@ -15,6 +15,11 @@ export default class Synthesizer {
     this.tremoloDepth = options.tremoloDepth;
     this.tremoloRate = options.tremoloRate;
     this.activeNotes = new Map();
+    this.oscillatorType = options.oscillatorType;
+  }
+
+  updateOscillatorType(newOscillatorType) {
+    this.oscillatorType = newOscillatorType;
   }
 
   updateHarmonicAmplitudes(newAmplitudes) {
@@ -42,8 +47,13 @@ export default class Synthesizer {
 
     const { attackTime, decayTime, sustainLevel, releaseTime } = this;
 
+    const oscillatorConfig = {
+      type: this.oscillatorType,
+      partials: partials
+    };
+
     const synth = new Tone.Synth({
-      oscillator: { type: 'custom', partials },
+      oscillator: oscillatorConfig,
       envelope: {
         attack: attackTime,
         decay: decayTime,
