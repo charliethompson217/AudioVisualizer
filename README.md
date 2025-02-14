@@ -163,10 +163,26 @@ npm -v
 ```
 
 ### 2. Clone the Repository:
-
 You need to clone the project repository from GitHub to your local machine.
-
 1. **Install Git** (if not already installed):
+   - **Windows**: Download and install Git from [git-scm.com](https://git-scm.com/download/win).
+   - **macOS**: Install via Homebrew:
+     ```
+     brew install git
+     ```
+   - **Debian/Ubuntu**:
+     ```
+     sudo apt install git
+     ```
+2. **Clone the Repository**:
+   Open your terminal (Command Prompt or PowerShell on Windows) and run:
+   ```
+   git clone https://github.com/charliethompson217/AudioVisualizer.git
+   ```
+3.	**Navigate to the Project Directory**
+   ```
+   cd AudioVisualizer
+   ```
 
 ### 3. Install Dependencies:
 
