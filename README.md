@@ -48,6 +48,8 @@ Check out the live demo at [AudioVisualizer.link](https://audiovisualizer.link)
 
 -   **Audio-to-MIDI Conversion**: Allows conversion of MP3 or other audio formats to MIDI with [Spotify’s Basic Pitch](https://github.com/spotify/basic-pitch.git) for realtime visualization through the piano roll.
 
+-   **BPM and Key detection**: Allows for detection of BPM and key using [essentia.js](https://github.com/MTG/essentia.js)
+
 ### Virtual Piano Keyboard
 
 -   **Enable Piano**: Check the "Piano" checkbox to enable the virtual piano.
