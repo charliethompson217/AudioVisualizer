@@ -6,6 +6,27 @@ export default function ChromevectorLineGraph({ chroma, isPlaying }) {
   const [history, setHistory] = useState([]);
   const historyRef = useRef([]);
 
+  const [stretchFactor, setStretchFactor] = useState(1);
+  const [verticalStretchFactor, setVerticalStretchFactor] = useState(1);
+  const [verticleExponent, setVerticleExponent] = useState(1);
+
+  const stretchFactorRef = useRef(stretchFactor);
+  const verticalStretchFactorRef = useRef(verticalStretchFactor);
+  const verticleExponentRef = useRef(1);
+
+
+  useEffect(() => {
+    stretchFactorRef.current = stretchFactor;
+  }, [stretchFactor]);
+
+  useEffect(() => {
+    verticalStretchFactorRef.current = verticalStretchFactor;
+  }, [verticalStretchFactor]);
+
+  useEffect(() => {
+    verticleExponentRef.current = verticleExponent;
+  }, [verticleExponent]);
+
   // Sync historyRef with history state
   useEffect(() => {
     historyRef.current = history;
@@ -26,7 +47,7 @@ export default function ChromevectorLineGraph({ chroma, isPlaying }) {
   }, [chroma]);
 
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
-  
+
   useEffect(() => {
     const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener('resize', handleResize);
@@ -64,9 +85,19 @@ export default function ChromevectorLineGraph({ chroma, isPlaying }) {
       };
 
       p.draw = () => {
+        const currentStretchFactor = stretchFactorRef.current;
+        const currentVerticalStretchFactor = verticalStretchFactorRef.current;
+
         p.background(0);
         const noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
         const currentHistory = historyRef.current;
+
+        p.push();
+        p.translate(
+          -p.width * (currentStretchFactor - 1),
+          0
+        );
+        p.scale(currentStretchFactor, currentVerticalStretchFactor);
 
         for (let i = 0; i < 12; i++) {
           p.stroke(noteHues[i], 100, 100);
@@ -75,7 +106,7 @@ export default function ChromevectorLineGraph({ chroma, isPlaying }) {
           p.beginShape();
           
           currentHistory.forEach((entry, j) => {
-            const value = entry[i];
+            const value = entry[i]**verticleExponentRef.current;
             let x;
             if (currentHistory.length === 1) {
               x = width;
@@ -88,6 +119,7 @@ export default function ChromevectorLineGraph({ chroma, isPlaying }) {
           
           p.endShape();
         }
+        p.pop();
       };
     };
 
@@ -104,7 +136,58 @@ export default function ChromevectorLineGraph({ chroma, isPlaying }) {
   return (
     <div>
       {isPlaying && (
-        <h2>Chroma Line Graph</h2>
+        <>
+          <h2>Chroma Line Graph</h2>
+          <div className='has-border' style={{width: '90%'}}>
+            <div style={{ margin: '20px 40px' }}>
+              <label htmlFor="horizontalStretchSlider">
+                Horizontal Stretch coefficient: {stretchFactor.toFixed(2)}x
+              </label>
+              <input
+                id="horizontalStretchSlider"
+                type="range"
+                min="0.01"
+                max="20"
+                step="0.01"
+                value={stretchFactor}
+                onChange={(e) => setStretchFactor(parseFloat(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+            
+            <div style={{ margin: '20px 40px' }}>
+              <label htmlFor="verticalStretchSlider">
+                Vertical Stretch coefficient: {verticalStretchFactor.toFixed(2)}x
+              </label>
+              <input
+                id="verticalStretchSlider"
+                type="range"
+                min="0.01"
+                max="20"
+                step="0.01"
+                value={verticalStretchFactor}
+                onChange={(e) => setVerticalStretchFactor(parseFloat(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div style={{ margin: '20px 40px' }}>
+              <label htmlFor="verticalStretchExponentSlider">
+                Vertical Exponent: {verticleExponent.toFixed(2)}x
+              </label>
+              <input
+                id="verticalStretchExponentSlider"
+                type="range"
+                min="0.01"
+                max="20"
+                step="0.01"
+                value={verticleExponent}
+                onChange={(e) => setVerticleExponent(parseFloat(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+        </>
       )}
       <div ref={sketchRef} style={{ width: '100%' }}></div>
     </div>
