@@ -593,7 +593,14 @@ useEffect(() => {
       </div>
         
         { chromaCircle && (<ChromavectorCircleGraph chroma={audioAnalysis.chroma} isPlaying={isPlaying}/>)}
-        { spectralCentroidGraph && (<SpectralCentroidGraph spectralCentroid={audioAnalysis.spectralCentroid} isPlaying={isPlaying}/>)}
+        { spectralCentroidGraph && (
+          <SpectralCentroidGraph 
+            spectralCentroid={audioAnalysis.spectralCentroid} 
+            isPlaying={isPlaying}
+            sampleRate={audioAnalysis.sampleRate}
+            bufferSize={meydaBufferSize}
+          />
+        )}
         { chromaLine && (<ChromevectorLineGraph chroma={audioAnalysis.chroma} isPlaying={isPlaying}/>)}
         { rms && (<RMS rms={audioAnalysis.rms} isPlaying={isPlaying}/>)}
 

@@ -1,13 +1,20 @@
 import React, { useRef, useEffect } from 'react';
 
-export default function SpectralCentroidGraph({ spectralCentroid, isPlaying }) {
+export default function SpectralCentroidGraph({ spectralCentroid, isPlaying, sampleRate, bufferSize }) {
   const sketchRef = useRef();
   const p5InstanceRef = useRef(null);
   const spectralCentroidRef = useRef(spectralCentroid);
+  const sampleRateRef = useRef(sampleRate);
+  const bufferSizeRef = useRef(bufferSize);
 
   useEffect(() => {
-    spectralCentroidRef.current = spectralCentroid * 23.44;
+    spectralCentroidRef.current = spectralCentroid * sampleRateRef.current / bufferSizeRef.current;
   }, [spectralCentroid]);
+
+  useEffect(() => {
+    sampleRateRef.current = sampleRate;
+    bufferSizeRef.current = bufferSize;
+  }, [sampleRate, bufferSize]);
 
   useEffect(() => {
     const sketch = (p) => {
@@ -33,7 +40,6 @@ export default function SpectralCentroidGraph({ spectralCentroid, isPlaying }) {
 
         if (isPlaying && spectralCentroidRef.current) {
           history.push(spectralCentroidRef.current);
-
           if (history.length > 200) {
             history.shift();
           }
@@ -43,21 +49,18 @@ export default function SpectralCentroidGraph({ spectralCentroid, isPlaying }) {
         p.stroke(100, 100, 100);
         p.strokeWeight(2);
         p.beginShape();
+        
+        const minFrequency = 20;
+        const nyquist = sampleRateRef.current / 2;
+        const maxFrequency = nyquist;
+        const logMin = Math.log2(minFrequency);
+        const logMax = Math.log2(maxFrequency);
+
         for (let i = 0; i < history.length; i++) {
-          const x = p.map(
-            Math.log2(history[i]),
-            0,
-            Math.log2(16000),
-            0,
-            width
-          );
-          const y = p.map(
-            i,
-            0,
-            history.length - 1,
-            baseHeight,
-            0
-          );
+          const centroid = history[i];
+          const logCentroid = Math.log2(Math.max(centroid, minFrequency));
+          const x = p.map(logCentroid, logMin, logMax, 0, width);
+          const y = p.map(i, 0, history.length - 1, baseHeight, 0);
           p.vertex(x, y);
         }
         p.endShape();
@@ -67,11 +70,11 @@ export default function SpectralCentroidGraph({ spectralCentroid, isPlaying }) {
         p.textSize(16);
         p.textAlign(p.RIGHT, p.TOP);
         if (isPlaying) {
-            p.text(
+          p.text(
             `Spectral Centroid: ${spectralCentroidRef.current?.toFixed(2)} Hz`,
             width - 20,
             20
-            );
+          );
         }
       };
     };
@@ -79,10 +82,8 @@ export default function SpectralCentroidGraph({ spectralCentroid, isPlaying }) {
     p5InstanceRef.current = new window.p5(sketch);
 
     return () => {
-      if (p5InstanceRef.current) {
-        p5InstanceRef.current.remove();
-        p5InstanceRef.current = null;
-      }
+      p5InstanceRef.current?.remove();
+      p5InstanceRef.current = null;
     };
   }, [isPlaying]);
 
