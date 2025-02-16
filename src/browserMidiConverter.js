@@ -13,10 +13,10 @@ async function initializeModel() {
 }
 
 const SAMPLE_RATE = 22050;
-const HOP_LENGTH = 512;
+const HOP_LENGTH = 256;
 const FRAME_DURATION = HOP_LENGTH / SAMPLE_RATE;
 
-function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, minDurationSec, offsetSec = 0.5, scale = 0.5) {
+function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, minDurationSec) {
   const notes = [];
   const activeNotes = new Map();
 
@@ -31,8 +31,8 @@ function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, mi
 
       if (frameValue < frameThreshold && activeNotes.has(pitch)) {
         const startFrame = activeNotes.get(pitch);
-        const startSec = ((startFrame * FRAME_DURATION) * scale) + offsetSec;
-        const endSec = ((i * FRAME_DURATION) * scale) + offsetSec;
+        const startSec = (startFrame * FRAME_DURATION);
+        const endSec = (i * FRAME_DURATION);
         const durationSec = endSec - startSec;
 
         if (durationSec >= minDurationSec) {

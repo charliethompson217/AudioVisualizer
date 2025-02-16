@@ -11,7 +11,7 @@ export async function computeFileHash(file) {
   return CryptoJS.SHA256(wordArray).toString(CryptoJS.enc.Hex);
 }
 
-export function buildNotes(parsedMidi, offsetTime = 0.5) {
+export function buildNotes(parsedMidi) {
   const notes = [];
   const ticksPerBeat = parsedMidi.header.ticksPerBeat || 480;
   let microsecondsPerBeat = 500000;
@@ -25,7 +25,7 @@ export function buildNotes(parsedMidi, offsetTime = 0.5) {
         microsecondsPerBeat = event.microsecondsPerBeat;
       }
       const secondsPerTick = microsecondsPerBeat / 1000000 / ticksPerBeat;
-      const eventTimeSec = currentTime * secondsPerTick + offsetTime;
+      const eventTimeSec = currentTime * secondsPerTick;
       
       if (event.type === 'noteOn' && event.velocity > 0) {
         activeMap[event.noteNumber] = eventTimeSec;
