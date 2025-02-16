@@ -201,7 +201,7 @@ This command reads the package.json file and installs all listed dependencies in
 Start the application in development mode.
 
 ```
-npm start
+npm run dev
 ```
 
 This command starts the React development server. By default, it runs on http://localhost:3000
