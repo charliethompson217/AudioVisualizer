@@ -15,6 +15,11 @@ export function buildNotes(parsedMidi) {
   const notes = [];
   const ticksPerBeat = parsedMidi.header.ticksPerBeat || 480;
   let microsecondsPerBeat = 500000;
+
+  let offset = 0;
+  if (navigator.userAgent.includes("Safari")) {
+    offset = 0.5;
+  }
   
   parsedMidi.tracks.forEach((track) => {
     let currentTime = 0;
@@ -25,7 +30,7 @@ export function buildNotes(parsedMidi) {
         microsecondsPerBeat = event.microsecondsPerBeat;
       }
       const secondsPerTick = microsecondsPerBeat / 1000000 / ticksPerBeat;
-      const eventTimeSec = currentTime * secondsPerTick;
+      const eventTimeSec = currentTime * secondsPerTick + offset;
       
       if (event.type === 'noteOn' && event.velocity > 0) {
         activeMap[event.noteNumber] = eventTimeSec;

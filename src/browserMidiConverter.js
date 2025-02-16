@@ -20,6 +20,11 @@ function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, mi
   const notes = [];
   const activeNotes = new Map();
 
+  let offset = 0;
+  if (navigator.userAgent.includes("Safari")) {
+    offset = 0.4;
+  }
+
   for (let i = 0; i < frames.length; i++) {
     for (let pitch = 0; pitch < frames[i].length; pitch++) {
       const frameValue = frames[i][pitch];
@@ -31,8 +36,8 @@ function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, mi
 
       if (frameValue < frameThreshold && activeNotes.has(pitch)) {
         const startFrame = activeNotes.get(pitch);
-        const startSec = (startFrame * FRAME_DURATION);
-        const endSec = (i * FRAME_DURATION);
+        const startSec = (startFrame * FRAME_DURATION) + offset;
+        const endSec = (i * FRAME_DURATION) + offset;
         const durationSec = endSec - startSec;
 
         if (durationSec >= minDurationSec) {
