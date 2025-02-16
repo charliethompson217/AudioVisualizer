@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import SpectrographVisualizer from './SpectrographVisualizer';
+import SpectrographVisualizer from './SpectrographVisualizer.jsx';
 import './App.css';
-import KeyboardSVG from './KeyboardSVG';
-import Waveform from './WaveformVisualizer.js';
+import KeyboardSVG from './KeyboardSVG.jsx';
+import Waveform from './WaveformVisualizer.jsx';
 import { useAudioAnalysis } from './useAudioAnalysis.js';
-import PianoRoll from './PianoRoll.js';
-import RMS from './RMS';
-import ChromavectorCircleGraph from './ChromavectorCircleGraph.js';
-import ChromevectorLineGraph from './ChromevectorLineGraph.js';
-import { convertToMidiBrowser } from './browserMidiConverter';
-import { convertToMidiServer } from './serverMidiConverter';
-import SpectralCentroidGraph from './SpectralCentroidGraph.js';
+import PianoRoll from './PianoRoll.jsx';
+import RMS from './RMS.jsx';
+import ChromavectorCircleGraph from './ChromavectorCircleGraph.jsx';
+import ChromevectorLineGraph from './ChromevectorLineGraph.jsx';
+import { convertToMidiBrowser } from './browserMidiConverter.js';
+import { convertToMidiServer } from './serverMidiConverter.js';
+import SpectralCentroidGraph from './SpectralCentroidGraph.jsx';
 import { monomix, downsampleArray } from './audioBufferTools.js';
 
 export default function App() {

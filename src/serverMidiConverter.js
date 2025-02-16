@@ -51,6 +51,7 @@ export function buildNotes(parsedMidi) {
 }
 
 export async function convertToMidiServer(mp3File, progressCallback) {
+  console.log('Converting to MIDI');
   const hash = await computeFileHash(mp3File);
   const midiUrl = `https://song-upload-bucket.s3.amazonaws.com/converted/${hash}.mid`;
   let response = await fetch(midiUrl);
