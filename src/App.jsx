@@ -55,6 +55,42 @@ export default function App() {
   const [key, setKey] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const [songs, setSongs] = useState([]);
+  const [selectedSongFileName, setSelectedSongFileName] = useState('');
+  const [fetchingSong, setFetchingSong] = useState(false);
+
+  const S3_BASE_URL = 'https://audio-visualizer-zongs.s3.us-east-2.amazonaws.com';
+
+  useEffect(() => {
+    fetch('/songs.json')
+      .then(response => response.json())
+      .then(data => setSongs(data))
+      .catch(error => console.error('Error loading songs:', error));
+  }, []);
+
+  const handleSongSelect = async (e) => {
+    const selectedFileName = e.target.value;
+    const selectedSong = songs.find(song => song.fileName === selectedFileName);
+    if (!selectedSong) return;
+  
+    try {
+      setCurrentSongName(`${selectedSong.artist} - ${selectedSong.title}`);
+      setSelectedSongFileName(selectedFileName);
+      setFetchingSong(true);
+      const songUrl = `${S3_BASE_URL}/${(selectedSong.fileName.replace(' ', '+'))}`;
+      const response = await fetch(songUrl);
+      const blob = await response.blob();
+      const file = new File([blob], selectedSong.fileName, { type: 'audio/mp3' });
+      setFetchingSong(false);
+      
+      setMp3File(file);
+      setMidiFile(null);
+    } catch (error) {
+      console.error('Error loading song:', error);
+      setWarning('Failed to load song. Please try again.');
+    }
+  };
+
   async function initializeEssentia() {
     if (!window.EssentiaWASM) {
       await new Promise(resolve => {
@@ -348,6 +384,7 @@ useEffect(() => {
         setMidiFile(file);
         setMp3File(null);
         setPianoEnabled(true);
+        setSelectedSongFileName('');
       } else if (
         fileName.endsWith('.mp3') ||
         fileName.endsWith('.wav') ||
@@ -376,6 +413,23 @@ useEffect(() => {
         {/* Controls that cannot be adjusted during playback */}
         {!isPlaying && (
           <div>
+            {/* Song selection dropdown */}
+            <label>
+              Select Song:
+              <select 
+                value={selectedSongFileName}
+                onChange={handleSongSelect}
+                style={{ marginLeft: '10px' }}
+                className="song-select"
+              >
+                <option value="">Choose from library</option>
+                {songs.map(song => (
+                  <option key={song.fileName} value={song.fileName}>
+                    {song.title} by {song.artist}
+                  </option>
+                ))}
+              </select>
+            </label>
               {/* File input for uploading local audio files (mp3, wav, ogg, midi) */}
               <label>
                 mp3, wav, ogg, midi -
@@ -386,6 +440,10 @@ useEffect(() => {
                   onChange={handleFileUpload}
                 />
               </label>
+              {fetchingSong && <p>Loading song...</p>}
+              <p>
+                All music is from <a href='https://freemusicarchive.org'>Free Music Archive</a> under the Creative Commons liscence Attribution-NonCommercial-ShareAlike (CC BY-NC-SA).
+              </p>
               {/* visualization toggles */}
               {!isPlaying && (
                 <>
@@ -547,7 +605,7 @@ useEffect(() => {
           <button
             className="control-button"
             onClick={handleStartStop}
-            disabled={!conversionComplete && mp3File}
+            disabled={(!conversionComplete && mp3File) || fetchingSong}
           >
             {isPlaying ? 'Stop' : 'Play'}
           </button>
