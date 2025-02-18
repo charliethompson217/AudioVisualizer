@@ -64,7 +64,7 @@ export default function SpectrographVisualizer({
       window.innerHeight || 0
     );
     const canvasWidth = 0.99 * vw;
-    const canvasHeight = 0.95 * vh;
+    const canvasHeight = (vw/16)*10;
 
     const sketch = (p) => {
       let canvas;

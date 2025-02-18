@@ -125,7 +125,7 @@ export default function SpectralSpreadGraph({ spectralCentroid, spectralSpread, 
   return (
     <div>
       {isPlaying && <h2>Spectral Centroid + Spread Graph</h2>}
-      <div ref={sketchRef} style={{ width: '100%', height: '40vh' }}></div>
+      <div ref={sketchRef} style={{ width: '100%' }}></div>
     </div>
   );
 }

@@ -96,10 +96,6 @@ select {
 }
 h2{
   margin-left: 20px;
-  margin-top: 200px;
-}
-.synthesizer-settings h2{
-  margin-top: 10px;
 }
 
 .control-label, .instrument-label {
@@ -177,14 +173,6 @@ h2{
   text-align: center;
   align-items: center;
   justify-content: center;
-}
-
-.spectrograph {
-  margin-top: 100px;
-}
-
-.Visualizers-Container{
-  margin-top: 40px;
 }
 
 .Piano-Roll-Time-Scale{

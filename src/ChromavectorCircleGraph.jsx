@@ -62,7 +62,7 @@ export default function ChromavectorCircleGraph({chroma, isPlaying}) {
        {isPlaying && (
         <h2>Chroma Circle Graph</h2>
       )}
-      <div ref={sketchRef} style={{ width: '100%', height: '40vh' }}></div>
+      <div ref={sketchRef} style={{ width: '100%'}}></div>
     </div>
   );
 }

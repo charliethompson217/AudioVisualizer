@@ -30,7 +30,7 @@ export default function App() {
   const [showWaveform, setShowWaveform] = useState(true);
   const [showSpectrograph, setShowSpectrograph] = useState(true);
   const [chromaCircle, setChromaCircle] = useState(true);
-  const [chromaLine, setChromaLine] = useState(true);
+  const [chromaLine, setChromaLine] = useState(false);
   const [rms, setRms] = useState(true);
 
   const [currentSongName, setCurrentSongName] = useState('');
