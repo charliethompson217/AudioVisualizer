@@ -10,7 +10,7 @@ import ChromavectorCircleGraph from './ChromavectorCircleGraph.jsx';
 import ChromevectorLineGraph from './ChromevectorLineGraph.jsx';
 import { convertToMidiBrowser } from './browserMidiConverter.js';
 import { convertToMidiServer } from './serverMidiConverter.js';
-import SpectralCentroidGraph from './SpectralCentroidGraph.jsx';
+import SpectralSpreadGraph from './SpectralSpreadGraph.jsx';
 import { monomix, downsampleArray } from './audioBufferTools.js';
 
 export default function App() {
@@ -49,7 +49,7 @@ export default function App() {
   const [minDurationSec, setMinDurationSec] = useState(0.1);
   const [oscillatorType, setOscillatorType] = useState('custom');
   const [meydaBufferSize, setMeydaBufferSize] = useState(4096);
-  const [spectralCentroidGraph, setSpectralCentroidGraph] = useState(true);
+  const [spectralSpreadGraph, setSpectralSpreadGraph] = useState(true);
 
   const [bpm, setBpm] = useState(null);
   const [key, setKey] = useState(null);
@@ -553,12 +553,12 @@ useEffect(() => {
                     />
                   </label>
                   <label className="control-label">
-                    Spectral Centroid Graph
+                    Spectral Centroid + Spread Graph
                     <input
                       className="control-checkbox"
                       type="checkbox"
-                      checked={spectralCentroidGraph}
-                      onChange={() => setSpectralCentroidGraph(!spectralCentroidGraph)}
+                      checked={spectralSpreadGraph}
+                      onChange={() => setSpectralSpreadGraph(!spectralSpreadGraph)}
                     />
                   </label>
                 </>
@@ -651,9 +651,10 @@ useEffect(() => {
       </div>
         
         { chromaCircle && (<ChromavectorCircleGraph chroma={audioAnalysis.chroma} isPlaying={isPlaying}/>)}
-        { spectralCentroidGraph && (
-          <SpectralCentroidGraph 
+        { spectralSpreadGraph && (
+          <SpectralSpreadGraph 
             spectralCentroid={audioAnalysis.spectralCentroid} 
+            spectralSpread={audioAnalysis.spectralSpread}
             isPlaying={isPlaying}
             sampleRate={audioAnalysis.sampleRate}
             bufferSize={meydaBufferSize}

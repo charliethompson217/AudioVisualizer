@@ -45,6 +45,7 @@ export function useAudioAnalysis(
   const [rms, setRms] = useState(0);
   const timeoutsRef = useRef([]);
   const [spectralCentroid, setSpectralCentroid] = useState(0);
+  const [spectralSpread, setSpectralSpread] = useState(0);
 
   useEffect(() => {
     meydaBufferSizeRef.current = meydaBufferSize;
@@ -61,11 +62,12 @@ export function useAudioAnalysis(
         audioContext: audioContextRef.current,
         source: analyserRef.current,
         bufferSize: meydaBufferSizeRef.current,
-        featureExtractors: ['chroma', 'rms', 'spectralCentroid'],
+        featureExtractors: ['chroma', 'rms', 'spectralCentroid', 'spectralSpread'],
         callback: (features) => {
           setChroma(features.chroma || []);
           setRms(features.rms || 0);
           setSpectralCentroid(features.spectralCentroid || 0);
+          setSpectralSpread(features.spectralSpread || 0);
         },
       });
       meydaAnalyzerRef.current.start();
@@ -227,11 +229,12 @@ export function useAudioAnalysis(
         audioContext: audioContextRef.current,
         source: analyserRef.current,
         bufferSize: meydaBufferSizeRef.current,
-        featureExtractors: ['chroma', 'rms', 'spectralCentroid'],
+        featureExtractors: ['chroma', 'rms', 'spectralCentroid', 'spectralSpread'],
         callback: (features) => {
           setChroma(features.chroma || []);
           setRms(features.rms || 0);
           setSpectralCentroid(features.spectralCentroid || 0);
+          setSpectralSpread(features.spectralSpread || 0);
         },
       });
       meydaAnalyzerRef.current.start();
@@ -490,5 +493,6 @@ export function useAudioAnalysis(
     chroma,
     rms,
     spectralCentroid,
+    spectralSpread,
   };
 }
