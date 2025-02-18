@@ -16,9 +16,19 @@ export function buildNotes(parsedMidi) {
   const ticksPerBeat = parsedMidi.header.ticksPerBeat || 480;
   let microsecondsPerBeat = 500000;
 
+  function isSafari() {
+    let isSafariBrowser =  /^((?!chrome|android).)*safari/i.test(navigator.userAgent) &&
+           navigator.vendor === 'Apple Computer, Inc.' &&
+           !window.chrome;
+    return isSafariBrowser;
+  }
   let offset = 0;
-  if (navigator.userAgent.includes("Safari")) {
-    offset = 0.5;
+  try {
+    if (isSafari()) {
+      offset = 0.7;
+    }
+  } catch (e) { 
+    console.error(e);
   }
   
   parsedMidi.tracks.forEach((track) => {
@@ -51,7 +61,6 @@ export function buildNotes(parsedMidi) {
 }
 
 export async function convertToMidiServer(mp3File, progressCallback) {
-  console.log('Converting to MIDI');
   const hash = await computeFileHash(mp3File);
   const midiUrl = `https://song-upload-bucket.s3.amazonaws.com/converted/${hash}.mid`;
   let response = await fetch(midiUrl);

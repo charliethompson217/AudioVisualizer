@@ -20,9 +20,19 @@ function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, mi
   const notes = [];
   const activeNotes = new Map();
 
+  function isSafari() {
+    let isSafariBrowser =  /^((?!chrome|android).)*safari/i.test(navigator.userAgent) &&
+           navigator.vendor === 'Apple Computer, Inc.' &&
+           !window.chrome;
+    return isSafariBrowser;
+  }
   let offset = 0;
-  if (navigator.userAgent.includes("Safari")) {
-    offset = 0.4;
+  try {
+    if (isSafari()) {
+      offset = 0.7;
+    }
+  } catch (e) { 
+    console.error(e);
   }
 
   for (let i = 0; i < frames.length; i++) {
