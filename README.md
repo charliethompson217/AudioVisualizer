@@ -1,7 +1,7 @@
 # Audio Visualizer and Synthesizer Application
 
 This application provides advanced audio visualization and synthesis.  
-Check out the live demo at [AudioVisualizer.link](https://audiovisualizer.org)
+Check out the live demo at [AudioVisualizer.org](https://audiovisualizer.org)
 
 ## Table of Contents
 
