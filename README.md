@@ -1,7 +1,7 @@
 # Audio Visualizer and Synthesizer Application
 
 This application provides advanced audio visualization and synthesis.  
-Check out the live demo at [AudioVisualizer.link](https://audiovisualizer.link)
+Check out the live demo at [AudioVisualizer.link](https://audiovisualizer.org)
 
 ## Table of Contents
 
@@ -204,9 +204,9 @@ Start the application in development mode.
 npm run dev
 ```
 
-This command starts the React development server. By default, it runs on http://localhost:3000
+This command starts the React development server. By default, it runs on http://localhost:5173
 
-Note: If port 3000 is already in use, the terminal will prompt you to use another port (e.g., 3001).
+Note: If port 5173 is already in use, the terminal will prompt you to use another port (e.g., 3001).
 
 ## Usage
 
