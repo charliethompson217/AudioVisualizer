@@ -1,14 +1,69 @@
+<!--
+A free online tool to visualize audio files with spectrogram, waveform, MIDI conversion and more.
+Copyright (C) 2024 Charles Thompson
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+-->
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#000000" />
-    <title>Audio Visualizer</title>
+    <link rel="icon" href="/favicon.ico" />
+    <title>Audio Visualizer - Free Online Music Visualization Tool</title>
+    <link rel="canonical" href="https://audiovisualizer.org" />
+    <meta name="description" content="A free online tool to visualize audio files with spectrogram, waveform, MIDI conversion and more. Try it now!" />
+    <script type="application/ld+json">
+      {
+        "@context": "http://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Audio Visualizer",
+        "description": "A free online tool to visualize audio files with spectrogram, waveform, MIDI conversion and more.",
+        "applicationCategory": "Multimedia",
+        "operatingSystem": "Web",
+        "url": "https://audiovisualizer.org",
+        "license": "https://audiovisualizer.org/license.txt",
+        "author": {
+          "@type": "Person",
+          "name": "Charles Thompson"
+        },
+        "datePublished": "2024"
+      }
+    </script>
+    <!-- Open Graph -->
+    <meta property="og:title" content="Audio Visualizer" />
+    <meta property="og:description" content="A free online tool to visualize audio files with spectrogram, waveform, MIDI conversion and more." />
+    <meta property="og:image" content="https://audiovisualizer.org/preview.jpg" />
+    <meta property="og:url" content="https://audiovisualizer.org" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Audio Visualizer" />
+    <meta name="twitter:description" content="A free online tool to visualize audio files with spectrogram, waveform, MIDI conversion and more." />
+    <meta name="twitter:image" content="https://audiovisualizer.org/preview.jpg" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <h1>Audio Visualizer</h1>
+      <p>A free online tool to visualize audio files with spectrogram, waveform, MIDI conversion and more.</p>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
+  <footer>
+    Source code available at: <a href="https://github.com/charliethompson217/audiovisualizer">github.com/charliethompson217/audiovisualizer</a>
+  </footer>
 </html>
