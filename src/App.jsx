@@ -28,7 +28,6 @@ import RMS from './RMS.jsx';
 import ChromavectorCircleGraph from './ChromavectorCircleGraph.jsx';
 import ChromevectorLineGraph from './ChromevectorLineGraph.jsx';
 import { convertToMidiBrowser } from './browserMidiConverter.js';
-import { convertToMidiServer } from './serverMidiConverter.js';
 import SpectralSpreadGraph from './SpectralSpreadGraph.jsx';
 import { monomix, downsampleArray } from './audioBufferTools.js';
 
@@ -62,7 +61,6 @@ export default function App() {
   const [warning, setWarning] = useState(null);
   const [progress, setProgress] = useState(0);
   const [generateBrowserMIDI, setGenerateBrowserMIDI] = useState(true);
-  const [generateServerMIDI, setGenerateServerMIDI] = useState(false);
   const [onsetThreshold, setOnsetThreshold] = useState(0.3);
   const [frameThreshold, setFrameThreshold] = useState(0.3);
   const [minDurationSec, setMinDurationSec] = useState(0.1);
@@ -180,7 +178,7 @@ export default function App() {
 
 useEffect(() => {
   const convertMidi = async () => {
-    if (!mp3File || (!generateBrowserMIDI && !generateServerMIDI)) return;
+    if (!mp3File || (!generateBrowserMIDI)) return;
 
     setIsConverting(true);
     setConversionComplete(false);
@@ -196,8 +194,6 @@ useEffect(() => {
           frameThreshold,
           minDurationSec
         );
-      } else {
-        notes = await convertToMidiServer(mp3File, setProgress);
       }
       
       setMidiNotes(notes);
@@ -212,7 +208,7 @@ useEffect(() => {
   };
 
   convertMidi();
-}, [mp3File, generateBrowserMIDI, generateServerMIDI, 
+}, [mp3File, generateBrowserMIDI, 
    onsetThreshold, frameThreshold, minDurationSec]);
 
 
@@ -497,14 +493,13 @@ useEffect(() => {
                     </label>
                   )}
                   <label className="control-label">
-                    Generate MIDI directly in the browser
+                    Generate MIDI
                     <input
                       type="checkbox"
                       checked={generateBrowserMIDI}
                       onChange={(e) => {
                         const checked = e.target.checked;
                         setGenerateBrowserMIDI(checked);
-                        if (checked) setGenerateServerMIDI(false);
                       }}
                     />
                   </label>
@@ -532,18 +527,6 @@ useEffect(() => {
                       </label>
                     </>
                   )}
-                  <label className="control-label">
-                    Generate MIDI on the server side
-                    <input
-                      type="checkbox"
-                      checked={generateServerMIDI}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        setGenerateServerMIDI(checked);
-                        if (checked) setGenerateBrowserMIDI(false);
-                      }}
-                    />
-                  </label>
                   <label className="control-label">
                     Chroma Circle Graph
                     <input
