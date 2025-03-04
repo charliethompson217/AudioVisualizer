@@ -44,7 +44,7 @@ export default function App() {
   const [showLabels, setShowLabels] = useState(true);
   const [showScroll, setShowScroll] = useState(true);
   const [pianoEnabled, setPianoEnabled] = useState(true);
-
+  const [bpmAndKey, setBpmAndKey] = useState(true);
   const [showWaveform, setShowWaveform] = useState(true);
   const [showSpectrograph, setShowSpectrograph] = useState(true);
   const [chromaCircle, setChromaCircle] = useState(true);
@@ -127,7 +127,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!mp3File) return;
+    if (!mp3File || !bpmAndKey) return;
 
     const processAudio = async () => {
       try {
@@ -463,6 +463,15 @@ useEffect(() => {
               {!isPlaying && (
                 <>
                   <label className="control-label">
+                    BPM and Key
+                    <input
+                      className="control-checkbox"
+                      type="checkbox"
+                      checked={bpmAndKey}
+                      onChange={() => setBpmAndKey(!bpmAndKey)}
+                    />
+                  </label>
+                  <label className="control-label">
                     Waveform
                     <input
                       className="control-checkbox"
@@ -570,20 +579,22 @@ useEffect(() => {
 
         {/* Start/Stop and Use Mic buttons */}
         <div className="controls-row">
-        <label className="control-label">
-          Meyda Buffer Size
-          <select
-            value={meydaBufferSize}
-            onChange={(e) => setMeydaBufferSize(parseInt(e.target.value, 10))}
-            style={{paddingLeft: '5px', paddingRight: '5px'}}
-          >
-            {[512, 1024, 2048, 4096, 8192, 16384].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-        </label>
+          {isPlaying && (
+            <label className="control-label">
+              Meyda Buffer Size
+              <select
+                value={meydaBufferSize}
+                onChange={(e) => setMeydaBufferSize(parseInt(e.target.value, 10))}
+                style={{paddingLeft: '5px', paddingRight: '5px'}}
+              >
+                {[512, 1024, 2048, 4096, 8192, 16384].map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           {!isPlaying && (
             <button
               className="control-button"
