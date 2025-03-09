@@ -30,6 +30,7 @@ import ChromevectorLineGraph from './ChromevectorLineGraph.jsx';
 import { convertToMidiBrowser } from './browserMidiConverter.js';
 import SpectralSpreadGraph from './SpectralSpreadGraph.jsx';
 import { monomix, downsampleArray } from './audioBufferTools.js';
+import WaterfallSpectrograph from './WaterfallSpectrograph';
 
 export default function App() {
   // React state hooks to manage various input parameters and settings for the audio visualization
@@ -47,6 +48,7 @@ export default function App() {
   const [bpmAndKey, setBpmAndKey] = useState(true);
   const [showWaveform, setShowWaveform] = useState(true);
   const [showSpectrograph, setShowSpectrograph] = useState(true);
+  const [showWaterfallSpectrograph, setShowWaterfallSpectrograph] = useState(false);
   const [chromaCircle, setChromaCircle] = useState(true);
   const [chromaLine, setChromaLine] = useState(false);
   const [rms, setRms] = useState(true);
@@ -481,12 +483,21 @@ useEffect(() => {
                     />
                   </label>
                   <label className="control-label">
-                    Spectrograph
+                    Bar graph Spectrograph
                     <input
                       className="control-checkbox"
                       type="checkbox"
                       checked={showSpectrograph}
                       onChange={() => setShowSpectrograph(!showSpectrograph)}
+                    />
+                  </label>
+                  <label className="control-label">
+                    Waterfall Spectrograph
+                    <input
+                      className="control-checkbox"
+                      type="checkbox"
+                      checked={showWaterfallSpectrograph}
+                      onChange={() => setShowWaterfallSpectrograph(!showWaterfallSpectrograph)}
                     />
                   </label>
                   {/* Checkbox input to enable piano keyboard input */}
@@ -679,10 +690,9 @@ useEffect(() => {
       {/* Render the visualization component when audio is playing */}
       {isPlaying && (
         <div className='Visualizers-Container'>
-          {showSpectrograph && (
+          {(showSpectrograph || showWaterfallSpectrograph) && (
             <>
               <>
-              <h2>Spectrograph</h2>
                 <div className="controls-row has-border">
                   {/* Select input for FFT bin size */}
                     <label className="control-label">
@@ -782,11 +792,20 @@ useEffect(() => {
                     </label>
                 </div>
               </>
-              <SpectrographVisualizer
-                showLabels={showLabels}
-                showScroll={showScroll}
-                audioAnalysis={audioAnalysis}
-              />
+              {showSpectrograph && (
+                <SpectrographVisualizer
+                  showLabels={showLabels}
+                  showScroll={showScroll}
+                  audioAnalysis={audioAnalysis}
+                />
+              )}
+              {showWaterfallSpectrograph && (
+                <WaterfallSpectrograph
+                  showLabels={showLabels}
+                  showScroll={showScroll}
+                  audioAnalysis={audioAnalysis}
+                />
+              )}
             </>
           )}
           {/* Harmonic amplitude sliders */}

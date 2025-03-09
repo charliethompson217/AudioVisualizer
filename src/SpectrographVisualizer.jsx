@@ -82,7 +82,7 @@ export default function SpectrographVisualizer({
       window.innerHeight || 0
     );
     const canvasWidth = 0.99 * vw;
-    const canvasHeight = (vw/16)*10;
+    const canvasHeight = Math.min((vw/16)*10, vh);
 
     const sketch = (p) => {
       let canvas;
@@ -243,6 +243,7 @@ export default function SpectrographVisualizer({
 
   return (
     <div>
+      <h2>Bar Graph Spectrograph</h2>
       {/* Sliders */}
       <div className="has-border" style={{width: '90%'}}>
       <div style={{ margin: '20px 40px' }}>
