@@ -163,8 +163,7 @@ export default function SpectrographVisualizer({
           const x = logScale(freq);
           const normalizedEnergy = p.map(Math.pow(energy, lengthPowerRef.current), 0, Math.pow(255, lengthPowerRef.current), 0, middle);
 
-          p.line(x, middle, x, middle - normalizedEnergy);
-          p.line(x, middle, x, middle + normalizedEnergy);
+          p.line(x, middle - normalizedEnergy, x, middle + normalizedEnergy);
         }
 
         // Draw note labels
