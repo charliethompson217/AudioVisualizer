@@ -23,6 +23,7 @@ export default function SpectrographVisualizer({
   showScroll,
   brightnessPower = 1,
   audioAnalysis,
+  noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330]
 }) {
   const sketchRef = useRef();
   const { analyser } = audioAnalysis;
@@ -119,7 +120,6 @@ export default function SpectrographVisualizer({
 
         const noteFrequencies = [];
         const baseNotes = ["C", "C#", "D",  "D#",  "E",  "F",  "F#",  "G",  "G#",  "A", "A#", "B"];
-        const noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
 
         // Generate note frequencies up to maxSemitone
         const maxSemitoneValue = Math.log2(maxFreq / f0) * 12;
@@ -238,7 +238,7 @@ export default function SpectrographVisualizer({
         p5InstanceRef.current = null;
       }
     };
-  }, [analyser, windowSize]);
+  }, [analyser, windowSize, noteHues]);
 
   return (
     <div>

@@ -18,21 +18,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React from 'react';
 
-const KeyboardSVG = () => {
+const KeyboardSVG = ({ noteHues }) => {
   // Define the keys that need to be colored and their corresponding HSL hues
   const coloredKeys = {
-    'z': 0,
-    's': 25,
-    'x': 45,
-    'd': 75,
-    'c': 110,
-    'v': 166,
-    'g': 190,
-    'b': 210,
-    'h': 240,
-    'n': 270,
-    'j': 300,
-    'm': 330,
+    'z': noteHues[0],
+    's': noteHues[1],
+    'x': noteHues[2],
+    'd': noteHues[3],
+    'c': noteHues[4],
+    'v': noteHues[5],
+    'g': noteHues[6],
+    'b': noteHues[7],
+    'h': noteHues[8],
+    'n': noteHues[9],
+    'j': noteHues[10],
+    'm': noteHues[11],
   };
 
   // All keys you want to display

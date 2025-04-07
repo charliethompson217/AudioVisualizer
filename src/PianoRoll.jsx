@@ -19,9 +19,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 import React, { useEffect, useRef, useState } from 'react';
 
 const baseNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-const noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
 
-export default function PianoRoll({ notes, isPlaying }) {
+export default function PianoRoll({
+  notes,
+  isPlaying,
+  noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330]
+}) {
   const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
   const rollHeight = screenHeight * 2;
   const noteRange = 108 - 12;
@@ -108,7 +111,7 @@ export default function PianoRoll({ notes, isPlaying }) {
         p5InstanceRef.current = null;
       }
     };
-  }, [notes, isPlaying]);
+  }, [notes, isPlaying, noteHues]);
 
   return (
     <div ref={containerRef} style={{ width: '100%', overflow: 'auto' }}>

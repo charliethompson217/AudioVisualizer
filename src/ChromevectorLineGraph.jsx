@@ -18,7 +18,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React, { useRef, useEffect, useState } from 'react';
 
-export default function ChromevectorLineGraph({ chroma, isPlaying }) {
+export default function ChromevectorLineGraph({
+  chroma,
+  isPlaying,
+  noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330]
+}) {
   const sketchRef = useRef();
   const p5InstanceRef = useRef(null);
   const [history, setHistory] = useState([]);
@@ -107,7 +111,6 @@ export default function ChromevectorLineGraph({ chroma, isPlaying }) {
         const currentVerticalStretchFactor = verticalStretchFactorRef.current;
 
         p.background(0);
-        const noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
         const currentHistory = historyRef.current;
 
         p.push();
@@ -149,7 +152,7 @@ export default function ChromevectorLineGraph({ chroma, isPlaying }) {
         p5InstanceRef.current = null;
       }
     };
-  }, [windowSize]);
+  }, [windowSize, noteHues]);
 
   return (
     <div>

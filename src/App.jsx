@@ -31,9 +31,14 @@ import { convertToMidiBrowser } from './browserMidiConverter.js';
 import SpectralSpreadGraph from './SpectralSpreadGraph.jsx';
 import { monomix, downsampleArray } from './audioBufferTools.js';
 import WaterfallSpectrograph from './WaterfallSpectrograph';
+import ColorSettingsModal from './ColorSettingsModal.jsx';
+import Cookies from 'js-cookie';
 
 export default function App() {
+  const defaultNoteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
   // React state hooks to manage various input parameters and settings for the audio visualization
+  const [noteHues, setNoteHues]= useState(defaultNoteHues);
+  const [showColorSettings, setShowColorSettings] = useState(false);
   const [mp3File, setMp3File] = useState(null);
   const [midiFile, setMidiFile] = useState(null);
   const [useMic, setUseMic] = useState(false);
@@ -413,6 +418,21 @@ useEffect(() => {
     }
   }
 
+  useEffect(() => {
+    const COOKIE_NAME = 'note-hues-settings';
+    const savedHues = Cookies.get(COOKIE_NAME);
+    if (savedHues) {
+      try {
+        const parsedHues = JSON.parse(savedHues);
+        if (Array.isArray(parsedHues) && parsedHues.length === 12) {
+          setNoteHues(parsedHues);
+        }
+      } catch (error) {
+        console.error('Error parsing saved color settings:', error);
+      }
+    }
+  }, []);
+
   // Render the main UI for the app
   return (
     <div className="App">
@@ -430,6 +450,15 @@ useEffect(() => {
         {/* Controls that cannot be adjusted during playback */}
         {!isPlaying && (
           <div>
+            {showColorSettings && (
+              <ColorSettingsModal 
+                noteHues={noteHues}
+                setNoteHues={setNoteHues}
+                setShowColorSettings={setShowColorSettings}
+                defaultNoteHues={defaultNoteHues}
+              />
+            )}
+
             {/* Song selection dropdown */}
             <label>
               Select Song:
@@ -585,6 +614,12 @@ useEffect(() => {
                   </label>
                 </>
               )}
+              <button 
+                className="control-button"
+                onClick={() => setShowColorSettings(true)}
+              >
+                Color Settings
+              </button>
             </div>
         )}
 
@@ -669,12 +704,12 @@ useEffect(() => {
         {/* Only show keyboard when piano is enabled */}
         {pianoEnabled && (
           <div className="keyboard-container">
-            <KeyboardSVG />
+            <KeyboardSVG noteHues={noteHues} />
           </div>
         )}
       </div>
         
-        { chromaCircle && (<ChromavectorCircleGraph chroma={audioAnalysis.chroma} isPlaying={isPlaying}/>)}
+        { chromaCircle && (<ChromavectorCircleGraph chroma={audioAnalysis.chroma} isPlaying={isPlaying} noteHues={noteHues}/>)}
         { spectralSpreadGraph && (
           <SpectralSpreadGraph 
             spectralCentroid={audioAnalysis.spectralCentroid} 
@@ -684,7 +719,7 @@ useEffect(() => {
             bufferSize={meydaBufferSize}
           />
         )}
-        { chromaLine && (<ChromevectorLineGraph chroma={audioAnalysis.chroma} isPlaying={isPlaying}/>)}
+        { chromaLine && (<ChromevectorLineGraph chroma={audioAnalysis.chroma} isPlaying={isPlaying} noteHues={noteHues}/>)}
         { rms && (<RMS rms={audioAnalysis.rms} isPlaying={isPlaying}/>)}
 
       {/* Render the visualization component when audio is playing */}
@@ -797,6 +832,7 @@ useEffect(() => {
                   showLabels={showLabels}
                   showScroll={showScroll}
                   audioAnalysis={audioAnalysis}
+                  noteHues={noteHues}
                 />
               )}
               {showWaterfallSpectrograph && (
@@ -804,6 +840,7 @@ useEffect(() => {
                   showLabels={showLabels}
                   showScroll={showScroll}
                   audioAnalysis={audioAnalysis}
+                  noteHues={noteHues}
                 />
               )}
             </>
@@ -1014,12 +1051,14 @@ useEffect(() => {
             <PianoRoll
               notes={audioAnalysis.midiNotes}
               isPlaying={isPlaying}
+              noteHues={noteHues}
             />
           )}
           {midiNotes && (
             <PianoRoll
               notes={midiNotes}
               isPlaying={isPlaying}
+              noteHues={noteHues}
             />
           )}
         </div>

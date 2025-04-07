@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 import React, { useRef, useEffect, useState } from 'react';
 
 export default function WaterfallSpectrograph({
-  audioAnalysis,
+  audioAnalysis, noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330]
 }) {
   const sketchRef = useRef();
   const { analyser } = audioAnalysis;
@@ -82,8 +82,7 @@ export default function WaterfallSpectrograph({
         const sampleRate = analyser.context.sampleRate;
         const minSemitoneValue = 12;
         const maxSemitoneValue = 108;
-        const noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
-
+        
         buffer.loadPixels();
         const pixels = buffer.pixels;
 
@@ -141,7 +140,7 @@ export default function WaterfallSpectrograph({
         p5InstanceRef.current = null;
       }
     };
-  }, [analyser, windowSize]);
+  }, [analyser, windowSize, noteHues]);
 
   return (
     <div>

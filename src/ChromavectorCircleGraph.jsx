@@ -18,7 +18,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React, { useRef, useEffect, useState } from 'react';
 
-export default function ChromavectorCircleGraph({chroma, isPlaying}) {
+export default function ChromavectorCircleGraph({
+  chroma,
+  isPlaying,
+  noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330]
+}) {
   const sketchRef = useRef();
   const p5InstanceRef = useRef(null);
 
@@ -52,7 +56,6 @@ export default function ChromavectorCircleGraph({chroma, isPlaying}) {
       p.draw = () => {
         p.background(0);
         p.translate(width / 2, baseHeight / 2);
-        const noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
         const sliceAngle = p.TWO_PI / 12;
         const maxRadius = baseHeight / 2;
         chromaRef.current.forEach((value, i) => {
@@ -73,7 +76,7 @@ export default function ChromavectorCircleGraph({chroma, isPlaying}) {
         p5InstanceRef.current = null;
       }
     };
-  }, []);
+  }, [noteHues]);
 
   return (
     <div >
