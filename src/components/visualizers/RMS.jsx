@@ -18,22 +18,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React, { useRef, useEffect, useState } from 'react';
 
-export default function ChromavectorCircleGraph({
-  chroma,
-  isPlaying,
-  noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330]
-}) {
+export default function RMS({ rms, isPlaying }) {
   const sketchRef = useRef();
   const p5InstanceRef = useRef(null);
-
-  const chromaRef = useRef(chroma);
+  const [history, setHistory] = useState([]);
+  const historyRef = useRef([]);
 
   useEffect(() => {
-    chromaRef.current = chroma;
-  }, [chroma]);
-  
-  useEffect(() => {
+    historyRef.current = history;
+  }, [history]);
 
+  useEffect(() => {
+    if (typeof rms === 'number') {
+      setHistory((prev) => {
+        let newHistory = [...prev, rms];
+        if (newHistory.length > 100) {
+          newHistory.shift();
+        }
+        if (rms == 0) {
+          newHistory = new Array(100).fill(0);
+        }
+        return newHistory;
+      });
+    }
+  }, [rms]);
+
+  useEffect(() => {
     const sketch = (p) => {
       let canvas;
       let width;
@@ -45,7 +55,6 @@ export default function ChromavectorCircleGraph({
         canvas.parent(sketchRef.current);
         p.pixelDensity(window.devicePixelRatio || 1);
         p.frameRate(120);
-        p.colorMode(p.HSB, 360, 100, 100);
       };
 
       p.windowResized = () => {
@@ -55,16 +64,27 @@ export default function ChromavectorCircleGraph({
 
       p.draw = () => {
         p.background(0);
-        p.translate(width / 2, baseHeight / 2);
-        const sliceAngle = p.TWO_PI / 12;
-        const maxRadius = baseHeight / 2;
-        chromaRef.current.forEach((value, i) => {
-          const radius = maxRadius * (value * value);
-          const startAngle = i * sliceAngle;
-          p.fill(noteHues[i], 100, 100);
-          p.noStroke();
-          p.arc(0, 0, radius * 2, radius * 2, startAngle, startAngle + sliceAngle, p.PIE);
+        const currentHistory = historyRef.current;
+
+        if (currentHistory.length === 0) return;
+
+        p.stroke(100, 100, 100);
+        p.strokeWeight(2);
+        p.noFill();
+        p.beginShape();
+
+        currentHistory.forEach((value, i) => {
+          let x;
+          if (currentHistory.length === 1) {
+            x = width;
+          } else {
+            x = (i / (currentHistory.length - 1)) * width;
+          }
+          const y = baseHeight - value * baseHeight;
+          p.vertex(x, y);
         });
+
+        p.endShape();
       };
     };
 
@@ -76,14 +96,12 @@ export default function ChromavectorCircleGraph({
         p5InstanceRef.current = null;
       }
     };
-  }, [noteHues]);
+  }, []);
 
   return (
-    <div >
-       {isPlaying && (
-        <h2>Chroma Circle Graph</h2>
-      )}
-      <div ref={sketchRef} style={{ width: '100%'}}></div>
+    <div>
+      {isPlaying && <h2>Root Mean Square (RMS)</h2>}
+      <div ref={sketchRef} style={{ width: '100%' }}></div>
     </div>
   );
 }

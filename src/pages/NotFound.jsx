@@ -17,26 +17,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 import React from 'react';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom';
-import CoreApp from './CoreApp';
-import About from './pages/About';
-import NotFound from './pages/NotFound';
+import { Link } from 'react-router-dom';
 
-export default function App() {
+export default function NotFound() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<CoreApp />} />
-        <Route path="/home" element={<CoreApp />} />
-        <Route path="/coreapp" element={<CoreApp />} />
-        <Route path="/about" element={<About />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <div
+      style={{
+        padding: '20px',
+        maxWidth: '600px',
+        margin: '100px auto',
+        textAlign: 'center',
+      }}
+    >
+      <h1>404 - Page Not Found</h1>
+      <p>The page you are looking for doesn't exist or has been moved.</p>
+      <div style={{ marginTop: '30px' }}>
+        <Link
+          to="/"
+          style={{
+            color: '#0077cc',
+            textDecoration: 'none',
+            padding: '10px 20px',
+            background: '#f2f2f2',
+            borderRadius: '4px',
+          }}
+        >
+          Return to Home
+        </Link>
+      </div>
+    </div>
   );
 }

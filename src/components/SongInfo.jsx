@@ -17,26 +17,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 import React from 'react';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom';
-import CoreApp from './CoreApp';
-import About from './pages/About';
-import NotFound from './pages/NotFound';
 
-export default function App() {
+export default function SongInfo({
+  currentSongName,
+  isProcessing,
+  bpm,
+  scaleKey,
+}) {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<CoreApp />} />
-        <Route path="/home" element={<CoreApp />} />
-        <Route path="/coreapp" element={<CoreApp />} />
-        <Route path="/about" element={<About />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <div className="SongTitle">
+      {currentSongName && <h1 style={{ color: 'white' }}>{currentSongName}</h1>}
+      {isProcessing && <p>Analyzing audio...</p>}
+      {!isProcessing && bpm && scaleKey && (
+        <div className="audio-info">
+          <p>BPM: {Math.round(bpm)}</p>
+          <p>Key: {scaleKey}</p>
+        </div>
+      )}
+    </div>
   );
 }

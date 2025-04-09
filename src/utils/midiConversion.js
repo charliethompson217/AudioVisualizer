@@ -34,14 +34,22 @@ const SAMPLE_RATE = 22050;
 const HOP_LENGTH = 256;
 const FRAME_DURATION = HOP_LENGTH / SAMPLE_RATE;
 
-function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, minDurationSec) {
+function buildNotes(
+  frames,
+  onsets,
+  contours,
+  onsetThreshold,
+  frameThreshold,
+  minDurationSec
+) {
   const notes = [];
   const activeNotes = new Map();
 
   function isSafari() {
-    let isSafariBrowser =  /^((?!chrome|android).)*safari/i.test(navigator.userAgent) &&
-           navigator.vendor === 'Apple Computer, Inc.' &&
-           !window.chrome;
+    let isSafariBrowser =
+      /^((?!chrome|android).)*safari/i.test(navigator.userAgent) &&
+      navigator.vendor === 'Apple Computer, Inc.' &&
+      !window.chrome;
     return isSafariBrowser;
   }
   let offset = 0;
@@ -49,7 +57,7 @@ function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, mi
     if (isSafari()) {
       offset = 0.7;
     }
-  } catch (e) { 
+  } catch (e) {
     console.error(e);
   }
 
@@ -64,8 +72,8 @@ function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, mi
 
       if (frameValue < frameThreshold && activeNotes.has(pitch)) {
         const startFrame = activeNotes.get(pitch);
-        const startSec = (startFrame * FRAME_DURATION) + offset;
-        const endSec = (i * FRAME_DURATION) + offset;
+        const startSec = startFrame * FRAME_DURATION + offset;
+        const endSec = i * FRAME_DURATION + offset;
         const durationSec = endSec - startSec;
 
         if (durationSec >= minDurationSec) {
@@ -85,7 +93,7 @@ function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, mi
     const startSec = startFrame * FRAME_DURATION;
     const endSec = frames.length * FRAME_DURATION;
     const durationSec = endSec - startSec;
-    
+
     if (durationSec >= minDurationSec) {
       notes.push({
         noteNumber: pitch + 21,
@@ -100,7 +108,9 @@ function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, mi
 
 async function resampleAudio(audioBuffer, targetSampleRate = 22050) {
   const sourceSampleRate = audioBuffer.sampleRate;
-  const length = Math.round(audioBuffer.length * (targetSampleRate / sourceSampleRate));
+  const length = Math.round(
+    audioBuffer.length * (targetSampleRate / sourceSampleRate)
+  );
   const offlineContext = new OfflineAudioContext(1, length, targetSampleRate);
   const bufferSource = offlineContext.createBufferSource();
   bufferSource.buffer = audioBuffer;
@@ -125,14 +135,20 @@ function convertToMono(audioBuffer) {
   return monoBuffer;
 }
 
-export async function convertToMidiBrowser(mp3File, progressCallback, onsetThreshold, frameThreshold, minDurationSec) {
+export async function convertAudioToMidi(
+  mp3File,
+  progressCallback,
+  onsetThreshold,
+  frameThreshold,
+  minDurationSec
+) {
   await initializeModel();
   const arrayBuffer = await mp3File.arrayBuffer();
   const audioContext = new AudioContext();
   const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
   const monoBuffer = convertToMono(audioBuffer);
   const resampledBuffer = await resampleAudio(monoBuffer);
-  
+
   if (resampledBuffer.sampleRate !== SAMPLE_RATE) {
     throw new Error(`Resampled to wrong rate: ${resampledBuffer.sampleRate}Hz`);
   }
@@ -140,7 +156,7 @@ export async function convertToMidiBrowser(mp3File, progressCallback, onsetThres
   const frames = [];
   const onsets = [];
   const contours = [];
-  
+
   await basicPitchModel.evaluateModel(
     resampledBuffer,
     (f, o, c) => {
@@ -151,5 +167,12 @@ export async function convertToMidiBrowser(mp3File, progressCallback, onsetThres
     (p) => progressCallback(p * 100)
   );
 
-  return buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, minDurationSec);
+  return buildNotes(
+    frames,
+    onsets,
+    contours,
+    onsetThreshold,
+    frameThreshold,
+    minDurationSec
+  );
 }

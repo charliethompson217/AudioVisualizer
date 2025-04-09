@@ -1,0 +1,13 @@
+.vscode
+.gitignore
+.git
+.DS_Store
+LICENSE
+README.md
+package-lock.json
+package.json
+node_modules
+dist
+build
+public
+amplify

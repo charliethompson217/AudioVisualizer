@@ -17,26 +17,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 import React from 'react';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom';
-import CoreApp from './CoreApp';
-import About from './pages/About';
-import NotFound from './pages/NotFound';
+import { Link } from 'react-router-dom';
 
-export default function App() {
+export default function About() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<CoreApp />} />
-        <Route path="/home" element={<CoreApp />} />
-        <Route path="/coreapp" element={<CoreApp />} />
-        <Route path="/about" element={<About />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+      <h1>About Audio Visualizer</h1>
+      <p></p>
+      <div style={{ marginTop: '20px' }}>
+        <Link to="/" style={{ color: '#0077cc', textDecoration: 'none' }}>
+          Back to Home
+        </Link>
+      </div>
+      <p>
+        Source code available at:{' '}
+        <a href="https://github.com/charliethompson217/audiovisualizer">
+          github.com/charliethompson217/audiovisualizer
+        </a>
+      </p>
+    </div>
   );
 }

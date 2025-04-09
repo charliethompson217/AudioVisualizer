@@ -18,15 +18,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React, { useRef, useEffect, useState } from 'react';
 
-export default function SpectrographVisualizer({
+export default function BarGraphSpectrograph({
   showLabels,
   showScroll,
   brightnessPower = 1,
-  audioAnalysis,
-  noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330]
+  audio,
+  noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330],
 }) {
   const sketchRef = useRef();
-  const { analyser } = audioAnalysis;
+  const { analyser } = audio;
   const p5InstanceRef = useRef(null);
 
   // State hooks for slider values
@@ -42,14 +42,6 @@ export default function SpectrographVisualizer({
 
   const showLabelsRef = useRef(showLabels);
   const showScrollRef = useRef(showScroll);
-
-  const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
-
-  useEffect(() => {
-    const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // Update refs when slider values change
   useEffect(() => {
@@ -74,33 +66,62 @@ export default function SpectrographVisualizer({
   useEffect(() => {
     if (!analyser) return;
 
-    let vw = Math.min(
-      document.documentElement.clientWidth || 0,
-      window.innerWidth || 0
-    );
-    let vh = Math.min(
-      document.documentElement.clientHeight || 0,
-      window.innerHeight || 0
-    );
-    const canvasWidth = 0.99 * vw;
-    const canvasHeight = Math.min((vw/16)*10, vh);
-
     const sketch = (p) => {
       let canvas;
       const f0 = 8.1758; // Frequency of C-1 in Hz
 
+      const updateCanvasSize = () => {
+        let vw = Math.min(
+          document.documentElement.clientWidth || 0,
+          window.innerWidth || 0
+        );
+        let vh = Math.min(
+          document.documentElement.clientHeight || 0,
+          window.innerHeight || 0
+        );
+        const canvasWidth = 0.99 * vw;
+        const canvasHeight = Math.min((vw / 16) * 10, vh);
+        p.resizeCanvas(canvasWidth, canvasHeight);
+      };
+
       p.setup = () => {
         p.pixelDensity(3);
+        let vw = Math.min(
+          document.documentElement.clientWidth || 0,
+          window.innerWidth || 0
+        );
+        let vh = Math.min(
+          document.documentElement.clientHeight || 0,
+          window.innerHeight || 0
+        );
+        const canvasWidth = 0.99 * vw;
+        const canvasHeight = Math.min((vw / 16) * 10, vh);
         canvas = p.createCanvas(canvasWidth, canvasHeight);
         canvas.parent(sketchRef.current);
+
+        p.windowResized = updateCanvasSize;
       };
 
       const getNoteName = (semitone) => {
-        const baseNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const baseNotes = [
+          'C',
+          'C#',
+          'D',
+          'D#',
+          'E',
+          'F',
+          'F#',
+          'G',
+          'G#',
+          'A',
+          'A#',
+          'B',
+        ];
         const octave = Math.floor(semitone / 12) - 1;
         const noteIndex = Math.floor(semitone % 12);
         const noteName = baseNotes[noteIndex];
-        const halfSemitone = semitone % 1 === 0.5 ? " plus half a semitone" : "";
+        const halfSemitone =
+          semitone % 1 === 0.5 ? ' plus half a semitone' : '';
         return `${noteName}${octave}${halfSemitone}`;
       };
 
@@ -115,11 +136,23 @@ export default function SpectrographVisualizer({
         const minFreq = f0 * Math.pow(2, minSemitoneRef.current / 12);
         const maxFreq = f0 * Math.pow(2, maxSemitoneRef.current / 12);
 
-        // Update computations that depend on minFreq and maxFreq
         const middle = p.height / 2;
 
         const noteFrequencies = [];
-        const baseNotes = ["C", "C#", "D",  "D#",  "E",  "F",  "F#",  "G",  "G#",  "A", "A#", "B"];
+        const baseNotes = [
+          'C',
+          'C#',
+          'D',
+          'D#',
+          'E',
+          'F',
+          'F#',
+          'G',
+          'G#',
+          'A',
+          'A#',
+          'B',
+        ];
 
         // Generate note frequencies up to maxSemitone
         const maxSemitoneValue = Math.log2(maxFreq / f0) * 12;
@@ -132,7 +165,13 @@ export default function SpectrographVisualizer({
           const minSemitoneValue = Math.log2(minFreq / f0) * 12;
           const maxSemitoneValue = Math.log2(maxFreq / f0) * 12;
           const freqSemitone = Math.log2(freq / f0) * 12;
-          return p.map(freqSemitone, minSemitoneValue, maxSemitoneValue, 0, p.width);
+          return p.map(
+            freqSemitone,
+            minSemitoneValue,
+            maxSemitoneValue,
+            0,
+            p.width
+          );
         };
 
         // Draw frequency spectrum
@@ -154,14 +193,34 @@ export default function SpectrographVisualizer({
           }
 
           const hue = noteHues[closestNoteIndex % 12];
-          const lightness = p.map(Math.pow(energy, brightnessRef.current), 0, Math.pow(255, brightnessRef.current), 0, 50);
-          const alpha = p.map(Math.pow(energy, brightnessRef.current), 0, Math.pow(255, brightnessRef.current), 0, 255);
+          const lightness = p.map(
+            Math.pow(energy, brightnessRef.current),
+            0,
+            Math.pow(255, brightnessRef.current),
+            0,
+            50
+          );
+          const alpha = p.map(
+            Math.pow(energy, brightnessRef.current),
+            0,
+            Math.pow(255, brightnessRef.current),
+            0,
+            255
+          );
 
-          p.stroke(p.color(`hsla(${hue}, 100%, ${lightness}%, ${alpha / 255})`));
+          p.stroke(
+            p.color(`hsla(${hue}, 100%, ${lightness}%, ${alpha / 255})`)
+          );
           p.strokeWeight(1);
 
           const x = logScale(freq);
-          const normalizedEnergy = p.map(Math.pow(energy, lengthPowerRef.current), 0, Math.pow(255, lengthPowerRef.current), 0, middle);
+          const normalizedEnergy = p.map(
+            Math.pow(energy, lengthPowerRef.current),
+            0,
+            Math.pow(255, lengthPowerRef.current),
+            0,
+            middle
+          );
 
           p.line(x, middle - normalizedEnergy, x, middle + normalizedEnergy);
         }
@@ -193,7 +252,13 @@ export default function SpectrographVisualizer({
 
             const minSemitone = Math.log2(minFreq / f0) * 12;
             const maxSemitone = Math.log2(maxFreq / f0) * 12;
-            const mouseSemitone = p.map(p.mouseX, 0, p.width, minSemitone, maxSemitone);
+            const mouseSemitone = p.map(
+              p.mouseX,
+              0,
+              p.width,
+              minSemitone,
+              maxSemitone
+            );
             const freq = f0 * Math.pow(2, mouseSemitone / 12);
 
             // Find the closest note
@@ -223,10 +288,26 @@ export default function SpectrographVisualizer({
         p.noStroke();
         p.fill(255);
         p.textAlign(p.LEFT, p.BOTTOM);
-        p.text(`Min Freq: ${minFreq.toFixed(2)} Hz (Semitone: ${minSemitoneRef.current} - ${getNoteName(minSemitoneRef.current)})`, 10, p.height - 60);
-        p.text(`Max Freq: ${maxFreq.toFixed(2)} Hz (Semitone: ${maxSemitoneRef.current} - ${getNoteName(maxSemitoneRef.current)})`, p.width / 2 + 10, p.height - 60);
-        p.text(`Brightness: ${brightnessRef.current.toFixed(2)}`, canvasWidth - 150, 1500);
-        p.text(`Length Power: ${lengthPowerRef.current.toFixed(2)}`, canvasWidth - 150, 1530);
+        p.text(
+          `Min Freq: ${minFreq.toFixed(2)} Hz (Semitone: ${minSemitoneRef.current} - ${getNoteName(minSemitoneRef.current)})`,
+          10,
+          p.height - 60
+        );
+        p.text(
+          `Max Freq: ${maxFreq.toFixed(2)} Hz (Semitone: ${maxSemitoneRef.current} - ${getNoteName(maxSemitoneRef.current)})`,
+          p.width / 2 + 10,
+          p.height - 60
+        );
+        p.text(
+          `Brightness: ${brightnessRef.current.toFixed(2)}`,
+          p.width - 150,
+          1500
+        );
+        p.text(
+          `Length Power: ${lengthPowerRef.current.toFixed(2)}`,
+          p.width - 150,
+          1530
+        );
       };
     };
 
@@ -238,73 +319,73 @@ export default function SpectrographVisualizer({
         p5InstanceRef.current = null;
       }
     };
-  }, [analyser, windowSize, noteHues]);
+  }, [analyser, noteHues]);
 
   return (
     <div>
       <h2>Bar Graph Spectrograph</h2>
       {/* Sliders */}
-      <div className="has-border" style={{width: '90%'}}>
-      <div style={{ margin: '20px 40px' }}>
-        <label htmlFor="minFreqSlider">
-          Min Frequency Semitone: {minSemitone}
-        </label>
-        <input
-          id="minFreqSlider"
-          type="range"
-          min="-36"
-          max="140"
-          step="0.5"
-          value={minSemitone}
-          onChange={(e) => setMinSemitone(parseFloat(e.target.value))}
-          style={{ width: '100%' }}
-        />
-      </div>
-      <div style={{ margin: '20px 40px' }}>
-        <label htmlFor="maxFreqSlider">
-          Max Frequency Semitone: {maxSemitone}
-        </label>
-        <input
-          id="maxFreqSlider"
-          type="range"
-          min="-36"
-          max="140"
-          step="0.5"
-          value={maxSemitone}
-          onChange={(e) => setMaxSemitone(parseFloat(e.target.value))}
-          style={{ width: '100%' }}
-        />
-      </div>
-      <div style={{ margin: '20px 40px' }}>
-        <label htmlFor="brightnessSlider">
-          Brightness exponent: {brightness.toFixed(2)}
-        </label>
-        <input
-          id="brightnessSlider"
-          type="range"
-          min="0.1"
-          max="3"
-          step="0.01"
-          value={brightness}
-          onChange={(e) => setBrightness(parseFloat(e.target.value))}
-          style={{ width: '100%' }}
-        />
-      </div>
-      <div style={{ margin: '20px 40px' }}>
-        <label htmlFor="lengthPowerSlider">
-          Length exponent: {lengthPower.toFixed(2)}
-        </label>
-        <input
-          id="lengthPowerSlider"
-          type="range"
-          min="0.1"
-          max="10"
-          step="0.01"
-          value={lengthPower}
-          onChange={(e) => setLengthPower(parseFloat(e.target.value))}
-          style={{ width: '100%' }}
-        />
-      </div>
+      <div className="has-border" style={{ width: '90%' }}>
+        <div style={{ margin: '20px 40px' }}>
+          <label htmlFor="minFreqSlider">
+            Min Frequency Semitone: {minSemitone}
+          </label>
+          <input
+            id="minFreqSlider"
+            type="range"
+            min="-36"
+            max="140"
+            step="0.5"
+            value={minSemitone}
+            onChange={(e) => setMinSemitone(parseFloat(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
+        <div style={{ margin: '20px 40px' }}>
+          <label htmlFor="maxFreqSlider">
+            Max Frequency Semitone: {maxSemitone}
+          </label>
+          <input
+            id="maxFreqSlider"
+            type="range"
+            min="-36"
+            max="140"
+            step="0.5"
+            value={maxSemitone}
+            onChange={(e) => setMaxSemitone(parseFloat(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
+        <div style={{ margin: '20px 40px' }}>
+          <label htmlFor="brightnessSlider">
+            Brightness exponent: {brightness.toFixed(2)}
+          </label>
+          <input
+            id="brightnessSlider"
+            type="range"
+            min="0.1"
+            max="3"
+            step="0.01"
+            value={brightness}
+            onChange={(e) => setBrightness(parseFloat(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
+        <div style={{ margin: '20px 40px' }}>
+          <label htmlFor="lengthPowerSlider">
+            Length exponent: {lengthPower.toFixed(2)}
+          </label>
+          <input
+            id="lengthPowerSlider"
+            type="range"
+            min="0.1"
+            max="10"
+            step="0.01"
+            value={lengthPower}
+            onChange={(e) => setLengthPower(parseFloat(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
       </div>
 
       {/* Spectrograph Canvas */}

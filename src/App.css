@@ -17,277 +17,277 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 body {
-    background-color: #000;
-    margin: 0;
-    padding: 0;
-    font-family: "Arial", sans-serif;
-    color: rgb(170, 170, 170);
+  background-color: #000;
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  color: rgb(170, 170, 170);
 }
 /* For Chrome, Safari, Opera, and Edge  */
-input[type="range"]::-webkit-slider-runnable-track {
-    background: rgb(170, 170, 170);
-    height: 0.5rem;
+input[type='range']::-webkit-slider-runnable-track {
+  background: rgb(170, 170, 170);
+  height: 0.5rem;
 }
 
 /* For Firefox */
-input[type="range"]::-moz-range-track {
-    background: rgb(170, 170, 170);
-    height: 0.5rem;
+input[type='range']::-moz-range-track {
+  background: rgb(170, 170, 170);
+  height: 0.5rem;
 }
 
 .App {
-    color: rgb(170, 170, 170);
-    display: flex;
-    flex-direction: column;
+  color: rgb(170, 170, 170);
+  display: flex;
+  flex-direction: column;
 }
 
-input[type="range"],
-input[type="range"]::-webkit-slider-runnable-track,
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    background: rgb(170, 170, 170);
+input[type='range'],
+input[type='range']::-webkit-slider-runnable-track,
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background: rgb(170, 170, 170);
 }
-input[type="range"]::-webkit-slider-runnable-track {
-    -webkit-appearance: none;
-    width: 200px;
-    height: 5px; /* equal to height of slider-thumb::before */
-    background: rgb(170, 170, 170);
+input[type='range']::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  width: 200px;
+  height: 5px; /* equal to height of slider-thumb::before */
+  background: rgb(170, 170, 170);
 }
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    position: relative;
-    height: 20px;
-    width: 20px;
-    margin-top: -8px; /* don't change this */
-    background: rgb(47, 47, 47);
-    border-radius: 50%;
-    border: none;
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  position: relative;
+  height: 20px;
+  width: 20px;
+  margin-top: -8px; /* don't change this */
+  background: rgb(47, 47, 47);
+  border-radius: 50%;
+  border: none;
 }
-input[type="range"]::-webkit-slider-thumb::before {
-    -webkit-appearance: none;
-    position: absolute;
-    content: "";
-    height: 5px; /* equal to height of runnable track */
-    width: 500px; /* make this bigger than the widest range input element */
-    left: -502px; /* this should be -2px - width */
-    top: 8px; /* don't change this */
-    background: rgb(47, 47, 47);
-}
-
-.seek-slider input[type="range"] {
-    width: 500px;
+input[type='range']::-webkit-slider-thumb::before {
+  -webkit-appearance: none;
+  position: absolute;
+  content: '';
+  height: 5px; /* equal to height of runnable track */
+  width: 500px; /* make this bigger than the widest range input element */
+  left: -502px; /* this should be -2px - width */
+  top: 8px; /* don't change this */
+  background: rgb(47, 47, 47);
 }
 
-.seek-slider input[type="range"]::-webkit-slider-runnable-track {
-    width: 500px;
+.seek-slider input[type='range'] {
+  width: 500px;
 }
 
-.seek-slider input[type="range"]::-webkit-slider-thumb::before {
-    width: 500px;
-    left: -502px;
+.seek-slider input[type='range']::-webkit-slider-runnable-track {
+  width: 500px;
+}
+
+.seek-slider input[type='range']::-webkit-slider-thumb::before {
+  width: 500px;
+  left: -502px;
 }
 
 select {
-    -webkit-appearance: none;
+  -webkit-appearance: none;
 }
 
 .main-container {
-    padding: 20px;
+  padding: 20px;
 }
 
 .controls-row,
 .song-selection-row {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .has-border {
-    border: 1px solid #444;
-    border-radius: 20px;
-    width: fit-content;
-    height: fit-content;
-    padding: 10px;
-    margin-left: 40px;
+  border: 1px solid #444;
+  border-radius: 20px;
+  width: fit-content;
+  height: fit-content;
+  padding: 10px;
+  margin-left: 40px;
 }
 h2 {
-    margin-left: 20px;
+  margin-left: 20px;
 }
 
 .control-label,
 .instrument-label {
-    margin-right: 20px;
-    display: flex;
-    align-items: center;
-    color: #ccc;
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
+  color: #ccc;
 }
 
 .control-label input,
 .control-label select,
 .instrument-label select {
-    margin-left: 10px;
+  margin-left: 10px;
 }
 
 .control-select,
 .song-select {
-    margin-right: 20px;
-    padding: 5px;
-    background-color: #1e1e1e;
-    color: rgb(170, 170, 170);
-    border: 1px solid #444;
-    border-radius: 4px;
+  margin-right: 20px;
+  padding: 5px;
+  background-color: #1e1e1e;
+  color: rgb(170, 170, 170);
+  border: 1px solid #444;
+  border-radius: 4px;
 }
 
 .file-input {
-    color: rgb(170, 170, 170);
+  color: rgb(170, 170, 170);
 }
 
 .control-slider {
-    width: 150px;
-    margin-left: 10px;
+  width: 150px;
+  margin-left: 10px;
 }
 
 .control-checkbox {
-    margin-left: 10px;
+  margin-left: 10px;
 }
 
 .control-button {
-    background-color: #1e1e1e;
-    color: rgb(255, 242, 242);
-    border: 1px solid #444;
-    border-radius: 4px;
-    padding: 10px 20px;
-    margin-right: 20px;
-    cursor: pointer;
+  background-color: #1e1e1e;
+  color: rgb(255, 242, 242);
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 10px 20px;
+  margin-right: 20px;
+  cursor: pointer;
 }
 
 .control-button:hover {
-    background-color: #444;
+  background-color: #444;
 }
 
 .synthesizer-settings {
-    right: 0;
-    top: 1000;
-    padding: 20px;
-    background-color: #29292992;
-    border: 1px solid #444;
-    border-radius: 20px;
+  right: 0;
+  top: 1000;
+  padding: 20px;
+  background-color: #29292992;
+  border: 1px solid #444;
+  border-radius: 20px;
 }
 
 .synthesizer-settings label {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    color: rgb(170, 170, 170);
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  color: rgb(170, 170, 170);
 }
 
 .harmonic-slider {
-    margin-left: 10px;
-    width: 80vw;
+  margin-left: 10px;
+  width: 80vw;
 }
 
 .SongTitle {
-    text-align: center;
-    align-items: center;
-    justify-content: center;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
 }
 
 .Piano-Roll-Time-Scale {
-    width: 800px;
+  width: 800px;
 }
 
 /* Color Settings Modal Styles */
 .color-settings-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
 .color-settings-content {
-    background-color: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 8px;
-    padding: 20px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 20px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .color-settings-content h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: white;
+  text-align: center;
+  margin-bottom: 20px;
+  color: white;
 }
 
 .color-sliders {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
 }
 
 .color-slider-row {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .color-slider-row label {
-    display: flex;
-    align-items: center;
-    color: white;
-    font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  color: white;
+  font-size: 0.9rem;
 }
 
-.color-slider-row input[type="range"] {
-    flex-grow: 1;
-    margin: 0 10px;
+.color-slider-row input[type='range'] {
+  flex-grow: 1;
+  margin: 0 10px;
 }
 
 .hue-value {
-    min-width: 40px;
-    text-align: right;
+  min-width: 40px;
+  text-align: right;
 }
 
 .color-settings-content button {
-    background-color: #444;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 15px;
+  background-color: #444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 15px;
 }
 
 .color-settings-content button:hover {
-    background-color: #555;
+  background-color: #555;
 }
 
 .modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 
 .reset-button {
-    background-color: #5a3030 !important;
+  background-color: #5a3030 !important;
 }
 
 .reset-button:hover {
-    background-color: #7a3e3e !important;
+  background-color: #7a3e3e !important;
 }
 
 .close-button {
-    background-color: #2c4a2c !important;
+  background-color: #2c4a2c !important;
 }
 
 .close-button:hover {
-    background-color: #3a5e3a !important;
+  background-color: #3a5e3a !important;
 }

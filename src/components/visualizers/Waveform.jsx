@@ -18,22 +18,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React, { useRef, useEffect, useState } from 'react';
 
-export default function Waveform({ audioAnalysis }) {
+export default function Waveform({ audio }) {
   const sketchRef = useRef();
-  const { analyser, dataArray } = audioAnalysis;
+  const { analyser, dataArray } = audio;
   const p5InstanceRef = useRef(null);
-  
+
   const [stretchFactor, setStretchFactor] = useState(1);
-  
+
   const [verticalStretchFactor, setVerticalStretchFactor] = useState(1);
-  
+
   const stretchFactorRef = useRef(stretchFactor);
   const verticalStretchFactorRef = useRef(verticalStretchFactor);
-  
+
   useEffect(() => {
     stretchFactorRef.current = stretchFactor;
   }, [stretchFactor]);
-  
+
   useEffect(() => {
     verticalStretchFactorRef.current = verticalStretchFactor;
   }, [verticalStretchFactor]);
@@ -67,7 +67,7 @@ export default function Waveform({ audioAnalysis }) {
         p.push();
         p.translate(
           -p.width * (currentStretchFactor - 1),
-          -baseHeight * (currentVerticalStretchFactor - 1) / 2
+          (-baseHeight * (currentVerticalStretchFactor - 1)) / 2
         );
         p.scale(currentStretchFactor, currentVerticalStretchFactor);
 
@@ -103,10 +103,9 @@ export default function Waveform({ audioAnalysis }) {
     <div style={{ marginBottom: '200px' }}>
       {/* Waveform Canvas */}
       <h2>Waveform</h2>
-     
 
       {/* Slider for Horizontal Stretch Factor */}
-      <div className='has-border' style={{width: '90%'}}>
+      <div className="has-border" style={{ width: '90%' }}>
         <div style={{ margin: '20px 40px' }}>
           <label htmlFor="horizontalStretchSlider">
             Horizontal Stretch coefficient: {stretchFactor.toFixed(2)}x
@@ -122,7 +121,7 @@ export default function Waveform({ audioAnalysis }) {
             style={{ width: '100%' }}
           />
         </div>
-        
+
         {/* Slider for Vertical Stretch Factor */}
         <div style={{ margin: '20px 40px' }}>
           <label htmlFor="verticalStretchSlider">
@@ -135,7 +134,9 @@ export default function Waveform({ audioAnalysis }) {
             max="20"
             step="0.01"
             value={verticalStretchFactor}
-            onChange={(e) => setVerticalStretchFactor(parseFloat(e.target.value))}
+            onChange={(e) =>
+              setVerticalStretchFactor(parseFloat(e.target.value))
+            }
             style={{ width: '100%' }}
           />
         </div>

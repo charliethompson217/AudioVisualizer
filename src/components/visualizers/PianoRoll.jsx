@@ -18,12 +18,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React, { useEffect, useRef, useState } from 'react';
 
-const baseNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const baseNotes = [
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+  'A',
+  'A#',
+  'B',
+];
 
 export default function PianoRoll({
   notes,
   isPlaying,
-  noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330]
+  noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330],
 }) {
   const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
   const rollHeight = screenHeight * 2;
@@ -66,13 +79,16 @@ export default function PianoRoll({
         const elapsedTime = isPlaying ? (p.millis() - startTime) / 1000 : 0;
         const scrollX = elapsedTime * scale;
 
-        notes.forEach(note => {
+        notes.forEach((note) => {
           const yPos = rollHeight - (note.noteNumber - 12 + 1) * noteHeight;
           const xPos = note.startSec * scale - scrollX + p.width / 2;
           const rectWidth = note.durationSec * scale;
-          const noteIsActive = isPlaying && elapsedTime >= note.startSec && elapsedTime <= note.startSec + note.durationSec;
+          const noteIsActive =
+            isPlaying &&
+            elapsedTime >= note.startSec &&
+            elapsedTime <= note.startSec + note.durationSec;
           const index = note.noteNumber % 12;
-          let  color = `hsl(${noteHues[index]}, 100%, 35%)`;
+          let color = `hsl(${noteHues[index]}, 100%, 35%)`;
           if (noteIsActive) {
             const index = note.noteNumber % 12;
             color = `hsl(${noteHues[index]}, 100%, 60%)`;
@@ -80,13 +96,17 @@ export default function PianoRoll({
           p.fill(color);
           p.rect(xPos, yPos, rectWidth, noteHeight);
         });
-        
-        notes.forEach(note => {
+
+        notes.forEach((note) => {
           const yPos = rollHeight - (note.noteNumber - 12 + 1) * noteHeight;
           const xPos = note.startSec * scale - scrollX + p.width / 2;
           if (showLabelsRef.current) {
             p.fill(255);
-            p.text(`${baseNotes[note.noteNumber%12]} ${Math.floor(note.noteNumber/12)-1} `, xPos, yPos + noteHeight / 2 + p.textSize() / 3);
+            p.text(
+              `${baseNotes[note.noteNumber % 12]} ${Math.floor(note.noteNumber / 12) - 1} `,
+              xPos,
+              yPos + noteHeight / 2 + p.textSize() / 3
+            );
           }
         });
 
@@ -119,7 +139,7 @@ export default function PianoRoll({
       <div>
         <label>Time Scale</label>
         <input
-          className='Piano-Roll-Time-Scale'
+          className="Piano-Roll-Time-Scale"
           type="range"
           min="1"
           max="3000"

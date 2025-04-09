@@ -51,7 +51,12 @@ export default class Synthesizer {
     this.releaseTime = releaseTime;
   }
 
-  updateVibratoAndTremolo({ vibratoDepth, vibratoRate, tremoloDepth, tremoloRate }) {
+  updateVibratoAndTremolo({
+    vibratoDepth,
+    vibratoRate,
+    tremoloDepth,
+    tremoloRate,
+  }) {
     this.vibratoDepth = vibratoDepth;
     this.vibratoRate = vibratoRate;
     this.tremoloDepth = tremoloDepth;
@@ -61,13 +66,16 @@ export default class Synthesizer {
   noteOn(noteNumber, velocity = 127) {
     const frequency = this.midiNoteToFrequency(noteNumber);
     const volume = (velocity / 127) * this.getVolume();
-    const partials = Array.from({ length: 8 }, (_, i) => this.harmonicAmplitudes[i + 1] || 0);
+    const partials = Array.from(
+      { length: 8 },
+      (_, i) => this.harmonicAmplitudes[i + 1] || 0
+    );
 
     const { attackTime, decayTime, sustainLevel, releaseTime } = this;
 
     const oscillatorConfig = {
       type: this.oscillatorType,
-      partials: partials
+      partials: partials,
     };
 
     const synth = new Tone.Synth({
@@ -76,8 +84,8 @@ export default class Synthesizer {
         attack: attackTime,
         decay: decayTime,
         sustain: sustainLevel,
-        release: releaseTime
-      }
+        release: releaseTime,
+      },
     });
 
     const volumeGain = new Tone.Gain(volume);
@@ -90,7 +98,7 @@ export default class Synthesizer {
         frequency: this.vibratoRate,
         min: frequency - this.vibratoDepth,
         max: frequency + this.vibratoDepth,
-        type: 'sine'
+        type: 'sine',
       }).start();
       vibratoLFO.connect(synth.oscillator.frequency);
     }
@@ -101,18 +109,18 @@ export default class Synthesizer {
         frequency: this.tremoloRate,
         min: volume * (1 - this.tremoloDepth),
         max: volume * (1 + this.tremoloDepth),
-        type: 'sine'
+        type: 'sine',
       }).start();
       tremoloLFO.connect(volumeGain.gain);
     }
 
     const noteId = `${noteNumber}_${performance.now()}`;
-    this.activeNotes.set(noteId, { 
-      synth, 
-      volumeGain, 
-      vibratoLFO, 
+    this.activeNotes.set(noteId, {
+      synth,
+      volumeGain,
+      vibratoLFO,
       tremoloLFO,
-      releaseTime
+      releaseTime,
     });
     synth.triggerAttack(frequency);
   }

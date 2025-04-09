@@ -232,6 +232,7 @@ Once the development server is running, you can access the application through y
     ```
 4. **Make Your Changes:**
     - Make your code changes, improvements, or bug fixes.
+    - run `npm run format` to ensure your code is properly formatted
 5. **Commit and Push Your Changes:**
     - this will list all modified files
         ```
