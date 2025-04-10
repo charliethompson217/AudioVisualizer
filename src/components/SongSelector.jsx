@@ -70,13 +70,20 @@ export default function SongSelector({
   };
 
   return (
-    <div>
-      <label>
+    <div className="song-selector-container" style={{ maxWidth: '100%' }}>
+      <label
+        style={{ display: 'flex', flexDirection: 'column', width: '100%' }}
+      >
         Select Song:
         <select
           value={selectedSongFileName}
           onChange={handleSongSelect}
-          style={{ marginLeft: '10px' }}
+          style={{
+            marginTop: '5px',
+            width: '100%',
+            maxWidth: '100%',
+            boxSizing: 'border-box',
+          }}
           className="song-select"
         >
           <option value="">Choose from library</option>
@@ -88,7 +95,7 @@ export default function SongSelector({
         </select>
       </label>
       {isLoading && <p>Loading song...</p>}
-      <p>
+      <p style={{ maxWidth: '100%', wordWrap: 'break-word' }}>
         All music is from{' '}
         <a href="https://freemusicarchive.org">Free Music Archive</a> under the
         Creative Commons liscence Attribution-NonCommercial-ShareAlike (CC

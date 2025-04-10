@@ -111,8 +111,7 @@ export default function VisualizationToggles({
       </label>
       {generateBrowserMIDI && (
         <>
-          <label>
-            {' '}
+          <label className="control-label">
             Onset Threshold
             <input
               type="range"
@@ -121,9 +120,10 @@ export default function VisualizationToggles({
               step="0.01"
               value={onsetThreshold}
               onChange={(e) => setOnsetThreshold(parseFloat(e.target.value))}
+              style={{ width: '100%', maxWidth: '500px' }}
             />
           </label>
-          <label>
+          <label className="control-label">
             Frame Threshold
             <input
               type="range"
@@ -132,9 +132,10 @@ export default function VisualizationToggles({
               step="0.01"
               value={frameThreshold}
               onChange={(e) => setFrameThreshold(parseFloat(e.target.value))}
+              style={{ width: '100%', maxWidth: '500px' }}
             />
           </label>
-          <label>
+          <label className="control-label">
             Min Duration (sec)
             <input
               type="range"
@@ -143,6 +144,7 @@ export default function VisualizationToggles({
               step="0.01"
               value={minDurationSec}
               onChange={(e) => setMinDurationSec(parseFloat(e.target.value))}
+              style={{ width: '100%', maxWidth: '500px' }}
             />
           </label>
         </>

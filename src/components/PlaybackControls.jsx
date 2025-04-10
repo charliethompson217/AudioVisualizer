@@ -40,7 +40,7 @@ export default function PlaybackControls({
   handleStartStopWithMic,
 }) {
   return (
-    <div className="controls-row">
+    <div style={{ display: 'block', overflow: 'visible', height: 'auto' }}>
       {isPlaying && (
         <label className="control-label">
           Meyda Buffer Size
@@ -57,68 +57,102 @@ export default function PlaybackControls({
           </select>
         </label>
       )}
+      <div
+        className="controls-row"
+        style={{
+          overflow: 'visible',
+          height: 'auto',
+          display: 'flex',
+          flexWrap: 'wrap',
+        }}
+      >
+        {!isPlaying && (
+          <button
+            className="control-button"
+            onClick={() => {
+              setUseMic(true);
+              setMp3File(null);
+              setMidiFile(null);
+              handleStartStopWithMic();
+            }}
+          >
+            Use Mic
+          </button>
+        )}
 
-      {!isPlaying && (
+        {progress < 100 && isConverting && (
+          <div style={{ width: '100%', overflow: 'visible' }}>
+            <p>Converting audio to MIDI... {progress.toFixed(2)}%</p>
+            <progress value={progress} max="100" />
+          </div>
+        )}
+
+        {warning && <div>{warning}</div>}
+
         <button
           className="control-button"
-          onClick={() => {
-            setUseMic(true);
-            setMp3File(null);
-            setMidiFile(null);
-            handleStartStopWithMic();
-          }}
+          onClick={handleStartStop}
+          disabled={(!conversionComplete && !useMic) || fetchingSong}
         >
-          Use Mic
+          {isPlaying ? 'Stop' : 'Play'}
         </button>
-      )}
 
-      {progress < 100 && isConverting && (
-        <>
-          <p>Converting audio to MIDI... {progress.toFixed(2)}%</p>
-          <progress value={progress} max="100" />
-        </>
-      )}
+        {isPlaying && (
+          <>
+            <button className="control-button" onClick={handlePauseResume}>
+              {isPaused ? 'Resume' : 'Pause'}
+            </button>
 
-      {warning && <div>{warning}</div>}
-
-      <button
-        className="control-button"
-        onClick={handleStartStop}
-        disabled={(!conversionComplete && !useMic) || fetchingSong}
-      >
-        {isPlaying ? 'Stop' : 'Play'}
-      </button>
-
-      {isPlaying && (
-        <>
-          <button className="control-button" onClick={handlePauseResume}>
-            {isPaused ? 'Resume' : 'Pause'}
-          </button>
-
-          {duration > 0 && (
-            <div className="seek-slider">
-              <label>
-                {String(Math.floor(currentTime / 60)).padStart(2, '0')}:
-                {String(Math.floor(currentTime % 60)).padStart(2, '0')}
-                <input
-                  type="range"
-                  min="0"
-                  max={duration}
-                  step="0.001"
-                  value={currentTime}
-                  onChange={(e) => {
-                    const time = parseFloat(e.target.value);
-                    seek(time);
+            {duration > 0 && (
+              <div
+                className="seek-slider-container"
+                style={{
+                  width: '100%',
+                  marginTop: '15px',
+                  overflow: 'visible',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    width: '95%',
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                    overflow: 'visible',
                   }}
-                  style={{ paddingLeft: '10px', paddingRight: '10px' }}
-                />
-                {String(Math.floor(duration / 60)).padStart(2, '0')}:
-                {String(Math.floor(duration % 60)).padStart(2, '0')}
-              </label>
-            </div>
-          )}
-        </>
-      )}
+                >
+                  <span>
+                    {String(Math.floor(currentTime / 60)).padStart(2, '0')}:
+                    {String(Math.floor(currentTime % 60)).padStart(2, '0')}
+                  </span>
+                  <div
+                    className="seek-slider"
+                    style={{ flex: 1, margin: '0 15px' }}
+                  >
+                    <input
+                      type="range"
+                      min="0"
+                      max={duration}
+                      step="0.001"
+                      value={currentTime}
+                      onChange={(e) => {
+                        const time = parseFloat(e.target.value);
+                        seek(time);
+                      }}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                  <span>
+                    {String(Math.floor(duration / 60)).padStart(2, '0')}:
+                    {String(Math.floor(duration % 60)).padStart(2, '0')}
+                  </span>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

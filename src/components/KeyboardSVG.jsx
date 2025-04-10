@@ -16,9 +16,32 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const KeyboardSVG = ({ noteHues }) => {
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 0
+  );
+  const svgWidth = 1000;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Don't render if screen is too narrow
+  if (windowWidth < svgWidth) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center', color: 'white' }}>
+        This app is intended to be viewed on a larger screen.
+      </div>
+    );
+  }
+
   // Define the keys that need to be colored and their corresponding HSL hues
   const coloredKeys = {
     z: noteHues[0],

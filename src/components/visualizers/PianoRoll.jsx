@@ -134,10 +134,21 @@ export default function PianoRoll({
   }, [notes, isPlaying, noteHues]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', overflow: 'auto' }}>
+    <div
+      ref={containerRef}
+      style={{ width: '100%', maxWidth: '100vw', overflow: 'hidden' }}
+    >
       <h2>Piano Roll</h2>
-      <div>
-        <label>Time Scale</label>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          width: '95%',
+          maxWidth: '1200px',
+          margin: '0 auto 20px',
+        }}
+      >
+        <label style={{ marginBottom: '8px' }}>Time Scale</label>
         <input
           className="Piano-Roll-Time-Scale"
           type="range"
@@ -149,15 +160,18 @@ export default function PianoRoll({
             setTimeScale(newScale);
             timeScaleRef.current = newScale;
           }}
+          style={{ width: '100%' }}
         />
-        <label>
-          <input
-            type="checkbox"
-            checked={showLabels}
-            onChange={() => setShowLabels(!showLabels)}
-          />
-          Show Labels
-        </label>
+        <div style={{ marginTop: '10px' }}>
+          <label>
+            <input
+              type="checkbox"
+              checked={showLabels}
+              onChange={() => setShowLabels(!showLabels)}
+            />
+            Show Labels
+          </label>
+        </div>
       </div>
     </div>
   );

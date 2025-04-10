@@ -33,7 +33,7 @@ export default function SpectrographControls({
   setShowScroll,
 }) {
   return (
-    <div className="controls-row has-border">
+    <div className="controls-row has-border spectrograph-controls">
       <label className="control-label">
         FFT Size:
         <select
