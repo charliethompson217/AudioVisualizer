@@ -19,30 +19,44 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 import React from 'react';
 
 export default function SynthesizerSettings({
-  oscillatorType,
-  setOscillatorType,
-  harmonicAmplitudes,
-  handleHarmonicChange,
-  attackTime,
-  setAttackTime,
-  decayTime,
-  setDecayTime,
-  sustainLevel,
-  setSustainLevel,
-  releaseTime,
-  setReleaseTime,
-  vibratoDepth,
-  setVibratoDepth,
-  vibratoRate,
-  setVibratoRate,
-  tremoloDepth,
-  setTremoloDepth,
-  tremoloRate,
-  setTremoloRate,
+  synthesizerSettings,
+  setSynthesizerSettings,
   selectedPreset,
   setSelectedPreset,
   presets,
 }) {
+  const {
+    oscillatorType,
+    harmonicAmplitudes,
+    attackTime,
+    decayTime,
+    sustainLevel,
+    releaseTime,
+    vibratoDepth,
+    vibratoRate,
+    tremoloDepth,
+    tremoloRate,
+  } = synthesizerSettings;
+
+  // Function to handle harmonic amplitude changes
+  const handleHarmonicChange = (harmonic, value) => {
+    setSynthesizerSettings((prevSettings) => ({
+      ...prevSettings,
+      harmonicAmplitudes: {
+        ...prevSettings.harmonicAmplitudes,
+        [harmonic]: value,
+      },
+    }));
+  };
+
+  // Function to update a single setting
+  const updateSetting = (settingName, value) => {
+    setSynthesizerSettings((prevSettings) => ({
+      ...prevSettings,
+      [settingName]: value,
+    }));
+  };
+
   return (
     <div className="synthesizer-settings">
       <h2>Synthesizer Settings</h2>
@@ -67,7 +81,7 @@ export default function SynthesizerSettings({
             Oscillator Type:
             <select
               value={oscillatorType}
-              onChange={(e) => setOscillatorType(e.target.value)}
+              onChange={(e) => updateSetting('oscillatorType', e.target.value)}
             >
               <option value="custom">Custom harmonics</option>
               <option value="sine">Sine</option>
@@ -114,7 +128,9 @@ export default function SynthesizerSettings({
             max="2"
             step="0.001"
             value={attackTime}
-            onChange={(e) => setAttackTime(parseFloat(e.target.value))}
+            onChange={(e) =>
+              updateSetting('attackTime', parseFloat(e.target.value))
+            }
             className="harmonic-slider"
           />
         </label>
@@ -128,7 +144,9 @@ export default function SynthesizerSettings({
             max="2"
             step="0.001"
             value={decayTime}
-            onChange={(e) => setDecayTime(parseFloat(e.target.value))}
+            onChange={(e) =>
+              updateSetting('decayTime', parseFloat(e.target.value))
+            }
             className="harmonic-slider"
           />
         </label>
@@ -142,7 +160,9 @@ export default function SynthesizerSettings({
             max="1"
             step="0.001"
             value={sustainLevel}
-            onChange={(e) => setSustainLevel(parseFloat(e.target.value))}
+            onChange={(e) =>
+              updateSetting('sustainLevel', parseFloat(e.target.value))
+            }
             className="harmonic-slider"
           />
         </label>
@@ -156,7 +176,9 @@ export default function SynthesizerSettings({
             max="5"
             step="0.001"
             value={releaseTime}
-            onChange={(e) => setReleaseTime(parseFloat(e.target.value))}
+            onChange={(e) =>
+              updateSetting('releaseTime', parseFloat(e.target.value))
+            }
             className="harmonic-slider"
           />
         </label>
@@ -172,7 +194,9 @@ export default function SynthesizerSettings({
             max="100.00"
             step="0.001"
             value={vibratoDepth}
-            onChange={(e) => setVibratoDepth(parseFloat(e.target.value))}
+            onChange={(e) =>
+              updateSetting('vibratoDepth', parseFloat(e.target.value))
+            }
             className="harmonic-slider"
           />
         </label>
@@ -186,7 +210,9 @@ export default function SynthesizerSettings({
             max="20.00"
             step="0.001"
             value={vibratoRate}
-            onChange={(e) => setVibratoRate(parseFloat(e.target.value))}
+            onChange={(e) =>
+              updateSetting('vibratoRate', parseFloat(e.target.value))
+            }
             className="harmonic-slider"
           />
         </label>
@@ -201,7 +227,9 @@ export default function SynthesizerSettings({
             max="1.00"
             step="0.001"
             value={tremoloDepth}
-            onChange={(e) => setTremoloDepth(parseFloat(e.target.value))}
+            onChange={(e) =>
+              updateSetting('tremoloDepth', parseFloat(e.target.value))
+            }
             className="harmonic-slider"
           />
         </label>
@@ -215,7 +243,9 @@ export default function SynthesizerSettings({
             max="20.00"
             step="0.001"
             value={tremoloRate}
-            onChange={(e) => setTremoloRate(parseFloat(e.target.value))}
+            onChange={(e) =>
+              updateSetting('tremoloRate', parseFloat(e.target.value))
+            }
             className="harmonic-slider"
           />
         </label>

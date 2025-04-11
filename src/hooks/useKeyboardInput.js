@@ -16,11 +16,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export function useKeyboardInput(synthesizer, isPlaying, pianoEnabled) {
-  const octaveRef = useRef(4);
-  const volumeRef = useRef(0.5);
+  const [octave, setOctave] = useState(4);
+  const [volume, setVolume] = useState(0.5);
   const activeKeysRef = useRef(new Set());
 
   useEffect(() => {
@@ -31,18 +31,18 @@ export function useKeyboardInput(synthesizer, isPlaying, pianoEnabled) {
       event.preventDefault();
 
       if (event.key === 'ArrowLeft') {
-        octaveRef.current = Math.max(-1, octaveRef.current - 1);
+        setOctave((prev) => Math.max(-1, prev - 1));
       } else if (event.key === 'ArrowRight') {
-        octaveRef.current = Math.min(9, octaveRef.current + 1);
+        setOctave((prev) => Math.min(9, prev + 1));
       } else if (event.key === 'ArrowUp') {
-        volumeRef.current = Math.min(2, volumeRef.current + 0.1); // Increase volume
+        setVolume((prev) => Math.min(2, prev + 0.1)); // Increase volume
       } else if (event.key === 'ArrowDown') {
-        volumeRef.current = Math.max(0.0, volumeRef.current - 0.1); // Decrease volume
+        setVolume((prev) => Math.max(0.0, prev - 0.1)); // Decrease volume
       } else if (event.key === ' ') {
         synthesizer.stopAllNotes();
         return;
       } else {
-        const noteNumber = mapKeyToNoteNumber(event.key, octaveRef.current);
+        const noteNumber = mapKeyToNoteNumber(event.key, octave);
         if (noteNumber !== null) {
           synthesizer.noteOn(noteNumber);
           activeKeysRef.current.add(event.key);
@@ -51,7 +51,7 @@ export function useKeyboardInput(synthesizer, isPlaying, pianoEnabled) {
     };
 
     const handleKeyUp = (event) => {
-      const noteNumber = mapKeyToNoteNumber(event.key, octaveRef.current);
+      const noteNumber = mapKeyToNoteNumber(event.key, octave);
       if (noteNumber !== null) {
         synthesizer.noteOff(noteNumber);
         activeKeysRef.current.delete(event.key);
@@ -68,11 +68,11 @@ export function useKeyboardInput(synthesizer, isPlaying, pianoEnabled) {
         synthesizer.stopAllNotes();
       }
     };
-  }, [pianoEnabled, isPlaying, synthesizer]);
+  }, [pianoEnabled, isPlaying, synthesizer, octave, volume]);
 
   return {
-    currentOctave: octaveRef.current,
-    currentVolume: volumeRef.current,
+    currentOctave: octave,
+    currentVolume: volume,
   };
 }
 

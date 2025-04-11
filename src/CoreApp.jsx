@@ -140,25 +140,9 @@ export default function CoreApp() {
   const [selectedSongFileName, setSelectedSongFileName] = useState('');
   const [fetchingSong, setFetchingSong] = useState(false);
 
-  const [oscillatorType, setOscillatorType] = useState('custom');
-  const [harmonicAmplitudes, setHarmonicAmplitudes] = useState({
-    1: 1.0,
-    2: 0.5,
-    3: 0.2,
-    4: 0.1,
-    5: 0.05,
-    6: 0.01,
-    7: 0.005,
-    8: 0.001,
-  });
-  const [attackTime, setAttackTime] = useState(0.01);
-  const [decayTime, setDecayTime] = useState(0.3);
-  const [sustainLevel, setSustainLevel] = useState(0.2);
-  const [releaseTime, setReleaseTime] = useState(0.5);
-  const [vibratoDepth, setVibratoDepth] = useState(0);
-  const [vibratoRate, setVibratoRate] = useState(0);
-  const [tremoloDepth, setTremoloDepth] = useState(0);
-  const [tremoloRate, setTremoloRate] = useState(0);
+  const [synthesizerSettings, setSynthesizerSettings] = useState(
+    synthesizerPresets.None
+  );
   const [selectedPreset, setSelectedPreset] = useState('None');
 
   const audio = useAudio(
@@ -171,16 +155,7 @@ export default function CoreApp() {
     minDecibels,
     maxDecibels,
     pianoEnabled,
-    harmonicAmplitudes,
-    attackTime,
-    decayTime,
-    sustainLevel,
-    releaseTime,
-    vibratoDepth,
-    vibratoRate,
-    tremoloDepth,
-    tremoloRate,
-    oscillatorType,
+    synthesizerSettings,
     meydaBufferSize,
     bpmAndKey,
     generateBrowserMIDI,
@@ -203,13 +178,6 @@ export default function CoreApp() {
   const setWarningMessage = (message) => {
     console.warn(message);
   };
-
-  function handleHarmonicChange(harmonic, value) {
-    setHarmonicAmplitudes((prevAmplitudes) => ({
-      ...prevAmplitudes,
-      [harmonic]: value,
-    }));
-  }
 
   const handleSongSelect = async (selectedFileName, file, songName) => {
     setSelectedSongFileName(selectedFileName);
@@ -260,17 +228,7 @@ export default function CoreApp() {
   // Update synthesizer settings when preset changes
   useEffect(() => {
     if (synthesizerPresets[selectedPreset]) {
-      const preset = synthesizerPresets[selectedPreset];
-      setHarmonicAmplitudes(preset.harmonicAmplitudes);
-      setAttackTime(preset.attackTime);
-      setDecayTime(preset.decayTime);
-      setSustainLevel(preset.sustainLevel);
-      setReleaseTime(preset.releaseTime);
-      setVibratoDepth(preset.vibratoDepth);
-      setVibratoRate(preset.vibratoRate);
-      setTremoloDepth(preset.tremoloDepth);
-      setTremoloRate(preset.tremoloRate);
-      setOscillatorType(preset.oscillatorType);
+      setSynthesizerSettings(synthesizerPresets[selectedPreset]);
     }
   }, [selectedPreset]);
 
@@ -415,26 +373,8 @@ export default function CoreApp() {
           pianoEnabled={pianoEnabled}
           midiFile={midiFile}
           midiNotes={midiNotes}
-          oscillatorType={oscillatorType}
-          setOscillatorType={setOscillatorType}
-          harmonicAmplitudes={harmonicAmplitudes}
-          handleHarmonicChange={handleHarmonicChange}
-          attackTime={attackTime}
-          setAttackTime={setAttackTime}
-          decayTime={decayTime}
-          setDecayTime={setDecayTime}
-          sustainLevel={sustainLevel}
-          setSustainLevel={setSustainLevel}
-          releaseTime={releaseTime}
-          setReleaseTime={setReleaseTime}
-          vibratoDepth={vibratoDepth}
-          setVibratoDepth={setVibratoDepth}
-          vibratoRate={vibratoRate}
-          setVibratoRate={setVibratoRate}
-          tremoloDepth={tremoloDepth}
-          setTremoloDepth={setTremoloDepth}
-          tremoloRate={tremoloRate}
-          setTremoloRate={setTremoloRate}
+          synthesizerSettings={synthesizerSettings}
+          setSynthesizerSettings={setSynthesizerSettings}
           selectedPreset={selectedPreset}
           setSelectedPreset={setSelectedPreset}
           presets={synthesizerPresets}

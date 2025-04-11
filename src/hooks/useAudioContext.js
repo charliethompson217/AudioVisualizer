@@ -18,7 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 
-export function useAudioContext(mp3File, useMic, isPlaying, volume = 0.5) {
+export function useAudioContext(mp3File, useMic, isPlaying) {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const gainNodeRef = useRef(null);
@@ -57,7 +57,7 @@ export function useAudioContext(mp3File, useMic, isPlaying, volume = 0.5) {
       setSampleRate(audioContext.sampleRate);
 
       const gainNode = audioContext.createGain();
-      gainNode.gain.value = volume;
+      gainNode.gain.value = 1.0;
       gainNodeRef.current = gainNode;
 
       // Connect analyser to GainNode only if not using microphone
@@ -66,9 +66,6 @@ export function useAudioContext(mp3File, useMic, isPlaying, volume = 0.5) {
         gainNode.connect(audioContext.destination);
       }
     }
-
-    // Update GainNode when volume changes
-    gainNodeRef.current.gain.value = volume;
 
     let fileURL = null;
 
@@ -112,7 +109,7 @@ export function useAudioContext(mp3File, useMic, isPlaying, volume = 0.5) {
         URL.revokeObjectURL(fileURL);
       }
     };
-  }, [isPlaying, mp3File, useMic, volume]);
+  }, [isPlaying, mp3File, useMic]);
 
   useEffect(() => {
     if (isPlaying && !useMic && analyserRef.current && gainNodeRef.current) {

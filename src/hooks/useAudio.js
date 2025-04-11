@@ -35,16 +35,7 @@ export function useAudio(
   minDecibels,
   maxDecibels,
   pianoEnabled,
-  harmonicAmplitudes = { 1: 1.0 },
-  ATTACK_TIME,
-  DECAY_TIME,
-  SUSTAIN_LEVEL,
-  RELEASE_TIME,
-  vibratoDepth,
-  vibratoRate,
-  tremoloDepth,
-  tremoloRate,
-  oscillatorType,
+  synthesizerSettings,
   meydaBufferSize,
   bpmAndKey = true,
   generateBrowserMIDI = true,
@@ -76,24 +67,15 @@ export function useAudio(
     pause,
     seek,
     getCurrentTime,
-  } = useAudioContext(mp3File, useMic, isPlaying, volumeRef.current);
+  } = useAudioContext(mp3File, useMic, isPlaying);
 
   // Initialize and manage synthesizer
   const synthesizer = useSynthesizer(
     audioContext,
     analyser,
     isPlaying,
-    harmonicAmplitudes,
-    ATTACK_TIME,
-    DECAY_TIME,
-    SUSTAIN_LEVEL,
-    RELEASE_TIME,
-    vibratoDepth,
-    vibratoRate,
-    tremoloDepth,
-    tremoloRate,
-    oscillatorType,
-    volumeRef.current
+    synthesizerSettings,
+    volumeRef
   );
 
   // Setup audio analysis with Web Audio API and Meyda
@@ -113,7 +95,18 @@ export function useAudio(
   const { midiNotes } = useMidiPlayer(midiFile, synthesizer, isPlaying);
 
   // Handle keyboard input for piano
-  useKeyboardInput(synthesizer, isPlaying, pianoEnabled);
+  const { currentVolume } = useKeyboardInput(
+    synthesizer,
+    isPlaying,
+    pianoEnabled
+  );
+
+  // Update volumeRef when keyboard input changes the volume
+  useEffect(() => {
+    if (currentVolume !== undefined) {
+      volumeRef.current = currentVolume;
+    }
+  }, [currentVolume]);
 
   // Process audio for BPM and key when mp3File changes
   useEffect(() => {

@@ -50,26 +50,8 @@ export default function VisualizersContainer({
   pianoEnabled,
   midiFile,
   midiNotes,
-  oscillatorType,
-  setOscillatorType,
-  harmonicAmplitudes,
-  handleHarmonicChange,
-  attackTime,
-  setAttackTime,
-  decayTime,
-  setDecayTime,
-  sustainLevel,
-  setSustainLevel,
-  releaseTime,
-  setReleaseTime,
-  vibratoDepth,
-  setVibratoDepth,
-  vibratoRate,
-  setVibratoRate,
-  tremoloDepth,
-  setTremoloDepth,
-  tremoloRate,
-  setTremoloRate,
+  synthesizerSettings,
+  setSynthesizerSettings,
   selectedPreset,
   setSelectedPreset,
   presets,
@@ -150,26 +132,8 @@ export default function VisualizersContainer({
 
       {(pianoEnabled || midiFile) && (
         <SynthesizerSettings
-          oscillatorType={oscillatorType}
-          setOscillatorType={setOscillatorType}
-          harmonicAmplitudes={harmonicAmplitudes}
-          handleHarmonicChange={handleHarmonicChange}
-          attackTime={attackTime}
-          setAttackTime={setAttackTime}
-          decayTime={decayTime}
-          setDecayTime={setDecayTime}
-          sustainLevel={sustainLevel}
-          setSustainLevel={setSustainLevel}
-          releaseTime={releaseTime}
-          setReleaseTime={setReleaseTime}
-          vibratoDepth={vibratoDepth}
-          setVibratoDepth={setVibratoDepth}
-          vibratoRate={vibratoRate}
-          setVibratoRate={setVibratoRate}
-          tremoloDepth={tremoloDepth}
-          setTremoloDepth={setTremoloDepth}
-          tremoloRate={tremoloRate}
-          setTremoloRate={setTremoloRate}
+          synthesizerSettings={synthesizerSettings}
+          setSynthesizerSettings={setSynthesizerSettings}
           selectedPreset={selectedPreset}
           setSelectedPreset={setSelectedPreset}
           presets={presets}

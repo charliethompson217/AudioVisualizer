@@ -23,17 +23,8 @@ export function useSynthesizer(
   audioContext,
   analyser,
   isPlaying,
-  harmonicAmplitudes = { 1: 1.0 },
-  attackTime = 0.05,
-  decayTime = 0.1,
-  sustainLevel = 0.7,
-  releaseTime = 0.2,
-  vibratoDepth = 0,
-  vibratoRate = 5,
-  tremoloDepth = 0,
-  tremoloRate = 5,
-  oscillatorType = 'sine',
-  volume = 0.5
+  settings,
+  volumeRef
 ) {
   const synthesizerRef = useRef(null);
 
@@ -46,24 +37,19 @@ export function useSynthesizer(
     }
 
     if (!synthesizerRef.current) {
-      const validHarmonicAmplitudes =
-        harmonicAmplitudes && Object.keys(harmonicAmplitudes).length > 0
-          ? harmonicAmplitudes
-          : { 1: 1.0 };
-
       const synthesizer = new Synthesizer(audioContext, {
-        harmonicAmplitudes: validHarmonicAmplitudes,
-        attackTime,
-        decayTime,
-        sustainLevel,
-        releaseTime,
+        harmonicAmplitudes: settings.harmonicAmplitudes,
+        attackTime: settings.attackTime,
+        decayTime: settings.decayTime,
+        sustainLevel: settings.sustainLevel,
+        releaseTime: settings.releaseTime,
         analyserNode: analyser,
-        getVolume: () => volume,
-        vibratoDepth,
-        vibratoRate,
-        tremoloDepth,
-        tremoloRate,
-        oscillatorType,
+        getVolume: () => volumeRef.current,
+        vibratoDepth: settings.vibratoDepth,
+        vibratoRate: settings.vibratoRate,
+        tremoloDepth: settings.tremoloDepth,
+        tremoloRate: settings.tremoloRate,
+        oscillatorType: settings.oscillatorType,
       });
       synthesizerRef.current = synthesizer;
     }
@@ -76,43 +62,34 @@ export function useSynthesizer(
     };
   }, [isPlaying, audioContext, analyser]);
 
-  // Update oscillator type when it changes
+  // Update all synthesizer settings in a single useEffect
   useEffect(() => {
     if (synthesizerRef.current) {
-      synthesizerRef.current.updateOscillatorType(oscillatorType);
-    }
-  }, [oscillatorType]);
+      // Update oscillator type
+      synthesizerRef.current.updateOscillatorType(settings.oscillatorType);
 
-  // Update harmonic amplitudes when they change
-  useEffect(() => {
-    if (synthesizerRef.current) {
-      synthesizerRef.current.updateHarmonicAmplitudes(harmonicAmplitudes);
-    }
-  }, [harmonicAmplitudes]);
+      // Update harmonic amplitudes
+      synthesizerRef.current.updateHarmonicAmplitudes(
+        settings.harmonicAmplitudes
+      );
 
-  // Update ADSR settings when they change
-  useEffect(() => {
-    if (synthesizerRef.current) {
+      // Update ADSR
       synthesizerRef.current.updateADSR({
-        attackTime,
-        decayTime,
-        sustainLevel,
-        releaseTime,
+        attackTime: settings.attackTime,
+        decayTime: settings.decayTime,
+        sustainLevel: settings.sustainLevel,
+        releaseTime: settings.releaseTime,
       });
-    }
-  }, [attackTime, decayTime, sustainLevel, releaseTime]);
 
-  // Update vibrato and tremolo settings when they change
-  useEffect(() => {
-    if (synthesizerRef.current) {
+      // Update vibrato and tremolo
       synthesizerRef.current.updateVibratoAndTremolo({
-        vibratoDepth,
-        vibratoRate,
-        tremoloDepth,
-        tremoloRate,
+        vibratoDepth: settings.vibratoDepth,
+        vibratoRate: settings.vibratoRate,
+        tremoloDepth: settings.tremoloDepth,
+        tremoloRate: settings.tremoloRate,
       });
     }
-  }, [vibratoDepth, vibratoRate, tremoloDepth, tremoloRate]);
+  }, [settings]);
 
   return synthesizerRef.current;
 }
