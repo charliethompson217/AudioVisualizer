@@ -63,13 +63,7 @@ export default function VisualizersContainer({
 }) {
   return (
     <div className="Visualizers-Container">
-      {chromaCircle && (
-        <ChromavectorCircleGraph
-          chroma={audio.chroma}
-          isPlaying={isPlaying}
-          noteHues={noteHues}
-        />
-      )}
+      {chromaCircle && <ChromavectorCircleGraph chroma={audio.chroma} isPlaying={isPlaying} noteHues={noteHues} />}
 
       {spectralSpreadGraph && (
         <SpectralSpreadGraph
@@ -81,13 +75,7 @@ export default function VisualizersContainer({
         />
       )}
 
-      {chromaLine && (
-        <ChromevectorLineGraph
-          chroma={audio.chroma}
-          isPlaying={isPlaying}
-          noteHues={noteHues}
-        />
-      )}
+      {chromaLine && <ChromevectorLineGraph chroma={audio.chroma} isPlaying={isPlaying} noteHues={noteHues} />}
 
       {rms && <RMS rms={audio.rms} isPlaying={isPlaying} />}
 
@@ -109,21 +97,11 @@ export default function VisualizersContainer({
           />
 
           {showSpectrograph && (
-            <BarGraphSpectrograph
-              showLabels={showLabels}
-              showScroll={showScroll}
-              audio={audio}
-              noteHues={noteHues}
-            />
+            <BarGraphSpectrograph showLabels={showLabels} showScroll={showScroll} audio={audio} noteHues={noteHues} />
           )}
 
           {showWaterfallSpectrograph && (
-            <WaterfallSpectrograph
-              showLabels={showLabels}
-              showScroll={showScroll}
-              audio={audio}
-              noteHues={noteHues}
-            />
+            <WaterfallSpectrograph showLabels={showLabels} showScroll={showScroll} audio={audio} noteHues={noteHues} />
           )}
         </>
       )}
@@ -140,13 +118,7 @@ export default function VisualizersContainer({
         />
       )}
 
-      {midiNotes && midiNotes.length > 0 && (
-        <PianoRoll
-          notes={midiNotes}
-          isPlaying={isPlaying}
-          noteHues={noteHues}
-        />
-      )}
+      {midiNotes && midiNotes.length > 0 && <PianoRoll notes={midiNotes} isPlaying={isPlaying} noteHues={noteHues} />}
     </div>
   );
 }

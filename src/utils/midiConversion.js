@@ -34,14 +34,7 @@ const SAMPLE_RATE = 22050;
 const HOP_LENGTH = 256;
 const FRAME_DURATION = HOP_LENGTH / SAMPLE_RATE;
 
-function buildNotes(
-  frames,
-  onsets,
-  contours,
-  onsetThreshold,
-  frameThreshold,
-  minDurationSec
-) {
+function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, minDurationSec) {
   const notes = [];
   const activeNotes = new Map();
 
@@ -108,9 +101,7 @@ function buildNotes(
 
 async function resampleAudio(audioBuffer, targetSampleRate = 22050) {
   const sourceSampleRate = audioBuffer.sampleRate;
-  const length = Math.round(
-    audioBuffer.length * (targetSampleRate / sourceSampleRate)
-  );
+  const length = Math.round(audioBuffer.length * (targetSampleRate / sourceSampleRate));
   const offlineContext = new OfflineAudioContext(1, length, targetSampleRate);
   const bufferSource = offlineContext.createBufferSource();
   bufferSource.buffer = audioBuffer;
@@ -135,13 +126,7 @@ function convertToMono(audioBuffer) {
   return monoBuffer;
 }
 
-export async function convertAudioToMidi(
-  mp3File,
-  progressCallback,
-  onsetThreshold,
-  frameThreshold,
-  minDurationSec
-) {
+export async function convertAudioToMidi(mp3File, progressCallback, onsetThreshold, frameThreshold, minDurationSec) {
   await initializeModel();
   const arrayBuffer = await mp3File.arrayBuffer();
   const audioContext = new AudioContext();
@@ -167,12 +152,5 @@ export async function convertAudioToMidi(
     (p) => progressCallback(p * 100)
   );
 
-  return buildNotes(
-    frames,
-    onsets,
-    contours,
-    onsetThreshold,
-    frameThreshold,
-    minDurationSec
-  );
+  return buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, minDurationSec);
 }

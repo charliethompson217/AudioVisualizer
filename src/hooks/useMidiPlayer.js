@@ -74,10 +74,7 @@ export function useMidiPlayer(midiFile, synthesizer, isPlaying) {
               startTime: eventTimeSec,
               velocity: event.velocity,
             };
-          } else if (
-            event.type === 'noteOff' ||
-            (event.type === 'noteOn' && event.velocity === 0)
-          ) {
+          } else if (event.type === 'noteOff' || (event.type === 'noteOn' && event.velocity === 0)) {
             const note = activeMap[event.noteNumber];
             if (note) {
               notesResult.push({
@@ -107,18 +104,14 @@ export function useMidiPlayer(midiFile, synthesizer, isPlaying) {
           }
 
           trackTime += event.deltaTime;
-          const delay =
-            (trackTime / ticksPerBeat) * (microsecondsPerBeat / 1000000);
+          const delay = (trackTime / ticksPerBeat) * (microsecondsPerBeat / 1000000);
 
           if (event.type === 'noteOn' && event.velocity > 0) {
             const timeoutId = setTimeout(() => {
               synthesizer?.noteOn(event.noteNumber, event.velocity, true);
             }, delay * 1000);
             timeoutsRef.current.push(timeoutId);
-          } else if (
-            event.type === 'noteOff' ||
-            (event.type === 'noteOn' && event.velocity === 0)
-          ) {
+          } else if (event.type === 'noteOff' || (event.type === 'noteOn' && event.velocity === 0)) {
             const timeoutId = setTimeout(() => {
               synthesizer?.noteOff(event.noteNumber);
             }, delay * 1000);

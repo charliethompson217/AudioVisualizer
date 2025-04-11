@@ -22,27 +22,9 @@ import Cookies from 'js-cookie';
 const COOKIE_NAME = 'note-hues-settings';
 const COOKIE_EXPIRY = 365; // Days
 
-export default function ColorSettingsModal({
-  noteHues,
-  setNoteHues,
-  setShowColorSettings,
-  defaultNoteHues,
-}) {
+export default function ColorSettingsModal({ noteHues, setNoteHues, setShowColorSettings, defaultNoteHues }) {
   const [localHues, setLocalHues] = useState([...noteHues]);
-  const noteNames = [
-    'C',
-    'C#',
-    'D',
-    'D#',
-    'E',
-    'F',
-    'F#',
-    'G',
-    'G#',
-    'A',
-    'A#',
-    'B',
-  ];
+  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
   useEffect(() => {
     const savedHues = Cookies.get(COOKIE_NAME);
@@ -129,9 +111,7 @@ export default function ColorSettingsModal({
                   min="0"
                   max="360"
                   value={localHues[index]}
-                  onChange={(e) =>
-                    handleHueChange(index, parseInt(e.target.value))
-                  }
+                  onChange={(e) => handleHueChange(index, parseInt(e.target.value))}
                   style={{ flex: '1', margin: '0 15px' }}
                 />
                 <span
@@ -150,12 +130,7 @@ export default function ColorSettingsModal({
                   min="0"
                   max="360"
                   value={localHues[index]}
-                  onChange={(e) =>
-                    handleHueChange(
-                      index,
-                      Math.min(360, Math.max(0, parseInt(e.target.value) || 0))
-                    )
-                  }
+                  onChange={(e) => handleHueChange(index, Math.min(360, Math.max(0, parseInt(e.target.value) || 0)))}
                   style={{
                     width: '50px',
                     marginLeft: '10px',

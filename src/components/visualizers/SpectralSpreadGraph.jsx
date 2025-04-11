@@ -18,13 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React, { useRef, useEffect } from 'react';
 
-export default function SpectralSpreadGraph({
-  spectralCentroid,
-  spectralSpread,
-  isPlaying,
-  sampleRate,
-  bufferSize,
-}) {
+export default function SpectralSpreadGraph({ spectralCentroid, spectralSpread, isPlaying, sampleRate, bufferSize }) {
   const sketchRef = useRef();
   const p5InstanceRef = useRef(null);
   const spectralCentroidRef = useRef(spectralCentroid);
@@ -33,13 +27,11 @@ export default function SpectralSpreadGraph({
   const bufferSizeRef = useRef(bufferSize);
 
   useEffect(() => {
-    spectralCentroidRef.current =
-      (spectralCentroid * sampleRateRef.current) / bufferSizeRef.current;
+    spectralCentroidRef.current = (spectralCentroid * sampleRateRef.current) / bufferSizeRef.current;
   }, [spectralCentroid]);
 
   useEffect(() => {
-    spectralSpreadRef.current =
-      (spectralSpread * sampleRateRef.current) / bufferSizeRef.current;
+    spectralSpreadRef.current = (spectralSpread * sampleRateRef.current) / bufferSizeRef.current;
   }, [spectralSpread]);
 
   useEffect(() => {
@@ -69,11 +61,7 @@ export default function SpectralSpreadGraph({
       p.draw = () => {
         p.background(0);
 
-        if (
-          isPlaying &&
-          spectralCentroidRef.current !== undefined &&
-          spectralSpreadRef.current !== undefined
-        ) {
+        if (isPlaying && spectralCentroidRef.current !== undefined && spectralSpreadRef.current !== undefined) {
           history.push({
             centroid: spectralCentroidRef.current,
             spread: spectralSpreadRef.current,
@@ -96,10 +84,7 @@ export default function SpectralSpreadGraph({
         for (let i = 0; i < history.length; i++) {
           const entry = history[i];
           const value = entry.centroid;
-          const cappedValue = Math.min(
-            Math.max(value, minFrequency),
-            maxFrequency
-          );
+          const cappedValue = Math.min(Math.max(value, minFrequency), maxFrequency);
           const logValue = Math.log2(cappedValue);
           const x = p.map(logValue, logMin, logMax, 0, width);
           const y = p.map(i, 0, history.length - 1, baseHeight, 0);
@@ -112,10 +97,7 @@ export default function SpectralSpreadGraph({
         for (let i = 0; i < history.length; i++) {
           const entry = history[i];
           const value = entry.centroid + entry.spread / 2;
-          const cappedValue = Math.min(
-            Math.max(value, minFrequency),
-            maxFrequency
-          );
+          const cappedValue = Math.min(Math.max(value, minFrequency), maxFrequency);
           const logValue = Math.log2(cappedValue);
           const x = p.map(logValue, logMin, logMax, 0, width);
           const y = p.map(i, 0, history.length - 1, baseHeight, 0);
@@ -128,10 +110,7 @@ export default function SpectralSpreadGraph({
         for (let i = 0; i < history.length; i++) {
           const entry = history[i];
           const value = entry.centroid - entry.spread / 2;
-          const cappedValue = Math.min(
-            Math.max(value, minFrequency),
-            maxFrequency
-          );
+          const cappedValue = Math.min(Math.max(value, minFrequency), maxFrequency);
           const logValue = Math.log2(cappedValue);
           const x = p.map(logValue, logMin, logMax, 0, width);
           const y = p.map(i, 0, history.length - 1, baseHeight, 0);
@@ -144,11 +123,7 @@ export default function SpectralSpreadGraph({
         p.textSize(16);
         p.textAlign(p.RIGHT, p.TOP);
         if (isPlaying) {
-          p.text(
-            `Spectral Centroid: ${spectralCentroidRef.current?.toFixed(2)} Hz`,
-            width - 20,
-            20
-          );
+          p.text(`Spectral Centroid: ${spectralCentroidRef.current?.toFixed(2)} Hz`, width - 20, 20);
         }
       };
     };

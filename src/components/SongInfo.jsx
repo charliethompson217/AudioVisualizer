@@ -18,12 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React from 'react';
 
-export default function SongInfo({
-  currentSongName,
-  isProcessing,
-  bpm,
-  scaleKey,
-}) {
+export default function SongInfo({ currentSongName, isProcessing, bpm, scaleKey }) {
   return (
     <div className="SongTitle">
       {currentSongName && <h1 style={{ color: 'white' }}>{currentSongName}</h1>}

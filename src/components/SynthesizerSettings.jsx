@@ -79,10 +79,7 @@ export default function SynthesizerSettings({
         <div className="oscillator-type">
           <label>
             Oscillator Type:
-            <select
-              value={oscillatorType}
-              onChange={(e) => updateSetting('oscillatorType', e.target.value)}
-            >
+            <select value={oscillatorType} onChange={(e) => updateSetting('oscillatorType', e.target.value)}>
               <option value="custom">Custom harmonics</option>
               <option value="sine">Sine</option>
               <option value="square">Square</option>
@@ -105,9 +102,7 @@ export default function SynthesizerSettings({
                     max="1.00"
                     step="0.001"
                     value={harmonicAmplitudes[harmonic]}
-                    onChange={(e) =>
-                      handleHarmonicChange(harmonic, parseFloat(e.target.value))
-                    }
+                    onChange={(e) => handleHarmonicChange(harmonic, parseFloat(e.target.value))}
                     className="harmonic-slider"
                   />
                 </label>
@@ -128,9 +123,7 @@ export default function SynthesizerSettings({
             max="2"
             step="0.001"
             value={attackTime}
-            onChange={(e) =>
-              updateSetting('attackTime', parseFloat(e.target.value))
-            }
+            onChange={(e) => updateSetting('attackTime', parseFloat(e.target.value))}
             className="harmonic-slider"
           />
         </label>
@@ -144,9 +137,7 @@ export default function SynthesizerSettings({
             max="2"
             step="0.001"
             value={decayTime}
-            onChange={(e) =>
-              updateSetting('decayTime', parseFloat(e.target.value))
-            }
+            onChange={(e) => updateSetting('decayTime', parseFloat(e.target.value))}
             className="harmonic-slider"
           />
         </label>
@@ -160,9 +151,7 @@ export default function SynthesizerSettings({
             max="1"
             step="0.001"
             value={sustainLevel}
-            onChange={(e) =>
-              updateSetting('sustainLevel', parseFloat(e.target.value))
-            }
+            onChange={(e) => updateSetting('sustainLevel', parseFloat(e.target.value))}
             className="harmonic-slider"
           />
         </label>
@@ -176,9 +165,7 @@ export default function SynthesizerSettings({
             max="5"
             step="0.001"
             value={releaseTime}
-            onChange={(e) =>
-              updateSetting('releaseTime', parseFloat(e.target.value))
-            }
+            onChange={(e) => updateSetting('releaseTime', parseFloat(e.target.value))}
             className="harmonic-slider"
           />
         </label>
@@ -194,9 +181,7 @@ export default function SynthesizerSettings({
             max="100.00"
             step="0.001"
             value={vibratoDepth}
-            onChange={(e) =>
-              updateSetting('vibratoDepth', parseFloat(e.target.value))
-            }
+            onChange={(e) => updateSetting('vibratoDepth', parseFloat(e.target.value))}
             className="harmonic-slider"
           />
         </label>
@@ -210,9 +195,7 @@ export default function SynthesizerSettings({
             max="20.00"
             step="0.001"
             value={vibratoRate}
-            onChange={(e) =>
-              updateSetting('vibratoRate', parseFloat(e.target.value))
-            }
+            onChange={(e) => updateSetting('vibratoRate', parseFloat(e.target.value))}
             className="harmonic-slider"
           />
         </label>
@@ -227,9 +210,7 @@ export default function SynthesizerSettings({
             max="1.00"
             step="0.001"
             value={tremoloDepth}
-            onChange={(e) =>
-              updateSetting('tremoloDepth', parseFloat(e.target.value))
-            }
+            onChange={(e) => updateSetting('tremoloDepth', parseFloat(e.target.value))}
             className="harmonic-slider"
           />
         </label>
@@ -243,9 +224,7 @@ export default function SynthesizerSettings({
             max="20.00"
             step="0.001"
             value={tremoloRate}
-            onChange={(e) =>
-              updateSetting('tremoloRate', parseFloat(e.target.value))
-            }
+            onChange={(e) => updateSetting('tremoloRate', parseFloat(e.target.value))}
             className="harmonic-slider"
           />
         </label>

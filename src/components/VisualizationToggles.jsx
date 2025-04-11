@@ -78,9 +78,7 @@ export default function VisualizationToggles({
           className="control-checkbox"
           type="checkbox"
           checked={showWaterfallSpectrograph}
-          onChange={() =>
-            setShowWaterfallSpectrograph(!showWaterfallSpectrograph)
-          }
+          onChange={() => setShowWaterfallSpectrograph(!showWaterfallSpectrograph)}
         />
       </label>
       <label className="control-label">
@@ -112,12 +110,7 @@ export default function VisualizationToggles({
       </label>
       <label className="control-label">
         RMS
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={rms}
-          onChange={() => setRms(!rms)}
-        />
+        <input className="control-checkbox" type="checkbox" checked={rms} onChange={() => setRms(!rms)} />
       </label>
       <label className="control-label">
         Spectral Centroid + Spread Graph

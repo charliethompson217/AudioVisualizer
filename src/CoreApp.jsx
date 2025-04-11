@@ -32,9 +32,7 @@ import Footer from './components/Footer.jsx';
 import BasicPitchSettings from './components/BasicPitchSettings.jsx';
 
 export default function CoreApp() {
-  const defaultNoteHues = [
-    0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330,
-  ];
+  const defaultNoteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
 
   const synthesizerPresets = {
     None: {
@@ -126,8 +124,7 @@ export default function CoreApp() {
   const [bpmAndKey, setBpmAndKey] = useState(true);
   const [showWaveform, setShowWaveform] = useState(true);
   const [showSpectrograph, setShowSpectrograph] = useState(true);
-  const [showWaterfallSpectrograph, setShowWaterfallSpectrograph] =
-    useState(false);
+  const [showWaterfallSpectrograph, setShowWaterfallSpectrograph] = useState(false);
   const [chromaCircle, setChromaCircle] = useState(true);
   const [chromaLine, setChromaLine] = useState(false);
   const [rms, setRms] = useState(true);
@@ -141,9 +138,7 @@ export default function CoreApp() {
   const [selectedSongFileName, setSelectedSongFileName] = useState('');
   const [fetchingSong, setFetchingSong] = useState(false);
 
-  const [synthesizerSettings, setSynthesizerSettings] = useState(
-    synthesizerPresets.None
-  );
+  const [synthesizerSettings, setSynthesizerSettings] = useState(synthesizerPresets.None);
   const [selectedPreset, setSelectedPreset] = useState('None');
 
   const audio = useAudio(
@@ -165,16 +160,7 @@ export default function CoreApp() {
     minDurationSec
   );
 
-  const {
-    bpm,
-    scaleKey,
-    isProcessing,
-    isConverting,
-    conversionComplete,
-    warning,
-    progress,
-    midiNotes,
-  } = audio;
+  const { bpm, scaleKey, isProcessing, isConverting, conversionComplete, warning, progress, midiNotes } = audio;
 
   const setWarningMessage = (message) => {
     console.warn(message);
@@ -249,12 +235,7 @@ export default function CoreApp() {
   return (
     <div className="App">
       <div className="main-container">
-        <SongInfo
-          currentSongName={currentSongName}
-          isProcessing={isProcessing}
-          bpm={bpm}
-          scaleKey={scaleKey}
-        />
+        <SongInfo currentSongName={currentSongName} isProcessing={isProcessing} bpm={bpm} scaleKey={scaleKey} />
 
         {showColorSettings && (
           <ColorSettingsModal
@@ -319,10 +300,7 @@ export default function CoreApp() {
           setMeydaBufferSize={setMeydaBufferSize}
         />
 
-        <button
-          className="control-button"
-          onClick={() => setShowColorSettings(true)}
-        >
+        <button className="control-button" onClick={() => setShowColorSettings(true)}>
           Color Settings
         </button>
 

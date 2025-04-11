@@ -51,12 +51,7 @@ export default class Synthesizer {
     this.releaseTime = releaseTime;
   }
 
-  updateVibratoAndTremolo({
-    vibratoDepth,
-    vibratoRate,
-    tremoloDepth,
-    tremoloRate,
-  }) {
+  updateVibratoAndTremolo({ vibratoDepth, vibratoRate, tremoloDepth, tremoloRate }) {
     this.vibratoDepth = vibratoDepth;
     this.vibratoRate = vibratoRate;
     this.tremoloDepth = tremoloDepth;
@@ -66,10 +61,7 @@ export default class Synthesizer {
   noteOn(noteNumber, velocity = 127) {
     const frequency = this.midiNoteToFrequency(noteNumber);
     const volume = (velocity / 127) * this.getVolume();
-    const partials = Array.from(
-      { length: 8 },
-      (_, i) => this.harmonicAmplitudes[i + 1] || 0
-    );
+    const partials = Array.from({ length: 8 }, (_, i) => this.harmonicAmplitudes[i + 1] || 0);
 
     const { attackTime, decayTime, sustainLevel, releaseTime } = this;
 

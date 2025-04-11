@@ -41,9 +41,7 @@ export default function SongSelector({
     const selectedFileName = e.target.value;
     if (!selectedFileName) return;
 
-    const selectedSong = songs.find(
-      (song) => song.fileName === selectedFileName
-    );
+    const selectedSong = songs.find((song) => song.fileName === selectedFileName);
     if (!selectedSong) return;
 
     const songName = `${selectedSong.artist} - ${selectedSong.title}`;
@@ -71,9 +69,7 @@ export default function SongSelector({
 
   return (
     <div className="song-selector-container" style={{ maxWidth: '100%' }}>
-      <label
-        style={{ display: 'flex', flexDirection: 'column', width: '100%' }}
-      >
+      <label style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         Select Song:
         <select
           value={selectedSongFileName}
@@ -96,10 +92,8 @@ export default function SongSelector({
       </label>
       {isLoading && <p>Loading song...</p>}
       <p style={{ maxWidth: '100%', wordWrap: 'break-word' }}>
-        All music is from{' '}
-        <a href="https://freemusicarchive.org">Free Music Archive</a> under the
-        Creative Commons liscence Attribution-NonCommercial-ShareAlike (CC
-        BY-NC-SA).
+        All music is from <a href="https://freemusicarchive.org">Free Music Archive</a> under the Creative Commons
+        liscence Attribution-NonCommercial-ShareAlike (CC BY-NC-SA).
       </p>
     </div>
   );

@@ -49,14 +49,8 @@ export default function WaterfallSpectrograph({
       const f0 = 8.1758; // Frequency of C-1 in Hz
 
       const updateCanvasSize = () => {
-        let vw = Math.min(
-          document.documentElement.clientWidth || 0,
-          window.innerWidth || 0
-        );
-        let vh = Math.min(
-          document.documentElement.clientHeight || 0,
-          window.innerHeight || 0
-        );
+        let vw = Math.min(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        let vh = Math.min(document.documentElement.clientHeight || 0, window.innerHeight || 0);
         const canvasWidth = Math.floor(0.99 * vw);
         const canvasHeight = Math.floor(Math.min((vw / 16) * 10, vh));
         p.resizeCanvas(canvasWidth, canvasHeight);
@@ -70,14 +64,8 @@ export default function WaterfallSpectrograph({
       p.setup = () => {
         p.pixelDensity(1);
         // Create canvas with initial dimensions
-        let vw = Math.min(
-          document.documentElement.clientWidth || 0,
-          window.innerWidth || 0
-        );
-        let vh = Math.min(
-          document.documentElement.clientHeight || 0,
-          window.innerHeight || 0
-        );
+        let vw = Math.min(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        let vh = Math.min(document.documentElement.clientHeight || 0, window.innerHeight || 0);
         const canvasWidth = Math.floor(0.99 * vw);
         const canvasHeight = Math.floor(Math.min((vw / 16) * 10, vh));
 
@@ -115,13 +103,7 @@ export default function WaterfallSpectrograph({
 
         // Draw new spectrum at top row
         for (let x = 0; x < buffer.width; x++) {
-          const semitone = p.map(
-            x,
-            0,
-            buffer.width,
-            minSemitoneValue,
-            maxSemitoneValue
-          );
+          const semitone = p.map(x, 0, buffer.width, minSemitoneValue, maxSemitoneValue);
           const freq = f0 * Math.pow(2, semitone / 12);
           const i = Math.floor((freq * analyser.fftSize) / sampleRate);
           let energy = 0;
@@ -137,16 +119,8 @@ export default function WaterfallSpectrograph({
             0,
             50
           );
-          const alpha = p.map(
-            Math.pow(energy, brightnessRef.current),
-            0,
-            Math.pow(255, brightnessRef.current),
-            0,
-            255
-          );
-          const color = p.color(
-            `hsla(${hue}, 100%, ${lightness}%, ${alpha / 255})`
-          );
+          const alpha = p.map(Math.pow(energy, brightnessRef.current), 0, Math.pow(255, brightnessRef.current), 0, 255);
+          const color = p.color(`hsla(${hue}, 100%, ${lightness}%, ${alpha / 255})`);
           const index = x * 4;
           if (energy > cutoffRef.current) {
             pixels[index] = p.red(color);
@@ -182,9 +156,7 @@ export default function WaterfallSpectrograph({
       <h2>Waterfall Spectrograph</h2>
       <div className="has-border" style={{ width: '90%' }}>
         <div style={{ margin: '20px 40px' }}>
-          <label htmlFor="brightnessSlider">
-            Brightness exponent: {brightness.toFixed(2)}
-          </label>
+          <label htmlFor="brightnessSlider">Brightness exponent: {brightness.toFixed(2)}</label>
           <input
             id="brightnessSlider"
             type="range"
@@ -197,9 +169,7 @@ export default function WaterfallSpectrograph({
           />
         </div>
         <div style={{ margin: '20px 40px' }}>
-          <label htmlFor="cutoffSlider">
-            Minimum energey threshold: {cutoff}
-          </label>
+          <label htmlFor="cutoffSlider">Minimum energey threshold: {cutoff}</label>
           <input
             id="cutoffSlider"
             type="range"

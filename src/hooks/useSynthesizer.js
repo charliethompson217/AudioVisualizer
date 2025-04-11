@@ -19,13 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 import { useRef, useEffect } from 'react';
 import Synthesizer from '../utils/Synthesizer';
 
-export function useSynthesizer(
-  audioContext,
-  analyser,
-  isPlaying,
-  settings,
-  volumeRef
-) {
+export function useSynthesizer(audioContext, analyser, isPlaying, settings, volumeRef) {
   const synthesizerRef = useRef(null);
 
   useEffect(() => {
@@ -69,9 +63,7 @@ export function useSynthesizer(
       synthesizerRef.current.updateOscillatorType(settings.oscillatorType);
 
       // Update harmonic amplitudes
-      synthesizerRef.current.updateHarmonicAmplitudes(
-        settings.harmonicAmplitudes
-      );
+      synthesizerRef.current.updateHarmonicAmplitudes(settings.harmonicAmplitudes);
 
       // Update ADSR
       synthesizerRef.current.updateADSR({

@@ -23,8 +23,7 @@ export async function initializeEssentia() {
   if (!window.EssentiaWASM) {
     await new Promise((resolve) => {
       const script = document.createElement('script');
-      script.src =
-        'https://cdn.jsdelivr.net/npm/essentia.js@latest/dist/essentia-wasm.web.js';
+      script.src = 'https://cdn.jsdelivr.net/npm/essentia.js@latest/dist/essentia-wasm.web.js';
       script.onload = resolve;
       document.head.appendChild(script);
     });
@@ -49,11 +48,7 @@ export async function processAudioFileEssentia(mp3File) {
     const monoAudio = monomix(audioBuffer);
 
     const targetSR = 22050;
-    const downsampled = downsampleArray(
-      monoAudio,
-      audioBuffer.sampleRate,
-      targetSR
-    );
+    const downsampled = downsampleArray(monoAudio, audioBuffer.sampleRate, targetSR);
 
     const vectorSignal = essentia.arrayToVector(downsampled);
 

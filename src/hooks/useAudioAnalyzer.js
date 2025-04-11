@@ -69,12 +69,7 @@ export function useAudioAnalyzer(
         audioContext: audioContext,
         source: analyser,
         bufferSize: meydaBufferSizeRef.current,
-        featureExtractors: [
-          'chroma',
-          'rms',
-          'spectralCentroid',
-          'spectralSpread',
-        ],
+        featureExtractors: ['chroma', 'rms', 'spectralCentroid', 'spectralSpread'],
         callback: (features) => {
           setChroma(features.chroma || []);
           setRms(features.rms || 0);

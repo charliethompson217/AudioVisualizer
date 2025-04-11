@@ -108,10 +108,7 @@ export default function PlaybackControls({
                     {String(Math.floor(currentTime / 60)).padStart(2, '0')}:
                     {String(Math.floor(currentTime % 60)).padStart(2, '0')}
                   </span>
-                  <div
-                    className="seek-slider"
-                    style={{ flex: 1, margin: '0 15px' }}
-                  >
+                  <div className="seek-slider" style={{ flex: 1, margin: '0 15px' }}>
                     <input
                       type="range"
                       min="0"

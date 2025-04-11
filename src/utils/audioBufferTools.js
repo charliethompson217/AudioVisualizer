@@ -40,11 +40,7 @@ export function downsampleArray(audioIn, sampleRateIn, sampleRateOut) {
     let accum = 0,
       count = 0;
 
-    for (
-      let i = offsetAudioIn;
-      i < nextOffsetAudioIn && i < audioIn.length;
-      i++
-    ) {
+    for (let i = offsetAudioIn; i < nextOffsetAudioIn && i < audioIn.length; i++) {
       accum += audioIn[i];
       count++;
     }

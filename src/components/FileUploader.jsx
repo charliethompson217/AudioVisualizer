@@ -37,11 +37,7 @@ export default function FileUploader({
         setMp3File(null);
         setPianoEnabled(true);
         setSelectedSongFileName('');
-      } else if (
-        fileName.endsWith('.mp3') ||
-        fileName.endsWith('.wav') ||
-        fileName.endsWith('.ogg')
-      ) {
+      } else if (fileName.endsWith('.mp3') || fileName.endsWith('.wav') || fileName.endsWith('.ogg')) {
         setMp3File(file);
         setMidiFile(null);
       }

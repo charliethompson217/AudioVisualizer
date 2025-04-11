@@ -65,10 +65,7 @@ export default function Waveform({ audio }) {
         p.background(0);
 
         p.push();
-        p.translate(
-          -p.width * (currentStretchFactor - 1),
-          (-baseHeight * (currentVerticalStretchFactor - 1)) / 2
-        );
+        p.translate(-p.width * (currentStretchFactor - 1), (-baseHeight * (currentVerticalStretchFactor - 1)) / 2);
         p.scale(currentStretchFactor, currentVerticalStretchFactor);
 
         analyser.getByteTimeDomainData(dataArray);
@@ -107,9 +104,7 @@ export default function Waveform({ audio }) {
       {/* Slider for Horizontal Stretch Factor */}
       <div className="has-border" style={{ width: '90%' }}>
         <div style={{ margin: '20px 40px' }}>
-          <label htmlFor="horizontalStretchSlider">
-            Horizontal Stretch coefficient: {stretchFactor.toFixed(2)}x
-          </label>
+          <label htmlFor="horizontalStretchSlider">Horizontal Stretch coefficient: {stretchFactor.toFixed(2)}x</label>
           <input
             id="horizontalStretchSlider"
             type="range"
@@ -134,9 +129,7 @@ export default function Waveform({ audio }) {
             max="20"
             step="0.01"
             value={verticalStretchFactor}
-            onChange={(e) =>
-              setVerticalStretchFactor(parseFloat(e.target.value))
-            }
+            onChange={(e) => setVerticalStretchFactor(parseFloat(e.target.value))}
             style={{ width: '100%' }}
           />
         </div>

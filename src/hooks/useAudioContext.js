@@ -46,8 +46,7 @@ export function useAudioContext(mp3File, useMic, isPlaying) {
     }
 
     if (!audioContextRef.current) {
-      const audioContext = new (window.AudioContext ||
-        window.webkitAudioContext)({
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)({
         latencyHint: 'interactive',
       });
       audioContextRef.current = audioContext;
@@ -84,8 +83,7 @@ export function useAudioContext(mp3File, useMic, isPlaying) {
         audioElement = new Audio(fileURL);
       }
       audioElement.crossOrigin = 'anonymous';
-      const source =
-        audioContextRef.current.createMediaElementSource(audioElement);
+      const source = audioContextRef.current.createMediaElementSource(audioElement);
       source.connect(analyserRef.current);
       analyserRef.current.connect(audioContextRef.current.destination);
       sourceRef.current = source;
@@ -98,10 +96,7 @@ export function useAudioContext(mp3File, useMic, isPlaying) {
     }
 
     return () => {
-      if (
-        sourceRef.current &&
-        sourceRef.current instanceof MediaStreamAudioSourceNode
-      ) {
+      if (sourceRef.current && sourceRef.current instanceof MediaStreamAudioSourceNode) {
         const tracks = sourceRef.current.mediaStream.getTracks();
         tracks.forEach((track) => track.stop());
       }

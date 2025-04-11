@@ -18,20 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React, { useEffect, useRef, useState } from 'react';
 
-const baseNotes = [
-  'C',
-  'C#',
-  'D',
-  'D#',
-  'E',
-  'F',
-  'F#',
-  'G',
-  'G#',
-  'A',
-  'A#',
-  'B',
-];
+const baseNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 export default function PianoRoll({
   notes,
@@ -84,9 +71,7 @@ export default function PianoRoll({
           const xPos = note.startSec * scale - scrollX + p.width / 2;
           const rectWidth = note.durationSec * scale;
           const noteIsActive =
-            isPlaying &&
-            elapsedTime >= note.startSec &&
-            elapsedTime <= note.startSec + note.durationSec;
+            isPlaying && elapsedTime >= note.startSec && elapsedTime <= note.startSec + note.durationSec;
           const index = note.noteNumber % 12;
           let color = `hsl(${noteHues[index]}, 100%, 35%)`;
           if (noteIsActive) {
@@ -134,10 +119,7 @@ export default function PianoRoll({
   }, [notes, isPlaying, noteHues]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', maxWidth: '100vw', overflow: 'hidden' }}
-    >
+    <div ref={containerRef} style={{ width: '100%', maxWidth: '100vw', overflow: 'hidden' }}>
       <h2>Piano Roll</h2>
       <div
         style={{
@@ -164,11 +146,7 @@ export default function PianoRoll({
         />
         <div style={{ marginTop: '10px' }}>
           <label>
-            <input
-              type="checkbox"
-              checked={showLabels}
-              onChange={() => setShowLabels(!showLabels)}
-            />
+            <input type="checkbox" checked={showLabels} onChange={() => setShowLabels(!showLabels)} />
             Show Labels
           </label>
         </div>

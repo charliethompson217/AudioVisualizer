@@ -58,48 +58,32 @@ export function useAudio(
   const [progress, setProgress] = useState(0);
 
   // Setup audio context and basic audio processing
-  const {
-    audioContext,
-    analyser,
-    sampleRate,
-    duration,
-    play,
-    pause,
-    seek,
-    getCurrentTime,
-  } = useAudioContext(mp3File, useMic, isPlaying);
-
-  // Initialize and manage synthesizer
-  const synthesizer = useSynthesizer(
-    audioContext,
-    analyser,
-    isPlaying,
-    synthesizerSettings,
-    volumeRef
+  const { audioContext, analyser, sampleRate, duration, play, pause, seek, getCurrentTime } = useAudioContext(
+    mp3File,
+    useMic,
+    isPlaying
   );
 
+  // Initialize and manage synthesizer
+  const synthesizer = useSynthesizer(audioContext, analyser, isPlaying, synthesizerSettings, volumeRef);
+
   // Setup audio analysis with Web Audio API and Meyda
-  const { dataArray, chroma, rms, spectralCentroid, spectralSpread } =
-    useAudioAnalyzer(
-      analyser,
-      audioContext,
-      isPlaying,
-      bins,
-      smoothing,
-      minDecibels,
-      maxDecibels,
-      meydaBufferSize
-    );
+  const { dataArray, chroma, rms, spectralCentroid, spectralSpread } = useAudioAnalyzer(
+    analyser,
+    audioContext,
+    isPlaying,
+    bins,
+    smoothing,
+    minDecibels,
+    maxDecibels,
+    meydaBufferSize
+  );
 
   // Handle MIDI file parsing and playback
   const { midiNotes } = useMidiPlayer(midiFile, synthesizer, isPlaying);
 
   // Handle keyboard input for piano
-  const { currentVolume } = useKeyboardInput(
-    synthesizer,
-    isPlaying,
-    pianoEnabled
-  );
+  const { currentVolume } = useKeyboardInput(synthesizer, isPlaying, pianoEnabled);
 
   // Update volumeRef when keyboard input changes the volume
   useEffect(() => {
@@ -138,13 +122,7 @@ export function useAudio(
       setWarning(null);
 
       try {
-        const notes = await convertAudioToMidi(
-          mp3File,
-          setProgress,
-          onsetThreshold,
-          frameThreshold,
-          minDurationSec
-        );
+        const notes = await convertAudioToMidi(mp3File, setProgress, onsetThreshold, frameThreshold, minDurationSec);
 
         setConvertedMidiNotes(notes);
         setConversionComplete(true);
@@ -158,13 +136,7 @@ export function useAudio(
     };
 
     convertMidi();
-  }, [
-    mp3File,
-    generateBrowserMIDI,
-    onsetThreshold,
-    frameThreshold,
-    minDurationSec,
-  ]);
+  }, [mp3File, generateBrowserMIDI, onsetThreshold, frameThreshold, minDurationSec]);
 
   return {
     analyser,

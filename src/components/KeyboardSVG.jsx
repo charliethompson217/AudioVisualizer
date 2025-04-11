@@ -19,9 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 import React, { useState, useEffect } from 'react';
 
 const KeyboardSVG = ({ noteHues }) => {
-  const [windowWidth, setWindowWidth] = useState(
-    typeof window !== 'undefined' ? window.innerWidth : 0
-  );
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
   const svgWidth = 1000;
 
   useEffect(() => {
@@ -73,40 +71,20 @@ const KeyboardSVG = ({ noteHues }) => {
 
   return (
     <svg width="1000" height="300" xmlns="http://www.w3.org/2000/svg">
-      <g
-        fontFamily="Arial"
-        fontSize="16"
-        textAnchor="middle"
-        dominantBaseline="middle"
-      >
+      <g fontFamily="Arial" fontSize="16" textAnchor="middle" dominantBaseline="middle">
         {keysRow.map((row, rowIndex) =>
           row.map((key, keyIndex) => {
-            const x =
-              startX +
-              keyIndex * (keyWidth + keySpacing) +
-              (rowIndex === 1 ? 25 : rowIndex === 2 ? 50 : 0);
+            const x = startX + keyIndex * (keyWidth + keySpacing) + (rowIndex === 1 ? 25 : rowIndex === 2 ? 50 : 0);
             const y = startY + rowIndex * (keyHeight + keySpacing);
             const hue = coloredKeys[key];
-            const strokeColor =
-              hue !== undefined ? `hsl(${hue}, 100%, 50%)` : 'white';
+            const strokeColor = hue !== undefined ? `hsl(${hue}, 100%, 50%)` : 'white';
             const fillColor = 'transparent';
             const textColor = strokeColor;
 
             return (
               <g key={key}>
-                <rect
-                  x={x}
-                  y={y}
-                  width={keyWidth}
-                  height={keyHeight}
-                  stroke={strokeColor}
-                  fill={fillColor}
-                />
-                <text
-                  x={x + keyWidth / 2}
-                  y={y + keyHeight / 2}
-                  fill={textColor}
-                >
+                <rect x={x} y={y} width={keyWidth} height={keyHeight} stroke={strokeColor} fill={fillColor} />
+                <text x={x + keyWidth / 2} y={y + keyHeight / 2} fill={textColor}>
                   {key.toUpperCase()}
                 </text>
               </g>
@@ -117,14 +95,7 @@ const KeyboardSVG = ({ noteHues }) => {
         {/* Arrow keys */}
         {/* + Volume (Up Arrow) */}
         <g>
-          <rect
-            x={570}
-            y={120}
-            width={keyWidth}
-            height={keyHeight}
-            stroke="white"
-            fill="transparent"
-          />
+          <rect x={570} y={120} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
           <text x={570 + keyWidth / 2} y={120 + keyHeight / 2} fill="white">
             ↑
           </text>
@@ -132,14 +103,7 @@ const KeyboardSVG = ({ noteHues }) => {
 
         {/* - Volume (Down Arrow) */}
         <g>
-          <rect
-            x={570}
-            y={180}
-            width={keyWidth}
-            height={keyHeight}
-            stroke="white"
-            fill="transparent"
-          />
+          <rect x={570} y={180} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
           <text x={570 + keyWidth / 2} y={180 + keyHeight / 2} fill="white">
             ↓
           </text>
@@ -147,14 +111,7 @@ const KeyboardSVG = ({ noteHues }) => {
 
         {/* + Octave (Right Arrow) */}
         <g>
-          <rect
-            x={630}
-            y={180}
-            width={keyWidth}
-            height={keyHeight}
-            stroke="white"
-            fill="transparent"
-          />
+          <rect x={630} y={180} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
           <text x={630 + keyWidth / 2} y={180 + keyHeight / 2} fill="white">
             →
           </text>
@@ -162,14 +119,7 @@ const KeyboardSVG = ({ noteHues }) => {
 
         {/* - Octave (Left Arrow) */}
         <g>
-          <rect
-            x={510}
-            y={180}
-            width={keyWidth}
-            height={keyHeight}
-            stroke="white"
-            fill="transparent"
-          />
+          <rect x={510} y={180} width={keyWidth} height={keyHeight} stroke="white" fill="transparent" />
           <text x={510 + keyWidth / 2} y={180 + keyHeight / 2} fill="white">
             ←
           </text>

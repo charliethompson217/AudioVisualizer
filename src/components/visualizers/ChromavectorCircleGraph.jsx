@@ -62,15 +62,7 @@ export default function ChromavectorCircleGraph({
           const startAngle = i * sliceAngle;
           p.fill(noteHues[i], 100, 100);
           p.noStroke();
-          p.arc(
-            0,
-            0,
-            radius * 2,
-            radius * 2,
-            startAngle,
-            startAngle + sliceAngle,
-            p.PIE
-          );
+          p.arc(0, 0, radius * 2, radius * 2, startAngle, startAngle + sliceAngle, p.PIE);
         });
       };
     };

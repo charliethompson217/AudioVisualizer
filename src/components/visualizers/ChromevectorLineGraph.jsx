@@ -73,8 +73,7 @@ export default function ChromevectorLineGraph({
   });
 
   useEffect(() => {
-    const handleResize = () =>
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -84,14 +83,8 @@ export default function ChromevectorLineGraph({
       let canvas;
       let width;
 
-      let vw = Math.min(
-        document.documentElement.clientWidth || 0,
-        window.innerWidth || 0
-      );
-      let vh = Math.min(
-        document.documentElement.clientHeight || 0,
-        window.innerHeight || 0
-      );
+      let vw = Math.min(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+      let vh = Math.min(document.documentElement.clientHeight || 0, window.innerHeight || 0);
       const canvasWidth = 0.99 * vw;
       const canvasHeight = 0.95 * vh;
 
@@ -178,8 +171,7 @@ export default function ChromevectorLineGraph({
 
             <div style={{ margin: '20px 40px' }}>
               <label htmlFor="verticalStretchSlider">
-                Vertical Stretch coefficient: {verticalStretchFactor.toFixed(2)}
-                x
+                Vertical Stretch coefficient: {verticalStretchFactor.toFixed(2)}x
               </label>
               <input
                 id="verticalStretchSlider"
@@ -188,17 +180,13 @@ export default function ChromevectorLineGraph({
                 max="20"
                 step="0.01"
                 value={verticalStretchFactor}
-                onChange={(e) =>
-                  setVerticalStretchFactor(parseFloat(e.target.value))
-                }
+                onChange={(e) => setVerticalStretchFactor(parseFloat(e.target.value))}
                 style={{ width: '100%' }}
               />
             </div>
 
             <div style={{ margin: '20px 40px' }}>
-              <label htmlFor="verticalStretchExponentSlider">
-                Vertical Exponent: {verticleExponent.toFixed(2)}x
-              </label>
+              <label htmlFor="verticalStretchExponentSlider">Vertical Exponent: {verticleExponent.toFixed(2)}x</label>
               <input
                 id="verticalStretchExponentSlider"
                 type="range"
@@ -206,9 +194,7 @@ export default function ChromevectorLineGraph({
                 max="20"
                 step="0.01"
                 value={verticleExponent}
-                onChange={(e) =>
-                  setVerticleExponent(parseFloat(e.target.value))
-                }
+                onChange={(e) => setVerticleExponent(parseFloat(e.target.value))}
                 style={{ width: '100%' }}
               />
             </div>

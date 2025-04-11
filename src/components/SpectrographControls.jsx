@@ -36,18 +36,12 @@ export default function SpectrographControls({
     <div className="controls-row has-border spectrograph-controls">
       <label className="control-label">
         FFT Size:
-        <select
-          className="control-select"
-          value={bins}
-          onChange={(e) => setBins(parseInt(e.target.value, 10))}
-        >
-          {[32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768].map(
-            (power) => (
-              <option key={power} value={power}>
-                {power}
-              </option>
-            )
-          )}
+        <select className="control-select" value={bins} onChange={(e) => setBins(parseInt(e.target.value, 10))}>
+          {[32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768].map((power) => (
+            <option key={power} value={power}>
+              {power}
+            </option>
+          ))}
         </select>
       </label>
 
