@@ -26,8 +26,6 @@ export default function PlaybackControls({
   currentTime,
   duration,
   seek,
-  meydaBufferSize,
-  setMeydaBufferSize,
   conversionComplete,
   fetchingSong,
   progress,
@@ -41,22 +39,6 @@ export default function PlaybackControls({
 }) {
   return (
     <div style={{ display: 'block', overflow: 'visible', height: 'auto' }}>
-      {isPlaying && (
-        <label className="control-label">
-          Meyda Buffer Size
-          <select
-            value={meydaBufferSize}
-            onChange={(e) => setMeydaBufferSize(parseInt(e.target.value, 10))}
-            style={{ paddingLeft: '5px', paddingRight: '5px' }}
-          >
-            {[512, 1024, 2048, 4096, 8192, 16384].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
       <div
         className="controls-row"
         style={{

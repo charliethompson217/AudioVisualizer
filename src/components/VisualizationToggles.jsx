@@ -29,14 +29,6 @@ export default function VisualizationToggles({
   setShowWaterfallSpectrograph,
   pianoEnabled,
   setPianoEnabled,
-  generateBrowserMIDI,
-  setGenerateBrowserMIDI,
-  onsetThreshold,
-  setOnsetThreshold,
-  frameThreshold,
-  setFrameThreshold,
-  minDurationSec,
-  setMinDurationSec,
   chromaCircle,
   setChromaCircle,
   chromaLine,
@@ -46,18 +38,22 @@ export default function VisualizationToggles({
   spectralSpreadGraph,
   setSpectralSpreadGraph,
   isPlaying,
+  meydaBufferSize,
+  setMeydaBufferSize,
 }) {
   return (
     <div className="visualization-toggles">
-      <label className="control-label">
-        BPM and Key
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={bpmAndKey}
-          onChange={() => setBpmAndKey(!bpmAndKey)}
-        />
-      </label>
+      {!isPlaying && (
+        <label className="control-label">
+          BPM and Key
+          <input
+            className="control-checkbox"
+            type="checkbox"
+            checked={bpmAndKey}
+            onChange={() => setBpmAndKey(!bpmAndKey)}
+          />
+        </label>
+      )}
       <label className="control-label">
         Waveform
         <input
@@ -87,68 +83,15 @@ export default function VisualizationToggles({
           }
         />
       </label>
-      {!isPlaying && (
-        <label className="control-label">
-          Synthesizer
-          <input
-            className="control-checkbox"
-            type="checkbox"
-            checked={pianoEnabled}
-            onChange={() => setPianoEnabled(!pianoEnabled)}
-          />
-        </label>
-      )}
       <label className="control-label">
-        Generate MIDI
+        Synthesizer
         <input
+          className="control-checkbox"
           type="checkbox"
-          checked={generateBrowserMIDI}
-          onChange={(e) => {
-            const checked = e.target.checked;
-            setGenerateBrowserMIDI(checked);
-          }}
+          checked={pianoEnabled}
+          onChange={() => setPianoEnabled(!pianoEnabled)}
         />
       </label>
-      {generateBrowserMIDI && (
-        <>
-          <label className="control-label">
-            Onset Threshold
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={onsetThreshold}
-              onChange={(e) => setOnsetThreshold(parseFloat(e.target.value))}
-              style={{ width: '100%', maxWidth: '500px' }}
-            />
-          </label>
-          <label className="control-label">
-            Frame Threshold
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={frameThreshold}
-              onChange={(e) => setFrameThreshold(parseFloat(e.target.value))}
-              style={{ width: '100%', maxWidth: '500px' }}
-            />
-          </label>
-          <label className="control-label">
-            Min Duration (sec)
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={minDurationSec}
-              onChange={(e) => setMinDurationSec(parseFloat(e.target.value))}
-              style={{ width: '100%', maxWidth: '500px' }}
-            />
-          </label>
-        </>
-      )}
       <label className="control-label">
         Chroma Circle Graph
         <input
@@ -184,6 +127,20 @@ export default function VisualizationToggles({
           checked={spectralSpreadGraph}
           onChange={() => setSpectralSpreadGraph(!spectralSpreadGraph)}
         />
+      </label>
+      <label className="control-label">
+        Meyda Buffer Size
+        <select
+          value={meydaBufferSize}
+          onChange={(e) => setMeydaBufferSize(parseInt(e.target.value, 10))}
+          style={{ paddingLeft: '5px', paddingRight: '5px' }}
+        >
+          {[512, 1024, 2048, 4096, 8192, 16384].map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
       </label>
     </div>
   );

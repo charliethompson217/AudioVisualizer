@@ -29,6 +29,7 @@ import PlaybackControls from './components/PlaybackControls.jsx';
 import VisualizersContainer from './components/VisualizersContainer.jsx';
 import SongInfo from './components/SongInfo.jsx';
 import Footer from './components/Footer.jsx';
+import BasicPitchSettings from './components/BasicPitchSettings.jsx';
 
 export default function CoreApp() {
   const defaultNoteHues = [
@@ -255,17 +256,17 @@ export default function CoreApp() {
           scaleKey={scaleKey}
         />
 
+        {showColorSettings && (
+          <ColorSettingsModal
+            noteHues={noteHues}
+            setNoteHues={setNoteHues}
+            setShowColorSettings={setShowColorSettings}
+            defaultNoteHues={defaultNoteHues}
+          />
+        )}
+
         {!isPlaying && (
           <div>
-            {showColorSettings && (
-              <ColorSettingsModal
-                noteHues={noteHues}
-                setNoteHues={setNoteHues}
-                setShowColorSettings={setShowColorSettings}
-                defaultNoteHues={defaultNoteHues}
-              />
-            )}
-
             <SongSelector
               onSongSelect={handleSongSelect}
               selectedSongFileName={selectedSongFileName}
@@ -282,17 +283,7 @@ export default function CoreApp() {
               setSelectedSongFileName={setSelectedSongFileName}
             />
 
-            <VisualizationToggles
-              bpmAndKey={bpmAndKey}
-              setBpmAndKey={setBpmAndKey}
-              showWaveform={showWaveform}
-              setShowWaveform={setShowWaveform}
-              showSpectrograph={showSpectrograph}
-              setShowSpectrograph={setShowSpectrograph}
-              showWaterfallSpectrograph={showWaterfallSpectrograph}
-              setShowWaterfallSpectrograph={setShowWaterfallSpectrograph}
-              pianoEnabled={pianoEnabled}
-              setPianoEnabled={setPianoEnabled}
+            <BasicPitchSettings
               generateBrowserMIDI={generateBrowserMIDI}
               setGenerateBrowserMIDI={setGenerateBrowserMIDI}
               onsetThreshold={onsetThreshold}
@@ -301,25 +292,39 @@ export default function CoreApp() {
               setFrameThreshold={setFrameThreshold}
               minDurationSec={minDurationSec}
               setMinDurationSec={setMinDurationSec}
-              chromaCircle={chromaCircle}
-              setChromaCircle={setChromaCircle}
-              chromaLine={chromaLine}
-              setChromaLine={setChromaLine}
-              rms={rms}
-              setRms={setRms}
-              spectralSpreadGraph={spectralSpreadGraph}
-              setSpectralSpreadGraph={setSpectralSpreadGraph}
-              isPlaying={isPlaying}
             />
-
-            <button
-              className="control-button"
-              onClick={() => setShowColorSettings(true)}
-            >
-              Color Settings
-            </button>
           </div>
         )}
+        <VisualizationToggles
+          bpmAndKey={bpmAndKey}
+          setBpmAndKey={setBpmAndKey}
+          showWaveform={showWaveform}
+          setShowWaveform={setShowWaveform}
+          showSpectrograph={showSpectrograph}
+          setShowSpectrograph={setShowSpectrograph}
+          showWaterfallSpectrograph={showWaterfallSpectrograph}
+          setShowWaterfallSpectrograph={setShowWaterfallSpectrograph}
+          pianoEnabled={pianoEnabled}
+          setPianoEnabled={setPianoEnabled}
+          chromaCircle={chromaCircle}
+          setChromaCircle={setChromaCircle}
+          chromaLine={chromaLine}
+          setChromaLine={setChromaLine}
+          rms={rms}
+          setRms={setRms}
+          spectralSpreadGraph={spectralSpreadGraph}
+          setSpectralSpreadGraph={setSpectralSpreadGraph}
+          isPlaying={isPlaying}
+          meydaBufferSize={meydaBufferSize}
+          setMeydaBufferSize={setMeydaBufferSize}
+        />
+
+        <button
+          className="control-button"
+          onClick={() => setShowColorSettings(true)}
+        >
+          Color Settings
+        </button>
 
         <PlaybackControls
           isPlaying={isPlaying}
@@ -329,8 +334,6 @@ export default function CoreApp() {
           currentTime={currentTime}
           duration={audio.duration}
           seek={audio.seek}
-          meydaBufferSize={meydaBufferSize}
-          setMeydaBufferSize={setMeydaBufferSize}
           conversionComplete={conversionComplete}
           fetchingSong={fetchingSong}
           progress={progress}
