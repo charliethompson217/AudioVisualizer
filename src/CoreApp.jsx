@@ -141,6 +141,8 @@ export default function CoreApp() {
   const [synthesizerSettings, setSynthesizerSettings] = useState(synthesizerPresets.None);
   const [selectedPreset, setSelectedPreset] = useState('None');
 
+  const [meydaFeaturesToExtract, setMeydaFeaturesToExtract] = useState([]);
+
   const audio = useAudio(
     mp3File,
     midiFile,
@@ -157,7 +159,8 @@ export default function CoreApp() {
     generateBrowserMIDI,
     onsetThreshold,
     frameThreshold,
-    minDurationSec
+    minDurationSec,
+    meydaFeaturesToExtract
   );
 
   const { bpm, scaleKey, isProcessing, isConverting, conversionComplete, warning, progress, midiNotes } = audio;
@@ -298,6 +301,8 @@ export default function CoreApp() {
           isPlaying={isPlaying}
           meydaBufferSize={meydaBufferSize}
           setMeydaBufferSize={setMeydaBufferSize}
+          meydaFeaturesToExtract={meydaFeaturesToExtract}
+          setMeydaFeaturesToExtract={setMeydaFeaturesToExtract}
         />
 
         <button className="control-button" onClick={() => setShowColorSettings(true)}>

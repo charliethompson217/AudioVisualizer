@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function VisualizationToggles({
   bpmAndKey,
@@ -40,7 +40,29 @@ export default function VisualizationToggles({
   isPlaying,
   meydaBufferSize,
   setMeydaBufferSize,
+  meydaFeaturesToExtract,
+  setMeydaFeaturesToExtract,
 }) {
+  useEffect(() => {
+    const newFeatures = [];
+
+    if (chromaCircle || chromaLine) {
+      newFeatures.push('chroma');
+    }
+
+    if (rms) {
+      newFeatures.push('rms');
+    }
+
+    if (spectralSpreadGraph) {
+      newFeatures.push('spectralCentroid', 'spectralSpread');
+    }
+
+    if (JSON.stringify(newFeatures) !== JSON.stringify(meydaFeaturesToExtract)) {
+      setMeydaFeaturesToExtract(newFeatures);
+    }
+  }, [chromaCircle, chromaLine, rms, spectralSpreadGraph, meydaFeaturesToExtract, setMeydaFeaturesToExtract]);
+
   return (
     <div className="visualization-toggles">
       {!isPlaying && (

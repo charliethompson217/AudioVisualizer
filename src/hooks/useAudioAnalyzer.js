@@ -27,7 +27,8 @@ export function useAudioAnalyzer(
   smoothing = 0.8,
   minDecibels = -100,
   maxDecibels = -30,
-  meydaBufferSize = 512
+  meydaBufferSize = 512,
+  meydaFeaturesToExtract
 ) {
   const [dataArray, setDataArray] = useState(null);
   const dataArrayRef = useRef(null);
@@ -38,6 +39,21 @@ export function useAudioAnalyzer(
   const [rms, setRms] = useState(0);
   const [spectralCentroid, setSpectralCentroid] = useState(0);
   const [spectralSpread, setSpectralSpread] = useState(0);
+  const [amplitudeSpectrum, setAmplitudeSpectrum] = useState([]);
+  const [complexSpectrum, setComplexSpectrum] = useState({});
+  const [energy, setEnergy] = useState(0);
+  const [loudness, setLoudness] = useState({});
+  const [mfcc, setMfcc] = useState([]);
+  const [perceptualSharpness, setPerceptualSharpness] = useState(0);
+  const [perceptualSpread, setPerceptualSpread] = useState(0);
+  const [powerSpectrum, setPowerSpectrum] = useState([]);
+  const [spectralFlatness, setSpectralFlatness] = useState(0);
+  const [spectralFlux, setSpectralFlux] = useState(0);
+  const [spectralKurtosis, setSpectralKurtosis] = useState(0);
+  const [spectralRolloff, setSpectralRolloff] = useState(0);
+  const [spectralSkewness, setSpectralSkewness] = useState(0);
+  const [spectralSlope, setSpectralSlope] = useState(0);
+  const [zcr, setZcr] = useState(0);
 
   // Update meydaBufferSizeRef when buffer size changes
   useEffect(() => {
@@ -69,12 +85,29 @@ export function useAudioAnalyzer(
         audioContext: audioContext,
         source: analyser,
         bufferSize: meydaBufferSizeRef.current,
-        featureExtractors: ['chroma', 'rms', 'spectralCentroid', 'spectralSpread'],
+        featureExtractors: meydaFeaturesToExtract,
         callback: (features) => {
-          setChroma(features.chroma || []);
-          setRms(features.rms || 0);
-          setSpectralCentroid(features.spectralCentroid || 0);
-          setSpectralSpread(features.spectralSpread || 0);
+          if (meydaFeaturesToExtract.includes('chroma')) setChroma(features.chroma || []);
+          if (meydaFeaturesToExtract.includes('rms')) setRms(features.rms || 0);
+          if (meydaFeaturesToExtract.includes('spectralCentroid')) setSpectralCentroid(features.spectralCentroid || 0);
+          if (meydaFeaturesToExtract.includes('spectralSpread')) setSpectralSpread(features.spectralSpread || 0);
+          if (meydaFeaturesToExtract.includes('amplitudeSpectrum'))
+            setAmplitudeSpectrum(features.amplitudeSpectrum || []);
+          if (meydaFeaturesToExtract.includes('complexSpectrum')) setComplexSpectrum(features.complexSpectrum || {});
+          if (meydaFeaturesToExtract.includes('energy')) setEnergy(features.energy || 0);
+          if (meydaFeaturesToExtract.includes('loudness')) setLoudness(features.loudness || {});
+          if (meydaFeaturesToExtract.includes('mfcc')) setMfcc(features.mfcc || []);
+          if (meydaFeaturesToExtract.includes('perceptualSharpness'))
+            setPerceptualSharpness(features.perceptualSharpness || 0);
+          if (meydaFeaturesToExtract.includes('perceptualSpread')) setPerceptualSpread(features.perceptualSpread || 0);
+          if (meydaFeaturesToExtract.includes('powerSpectrum')) setPowerSpectrum(features.powerSpectrum || []);
+          if (meydaFeaturesToExtract.includes('spectralFlatness')) setSpectralFlatness(features.spectralFlatness || 0);
+          if (meydaFeaturesToExtract.includes('spectralFlux')) setSpectralFlux(features.spectralFlux || 0);
+          if (meydaFeaturesToExtract.includes('spectralKurtosis')) setSpectralKurtosis(features.spectralKurtosis || 0);
+          if (meydaFeaturesToExtract.includes('spectralRolloff')) setSpectralRolloff(features.spectralRolloff || 0);
+          if (meydaFeaturesToExtract.includes('spectralSkewness')) setSpectralSkewness(features.spectralSkewness || 0);
+          if (meydaFeaturesToExtract.includes('spectralSlope')) setSpectralSlope(features.spectralSlope || 0);
+          if (meydaFeaturesToExtract.includes('zcr')) setZcr(features.zcr || 0);
         },
       });
       meydaAnalyzerRef.current.start();
@@ -86,7 +119,7 @@ export function useAudioAnalyzer(
         meydaAnalyzerRef.current = null;
       }
     };
-  }, [analyser, audioContext, isPlaying, meydaBufferSize]);
+  }, [analyser, audioContext, isPlaying, meydaBufferSize, meydaFeaturesToExtract]);
 
   return {
     dataArray,
@@ -94,5 +127,20 @@ export function useAudioAnalyzer(
     rms,
     spectralCentroid,
     spectralSpread,
+    amplitudeSpectrum,
+    complexSpectrum,
+    energy,
+    loudness,
+    mfcc,
+    perceptualSharpness,
+    perceptualSpread,
+    powerSpectrum,
+    spectralFlatness,
+    spectralFlux,
+    spectralKurtosis,
+    spectralRolloff,
+    spectralSkewness,
+    spectralSlope,
+    zcr,
   };
 }

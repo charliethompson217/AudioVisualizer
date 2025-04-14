@@ -41,7 +41,8 @@ export function useAudio(
   generateBrowserMIDI = true,
   onsetThreshold = 0.3,
   frameThreshold = 0.3,
-  minDurationSec = 0.1
+  minDurationSec = 0.1,
+  meydaFeaturesToExtract
 ) {
   const volumeRef = useRef(0.5);
 
@@ -68,7 +69,28 @@ export function useAudio(
   const synthesizer = useSynthesizer(audioContext, analyser, isPlaying, synthesizerSettings, volumeRef);
 
   // Setup audio analysis with Web Audio API and Meyda
-  const { dataArray, chroma, rms, spectralCentroid, spectralSpread } = useAudioAnalyzer(
+  const {
+    dataArray,
+    chroma,
+    rms,
+    spectralCentroid,
+    spectralSpread,
+    amplitudeSpectrum,
+    complexSpectrum,
+    energy,
+    loudness,
+    mfcc,
+    perceptualSharpness,
+    perceptualSpread,
+    powerSpectrum,
+    spectralFlatness,
+    spectralFlux,
+    spectralKurtosis,
+    spectralRolloff,
+    spectralSkewness,
+    spectralSlope,
+    zcr,
+  } = useAudioAnalyzer(
     analyser,
     audioContext,
     isPlaying,
@@ -76,7 +98,8 @@ export function useAudio(
     smoothing,
     minDecibels,
     maxDecibels,
-    meydaBufferSize
+    meydaBufferSize,
+    meydaFeaturesToExtract
   );
 
   // Handle MIDI file parsing and playback
@@ -152,6 +175,21 @@ export function useAudio(
     rms,
     spectralCentroid,
     spectralSpread,
+    amplitudeSpectrum,
+    complexSpectrum,
+    energy,
+    loudness,
+    mfcc,
+    perceptualSharpness,
+    perceptualSpread,
+    powerSpectrum,
+    spectralFlatness,
+    spectralFlux,
+    spectralKurtosis,
+    spectralRolloff,
+    spectralSkewness,
+    spectralSlope,
+    zcr,
     bpm,
     scaleKey,
     isProcessing,
