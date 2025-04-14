@@ -121,16 +121,17 @@ export default function CoreApp() {
   const [showLabels, setShowLabels] = useState(true);
   const [showScroll, setShowScroll] = useState(true);
   const [pianoEnabled, setPianoEnabled] = useState(true);
-  const [bpmAndKey, setBpmAndKey] = useState(true);
+  const [bpmAndKey, setBpmAndKey] = useState(false);
   const [showWaveform, setShowWaveform] = useState(true);
   const [showSpectrograph, setShowSpectrograph] = useState(true);
   const [showWaterfallSpectrograph, setShowWaterfallSpectrograph] = useState(false);
   const [chromaCircle, setChromaCircle] = useState(true);
   const [chromaLine, setChromaLine] = useState(false);
-  const [rms, setRms] = useState(true);
-  const [spectralSpreadGraph, setSpectralSpreadGraph] = useState(true);
+  const [rms, setRms] = useState(false);
+  const [loudness, setLoudness] = useState(true);
+  const [spectralSpreadGraph, setSpectralSpreadGraph] = useState(false);
 
-  const [generateBrowserMIDI, setGenerateBrowserMIDI] = useState(true);
+  const [generateBrowserMIDI, setGenerateBrowserMIDI] = useState(false);
   const [onsetThreshold, setOnsetThreshold] = useState(0.3);
   const [frameThreshold, setFrameThreshold] = useState(0.3);
   const [minDurationSec, setMinDurationSec] = useState(0.1);
@@ -296,6 +297,8 @@ export default function CoreApp() {
           setChromaLine={setChromaLine}
           rms={rms}
           setRms={setRms}
+          loudness={loudness}
+          setLoudness={setLoudness}
           spectralSpreadGraph={spectralSpreadGraph}
           setSpectralSpreadGraph={setSpectralSpreadGraph}
           isPlaying={isPlaying}
@@ -368,6 +371,7 @@ export default function CoreApp() {
           spectralSpreadGraph={spectralSpreadGraph}
           chromaLine={chromaLine}
           rms={rms}
+          loudness={loudness}
           meydaBufferSize={meydaBufferSize}
         />
       )}

@@ -27,6 +27,7 @@ import ChromavectorCircleGraph from './visualizers/ChromavectorCircleGraph';
 import ChromevectorLineGraph from './visualizers/ChromevectorLineGraph';
 import SpectralSpreadGraph from './visualizers/SpectralSpreadGraph';
 import RMS from './visualizers/RMS';
+import Loudness from './visualizers/Loudness';
 
 export default function VisualizersContainer({
   isPlaying,
@@ -59,6 +60,7 @@ export default function VisualizersContainer({
   spectralSpreadGraph,
   chromaLine,
   rms,
+  loudness,
   meydaBufferSize,
 }) {
   return (
@@ -78,6 +80,8 @@ export default function VisualizersContainer({
       {chromaLine && <ChromevectorLineGraph chroma={audio.chroma} isPlaying={isPlaying} noteHues={noteHues} />}
 
       {rms && <RMS rms={audio.rms} isPlaying={isPlaying} />}
+
+      {loudness && <Loudness loudness={audio.loudness} isPlaying={isPlaying} />}
 
       {(showSpectrograph || showWaterfallSpectrograph) && (
         <>

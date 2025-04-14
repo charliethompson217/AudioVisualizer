@@ -35,6 +35,8 @@ export default function VisualizationToggles({
   setChromaLine,
   rms,
   setRms,
+  loudness,
+  setLoudness,
   spectralSpreadGraph,
   setSpectralSpreadGraph,
   isPlaying,
@@ -54,6 +56,10 @@ export default function VisualizationToggles({
       newFeatures.push('rms');
     }
 
+    if (loudness) {
+      newFeatures.push('loudness');
+    }
+
     if (spectralSpreadGraph) {
       newFeatures.push('spectralCentroid', 'spectralSpread');
     }
@@ -61,7 +67,7 @@ export default function VisualizationToggles({
     if (JSON.stringify(newFeatures) !== JSON.stringify(meydaFeaturesToExtract)) {
       setMeydaFeaturesToExtract(newFeatures);
     }
-  }, [chromaCircle, chromaLine, rms, spectralSpreadGraph, meydaFeaturesToExtract, setMeydaFeaturesToExtract]);
+  }, [chromaCircle, chromaLine, rms, loudness, spectralSpreadGraph, meydaFeaturesToExtract, setMeydaFeaturesToExtract]);
 
   return (
     <div className="visualization-toggles">
@@ -141,6 +147,15 @@ export default function VisualizationToggles({
           type="checkbox"
           checked={spectralSpreadGraph}
           onChange={() => setSpectralSpreadGraph(!spectralSpreadGraph)}
+        />
+      </label>
+      <label className="control-label">
+        Perceptual Loudness
+        <input
+          className="control-checkbox"
+          type="checkbox"
+          checked={loudness}
+          onChange={() => setLoudness(!loudness)}
         />
       </label>
       <label className="control-label">

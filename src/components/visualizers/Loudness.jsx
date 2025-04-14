@@ -18,7 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React, { useRef, useEffect, useState } from 'react';
 
-export default function RMS({ rms, isPlaying }) {
+export default function Loudness({ loudness, isPlaying }) {
   const sketchRef = useRef();
   const p5InstanceRef = useRef(null);
   const [history, setHistory] = useState([]);
@@ -29,19 +29,18 @@ export default function RMS({ rms, isPlaying }) {
   }, [history]);
 
   useEffect(() => {
-    if (typeof rms === 'number') {
-      setHistory((prev) => {
-        let newHistory = [...prev, rms];
-        if (newHistory.length > 100) {
-          newHistory.shift();
-        }
-        if (rms == 0) {
-          newHistory = new Array(100).fill(0);
-        }
-        return newHistory;
-      });
-    }
-  }, [rms]);
+    const loudnessValue = loudness.total;
+    setHistory((prev) => {
+      let newHistory = [...prev, loudnessValue];
+      if (newHistory.length > 100) {
+        newHistory.shift();
+      }
+      if (loudnessValue === 0) {
+        newHistory = new Array(100).fill(0);
+      }
+      return newHistory;
+    });
+  }, [loudness]);
 
   useEffect(() => {
     const sketch = (p) => {
@@ -78,19 +77,23 @@ export default function RMS({ rms, isPlaying }) {
 
         if (currentHistory.length === 0) return;
 
+        const maxValue = Math.max(...currentHistory, 0.01);
+
         p.stroke(100, 100, 100);
         p.strokeWeight(2);
         p.noFill();
         p.beginShape();
 
         currentHistory.forEach((value, i) => {
+          const normalizedValue = value / maxValue;
+
           let x;
           if (currentHistory.length === 1) {
             x = width;
           } else {
             x = (i / (currentHistory.length - 1)) * width;
           }
-          const y = baseHeight - value * baseHeight;
+          const y = baseHeight - normalizedValue * baseHeight;
           p.vertex(x, y);
         });
 
@@ -110,7 +113,7 @@ export default function RMS({ rms, isPlaying }) {
 
   return (
     <div>
-      {isPlaying && <h2>Root Mean Square (RMS)</h2>}
+      {isPlaying && <h2>Perceptual Loudness (Normalized)</h2>}
       <div ref={sketchRef} style={{ width: '100%' }}></div>
     </div>
   );
