@@ -18,6 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { useRef, useState, useEffect } from 'react';
 import Meyda from 'meyda';
+import { processAudioFileEssentia } from '../utils/essentiaAudioProcessing.js';
 
 export function useAudioAnalyzer(
   analyser,
@@ -28,12 +29,20 @@ export function useAudioAnalyzer(
   minDecibels = -100,
   maxDecibels = -30,
   meydaBufferSize = 512,
-  meydaFeaturesToExtract
+  meydaFeaturesToExtract,
+  mp3File,
+  bpmAndKey = true
 ) {
   const [dataArray, setDataArray] = useState(null);
   const dataArrayRef = useRef(null);
   const meydaAnalyzerRef = useRef(null);
   const meydaBufferSizeRef = useRef(meydaBufferSize);
+
+  // States for BPM and key detection
+  const [bpm, setBpm] = useState(null);
+  const [scaleKey, setScaleKey] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [warning, setWarning] = useState(null);
 
   const [chroma, setChroma] = useState([]);
   const [rms, setRms] = useState(0);
@@ -121,6 +130,26 @@ export function useAudioAnalyzer(
     };
   }, [analyser, audioContext, isPlaying, meydaBufferSize, meydaFeaturesToExtract]);
 
+  // Process audio for BPM and key when mp3File changes
+  useEffect(() => {
+    if (!mp3File || !bpmAndKey) return;
+
+    const analyzeAudio = async () => {
+      setIsProcessing(true);
+      try {
+        const result = await processAudioFileEssentia(mp3File);
+        setBpm(result.bpm);
+        setScaleKey(result.key);
+      } catch (error) {
+        setWarning(error.message);
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    analyzeAudio();
+  }, [mp3File, bpmAndKey]);
+
   return {
     dataArray,
     chroma,
@@ -142,5 +171,9 @@ export function useAudioAnalyzer(
     spectralSkewness,
     spectralSlope,
     zcr,
+    bpm,
+    scaleKey,
+    isProcessing,
+    warning,
   };
 }

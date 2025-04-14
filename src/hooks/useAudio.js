@@ -22,7 +22,6 @@ import { useAudioAnalyzer } from './useAudioAnalyzer';
 import { useSynthesizer } from './useSynthesizer';
 import { useMidiPlayer } from './useMidiPlayer';
 import { useKeyboardInput } from './useKeyboardInput';
-import { processAudioFileEssentia } from '../utils/essentiaAudioProcessing.js';
 import { convertAudioToMidi } from '../utils/midiConversion.js';
 
 export function useAudio(
@@ -45,11 +44,6 @@ export function useAudio(
   meydaFeaturesToExtract
 ) {
   const volumeRef = useRef(0.5);
-
-  // States for BPM and key detection
-  const [bpm, setBpm] = useState(null);
-  const [scaleKey, setScaleKey] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   // States for MIDI conversion
   const [convertedMidiNotes, setConvertedMidiNotes] = useState(null);
@@ -90,6 +84,9 @@ export function useAudio(
     spectralSkewness,
     spectralSlope,
     zcr,
+    bpm,
+    scaleKey,
+    isProcessing,
   } = useAudioAnalyzer(
     analyser,
     audioContext,
@@ -99,7 +96,9 @@ export function useAudio(
     minDecibels,
     maxDecibels,
     meydaBufferSize,
-    meydaFeaturesToExtract
+    meydaFeaturesToExtract,
+    mp3File,
+    bpmAndKey
   );
 
   // Handle MIDI file parsing and playback
@@ -114,26 +113,6 @@ export function useAudio(
       volumeRef.current = currentVolume;
     }
   }, [currentVolume]);
-
-  // Process audio for BPM and key when mp3File changes
-  useEffect(() => {
-    if (!mp3File || !bpmAndKey) return;
-
-    const analyzeAudio = async () => {
-      setIsProcessing(true);
-      try {
-        const result = await processAudioFileEssentia(mp3File);
-        setBpm(result.bpm);
-        setScaleKey(result.key);
-      } catch (error) {
-        setWarning(error.message);
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-
-    analyzeAudio();
-  }, [mp3File, bpmAndKey]);
 
   // Convert mp3 to MIDI when mp3File changes
   useEffect(() => {
