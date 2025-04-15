@@ -53,7 +53,7 @@ export function useAudio(
   const [progress, setProgress] = useState(0);
 
   // Setup audio context and basic audio processing
-  const { audioContext, analyser, sampleRate, duration, play, pause, seek, getCurrentTime } = useAudioContext(
+  const { audioContext, analyser, sampleRate, duration, play, pause, seek, getCurrentTime, source } = useAudioContext(
     mp3File,
     useMic,
     isPlaying
@@ -87,6 +87,7 @@ export function useAudio(
     bpm,
     scaleKey,
     isProcessing,
+    essentiaFeatures,
   } = useAudioAnalyzer(
     analyser,
     audioContext,
@@ -98,7 +99,8 @@ export function useAudio(
     meydaBufferSize,
     meydaFeaturesToExtract,
     mp3File,
-    bpmAndKey
+    bpmAndKey,
+    source
   );
 
   // Handle MIDI file parsing and playback
@@ -176,5 +178,6 @@ export function useAudio(
     conversionComplete,
     warning,
     progress,
+    essentiaFeatures,
   };
 }

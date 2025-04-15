@@ -18,7 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React from 'react';
 
-export default function SongInfo({ currentSongName, isProcessing, bpm, scaleKey }) {
+export default function SongInfo({ currentSongName, isProcessing, bpm, scaleKey, essentiaFeatures }) {
   return (
     <div className="SongTitle">
       {currentSongName && <h1 style={{ color: 'white' }}>{currentSongName}</h1>}
@@ -27,6 +27,12 @@ export default function SongInfo({ currentSongName, isProcessing, bpm, scaleKey 
         <div className="audio-info">
           <p>BPM: {Math.round(bpm)}</p>
           <p>Key: {scaleKey}</p>
+        </div>
+      )}
+      {essentiaFeatures && (
+        <div className="audio-info">
+          <p>Current BPM estimate: {Math.round(essentiaFeatures.bpm)}</p>
+          <p>Current Key prediction: {essentiaFeatures.scaleKey}</p>
         </div>
       )}
     </div>

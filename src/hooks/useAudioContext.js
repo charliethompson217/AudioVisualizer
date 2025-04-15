@@ -153,5 +153,6 @@ export function useAudioContext(mp3File, useMic, isPlaying) {
     pause,
     seek,
     getCurrentTime,
+    source: sourceRef.current,
   };
 }

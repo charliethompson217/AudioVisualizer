@@ -31,7 +31,8 @@ export function useAudioAnalyzer(
   meydaBufferSize = 512,
   meydaFeaturesToExtract,
   mp3File,
-  bpmAndKey = true
+  bpmAndKey = true,
+  source
 ) {
   const [dataArray, setDataArray] = useState(null);
   const dataArrayRef = useRef(null);
@@ -63,6 +64,7 @@ export function useAudioAnalyzer(
   const [spectralSkewness, setSpectralSkewness] = useState(0);
   const [spectralSlope, setSpectralSlope] = useState(0);
   const [zcr, setZcr] = useState(0);
+  const [essentiaFeatures, setEssentiaFeatures] = useState(null);
 
   // Update meydaBufferSizeRef when buffer size changes
   useEffect(() => {
@@ -150,6 +152,43 @@ export function useAudioAnalyzer(
     analyzeAudio();
   }, [mp3File, bpmAndKey]);
 
+  useEffect(() => {
+    if (!isPlaying || !audioContext || !source) return;
+
+    const worker = new Worker('/essentiaWorker.js');
+    worker.postMessage({ type: 'init', sampleRate: audioContext.sampleRate });
+    const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+    scriptProcessor.onaudioprocess = (event) => {
+      const inputBuffer = event.inputBuffer;
+      const outputBuffer = event.outputBuffer;
+      for (let channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
+        const inputData = inputBuffer.getChannelData(channel);
+        const outputData = outputBuffer.getChannelData(channel);
+        outputData.set(inputData);
+      }
+      const channelData = inputBuffer.getChannelData(0);
+      const float32Array = new Float32Array(channelData);
+      worker.postMessage({ type: 'audioChunk', data: float32Array }, [float32Array.buffer]);
+    };
+    source.connect(scriptProcessor);
+
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = 0;
+    scriptProcessor.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    worker.onmessage = (event) => {
+      if (event.data.type === 'feature') {
+        setEssentiaFeatures(event.data.data);
+      }
+    };
+
+    return () => {
+      worker.terminate();
+      scriptProcessor.disconnect();
+    };
+  }, [audioContext, source, isPlaying]);
+
   return {
     dataArray,
     chroma,
@@ -175,5 +214,6 @@ export function useAudioAnalyzer(
     scaleKey,
     isProcessing,
     warning,
+    essentiaFeatures,
   };
 }

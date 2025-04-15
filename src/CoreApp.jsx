@@ -164,7 +164,17 @@ export default function CoreApp() {
     meydaFeaturesToExtract
   );
 
-  const { bpm, scaleKey, isProcessing, isConverting, conversionComplete, warning, progress, midiNotes } = audio;
+  const {
+    bpm,
+    scaleKey,
+    isProcessing,
+    isConverting,
+    conversionComplete,
+    warning,
+    progress,
+    midiNotes,
+    essentiaFeatures,
+  } = audio;
 
   const setWarningMessage = (message) => {
     console.warn(message);
@@ -239,7 +249,13 @@ export default function CoreApp() {
   return (
     <div className="App">
       <div className="main-container">
-        <SongInfo currentSongName={currentSongName} isProcessing={isProcessing} bpm={bpm} scaleKey={scaleKey} />
+        <SongInfo
+          currentSongName={currentSongName}
+          isProcessing={isProcessing}
+          bpm={bpm}
+          scaleKey={scaleKey}
+          essentiaFeatures={essentiaFeatures}
+        />
 
         {showColorSettings && (
           <ColorSettingsModal
