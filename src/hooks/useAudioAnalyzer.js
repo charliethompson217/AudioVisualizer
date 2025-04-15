@@ -18,7 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { useRef, useState, useEffect } from 'react';
 import Meyda from 'meyda';
-import { processAudioFileEssentia } from '../utils/essentiaAudioProcessing.js';
+import { useEssentia } from './useEssentia';
 
 export function useAudioAnalyzer(
   analyser,
@@ -39,12 +39,6 @@ export function useAudioAnalyzer(
   const meydaAnalyzerRef = useRef(null);
   const meydaBufferSizeRef = useRef(meydaBufferSize);
 
-  // States for BPM and key detection
-  const [bpm, setBpm] = useState(null);
-  const [scaleKey, setScaleKey] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [warning, setWarning] = useState(null);
-
   const [chroma, setChroma] = useState([]);
   const [rms, setRms] = useState(0);
   const [spectralCentroid, setSpectralCentroid] = useState(0);
@@ -64,7 +58,6 @@ export function useAudioAnalyzer(
   const [spectralSkewness, setSpectralSkewness] = useState(0);
   const [spectralSlope, setSpectralSlope] = useState(0);
   const [zcr, setZcr] = useState(0);
-  const [essentiaFeatures, setEssentiaFeatures] = useState(null);
 
   // Update meydaBufferSizeRef when buffer size changes
   useEffect(() => {
@@ -132,62 +125,13 @@ export function useAudioAnalyzer(
     };
   }, [analyser, audioContext, isPlaying, meydaBufferSize, meydaFeaturesToExtract]);
 
-  // Process audio for BPM and key when mp3File changes
-  useEffect(() => {
-    if (!mp3File || !bpmAndKey) return;
-
-    const analyzeAudio = async () => {
-      setIsProcessing(true);
-      try {
-        const result = await processAudioFileEssentia(mp3File);
-        setBpm(result.bpm);
-        setScaleKey(result.key);
-      } catch (error) {
-        setWarning(error.message);
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-
-    analyzeAudio();
-  }, [mp3File, bpmAndKey]);
-
-  useEffect(() => {
-    if (!isPlaying || !audioContext || !source) return;
-
-    const worker = new Worker('/essentiaWorker.js');
-    worker.postMessage({ type: 'init', sampleRate: audioContext.sampleRate });
-    const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
-    scriptProcessor.onaudioprocess = (event) => {
-      const inputBuffer = event.inputBuffer;
-      const outputBuffer = event.outputBuffer;
-      for (let channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
-        const inputData = inputBuffer.getChannelData(channel);
-        const outputData = outputBuffer.getChannelData(channel);
-        outputData.set(inputData);
-      }
-      const channelData = inputBuffer.getChannelData(0);
-      const float32Array = new Float32Array(channelData);
-      worker.postMessage({ type: 'audioChunk', data: float32Array }, [float32Array.buffer]);
-    };
-    source.connect(scriptProcessor);
-
-    const gainNode = audioContext.createGain();
-    gainNode.gain.value = 0;
-    scriptProcessor.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    worker.onmessage = (event) => {
-      if (event.data.type === 'feature') {
-        setEssentiaFeatures(event.data.data);
-      }
-    };
-
-    return () => {
-      worker.terminate();
-      scriptProcessor.disconnect();
-    };
-  }, [audioContext, source, isPlaying]);
+  const { bpm, scaleKey, isProcessing, essentiaFeatures } = useEssentia(
+    audioContext,
+    isPlaying,
+    mp3File,
+    bpmAndKey,
+    source
+  );
 
   return {
     dataArray,
@@ -213,7 +157,6 @@ export function useAudioAnalyzer(
     bpm,
     scaleKey,
     isProcessing,
-    warning,
     essentiaFeatures,
   };
 }

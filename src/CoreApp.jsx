@@ -121,7 +121,7 @@ export default function CoreApp() {
   const [showLabels, setShowLabels] = useState(true);
   const [showScroll, setShowScroll] = useState(true);
   const [pianoEnabled, setPianoEnabled] = useState(true);
-  const [bpmAndKey, setBpmAndKey] = useState(false);
+  const [bpmAndKey, setBpmAndKey] = useState(true);
   const [showWaveform, setShowWaveform] = useState(true);
   const [showSpectrograph, setShowSpectrograph] = useState(true);
   const [showWaterfallSpectrograph, setShowWaterfallSpectrograph] = useState(false);
