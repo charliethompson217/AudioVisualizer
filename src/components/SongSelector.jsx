@@ -34,7 +34,10 @@ export default function SongSelector({
     fetch('/songs.json')
       .then((response) => response.json())
       .then((data) => setSongs(data))
-      .catch((error) => console.error('Error loading songs:', error));
+      .catch((error) => {
+        console.error('Error loading songs:', error);
+        setWarning(`Error loading songs: ${error.message}`);
+      });
   }, []);
 
   const handleSongSelect = async (e) => {

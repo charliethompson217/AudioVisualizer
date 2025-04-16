@@ -32,7 +32,8 @@ export function useAudioAnalyzer(
   meydaFeaturesToExtract,
   mp3File,
   bpmAndKey = true,
-  source
+  source,
+  setWarning
 ) {
   const [dataArray, setDataArray] = useState(null);
   const dataArrayRef = useRef(null);
@@ -130,7 +131,8 @@ export function useAudioAnalyzer(
     isPlaying,
     mp3File,
     bpmAndKey,
-    source
+    source,
+    setWarning
   );
 
   return {

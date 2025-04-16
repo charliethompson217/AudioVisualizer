@@ -18,7 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { useState, useEffect } from 'react';
 
-export function useEssentia(audioContext, isPlaying, mp3File, bpmAndKey = true, source) {
+export function useEssentia(audioContext, isPlaying, mp3File, bpmAndKey = true, source, setWarning) {
   const [bpm, setBpm] = useState(null);
   const [scaleKey, setScaleKey] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -27,41 +27,52 @@ export function useEssentia(audioContext, isPlaying, mp3File, bpmAndKey = true, 
 
   useEffect(() => {
     if (!mp3File || !bpmAndKey) return;
+    let worker;
 
     const analyzeAudio = async () => {
-      setIsProcessing(true);
-      const worker = new Worker('/essentiaWorker.js');
-      const arrayBuffer = await mp3File.arrayBuffer();
-      const tempAudioContext = new AudioContext();
-      let audioBuffer = await tempAudioContext.decodeAudioData(arrayBuffer);
-      worker.postMessage({ type: 'init', sampleRate: tempAudioContext.sampleRate });
-      tempAudioContext.close();
+      try {
+        setIsProcessing(true);
+        worker = new Worker('/essentiaWorker.js');
+        const arrayBuffer = await mp3File.arrayBuffer();
+        const tempAudioContext = new AudioContext();
+        let audioBuffer = await tempAudioContext.decodeAudioData(arrayBuffer);
+        worker.postMessage({ type: 'init', sampleRate: tempAudioContext.sampleRate });
+        tempAudioContext.close();
 
-      const numberOfChannels = audioBuffer.numberOfChannels;
-      const length = audioBuffer.length;
-      const extractedData = [];
+        const numberOfChannels = audioBuffer.numberOfChannels;
+        const length = audioBuffer.length;
+        const extractedData = [];
 
-      for (let channel = 0; channel < numberOfChannels; channel++) {
-        const channelData = audioBuffer.getChannelData(channel);
-        extractedData.push(new Float32Array(channelData));
-      }
-
-      worker.postMessage({
-        type: 'audioFile',
-        data: {
-          extractedData,
-          numberOfChannels,
-          length,
-        },
-      });
-
-      worker.onmessage = (event) => {
-        if (event.data.type === 'fileFeatures') {
-          setBpm(event.data.data.bpm);
-          setScaleKey(event.data.data.scaleKey);
-          setIsProcessing(false);
+        for (let channel = 0; channel < numberOfChannels; channel++) {
+          const channelData = audioBuffer.getChannelData(channel);
+          extractedData.push(new Float32Array(channelData));
         }
-      };
+
+        worker.postMessage({
+          type: 'audioFile',
+          data: {
+            extractedData,
+            numberOfChannels,
+            length,
+          },
+        });
+
+        worker.onmessage = (event) => {
+          if (event.data.type === 'fileFeatures') {
+            setBpm(event.data.data.bpm);
+            setScaleKey(event.data.data.scaleKey);
+            setIsProcessing(false);
+          }
+        };
+      } catch (error) {
+        if (error.message.includes('decod')) {
+          setWarning('Failed to decode audio. File size may be too large.');
+        } else {
+          setWarning(`Failed to analyze audio: ${error.message}`);
+        }
+        setIsProcessing(false);
+        if (worker) worker.terminate();
+      }
     };
 
     analyzeAudio();
@@ -102,6 +113,7 @@ export function useEssentia(audioContext, isPlaying, mp3File, bpmAndKey = true, 
         gainNode.connect(audioContext.destination);
       } catch (error) {
         console.error('Failed to set up AudioWorklet:', error);
+        setWarning(`Failed to set up AudioWorklet:  ${error.message}`);
         worker.terminate();
         throw error;
       }

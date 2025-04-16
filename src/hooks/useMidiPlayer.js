@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 import { useRef, useState, useEffect } from 'react';
 import { parseMidi } from 'midi-file';
 
-export function useMidiPlayer(midiFile, synthesizer, isPlaying) {
+export function useMidiPlayer(midiFile, synthesizer, isPlaying, setWarning) {
   const [midiNotes, setMidiNotes] = useState([]);
   const timeoutsRef = useRef([]);
 
@@ -41,6 +41,7 @@ export function useMidiPlayer(midiFile, synthesizer, isPlaying) {
         readMidiFile(fileBlob);
       } catch (error) {
         console.error('Error fetching or processing MIDI file:', error);
+        setWarning(`Error fetching or processing MIDI file: ${error.message}`);
       }
     };
 

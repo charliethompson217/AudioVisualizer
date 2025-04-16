@@ -30,7 +30,6 @@ export default function PlaybackControls({
   fetchingSong,
   progress,
   isConverting,
-  warning,
   useMic,
   setUseMic,
   setMp3File,
@@ -68,8 +67,6 @@ export default function PlaybackControls({
             <progress value={progress} max="100" />
           </div>
         )}
-
-        {warning && <div>{warning}</div>}
 
         <button
           className="control-button"

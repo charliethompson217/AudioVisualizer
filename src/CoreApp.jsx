@@ -144,6 +144,8 @@ export default function CoreApp() {
 
   const [meydaFeaturesToExtract, setMeydaFeaturesToExtract] = useState([]);
 
+  const [warning, setWarning] = useState('');
+
   const audio = useAudio(
     mp3File,
     midiFile,
@@ -161,24 +163,12 @@ export default function CoreApp() {
     onsetThreshold,
     frameThreshold,
     minDurationSec,
-    meydaFeaturesToExtract
+    meydaFeaturesToExtract,
+    setWarning
   );
 
-  const {
-    bpm,
-    scaleKey,
-    isProcessing,
-    isConverting,
-    conversionComplete,
-    warning,
-    progress,
-    midiNotes,
-    essentiaFeatures,
-  } = audio;
-
-  const setWarningMessage = (message) => {
-    console.warn(message);
-  };
+  const { bpm, scaleKey, isProcessing, isConverting, conversionComplete, progress, midiNotes, essentiaFeatures } =
+    audio;
 
   const handleSongSelect = async (selectedFileName, file, songName) => {
     setSelectedSongFileName(selectedFileName);
@@ -271,7 +261,7 @@ export default function CoreApp() {
             <SongSelector
               onSongSelect={handleSongSelect}
               selectedSongFileName={selectedSongFileName}
-              setWarning={setWarningMessage}
+              setWarning={setWarning}
               setCurrentSongName={setCurrentSongName}
               setFetchingSong={setFetchingSong}
             />
@@ -340,13 +330,14 @@ export default function CoreApp() {
           fetchingSong={fetchingSong}
           progress={progress}
           isConverting={isConverting}
-          warning={warning}
           useMic={useMic}
           setUseMic={setUseMic}
           setMp3File={setMp3File}
           setMidiFile={setMidiFile}
           handleStartStopWithMic={handleStartStopWithMic}
         />
+
+        {warning && <div>{warning}</div>}
 
         {pianoEnabled && (
           <div className="keyboard-container">

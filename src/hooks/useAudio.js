@@ -41,7 +41,8 @@ export function useAudio(
   onsetThreshold = 0.3,
   frameThreshold = 0.3,
   minDurationSec = 0.1,
-  meydaFeaturesToExtract
+  meydaFeaturesToExtract,
+  setWarning
 ) {
   const volumeRef = useRef(0.5);
 
@@ -49,7 +50,6 @@ export function useAudio(
   const [convertedMidiNotes, setConvertedMidiNotes] = useState(null);
   const [isConverting, setIsConverting] = useState(false);
   const [conversionComplete, setConversionComplete] = useState(true);
-  const [warning, setWarning] = useState(null);
   const [progress, setProgress] = useState(0);
 
   // Setup audio context and basic audio processing
@@ -100,11 +100,12 @@ export function useAudio(
     meydaFeaturesToExtract,
     mp3File,
     bpmAndKey,
-    source
+    source,
+    setWarning
   );
 
   // Handle MIDI file parsing and playback
-  const { midiNotes } = useMidiPlayer(midiFile, synthesizer, isPlaying);
+  const { midiNotes } = useMidiPlayer(midiFile, synthesizer, isPlaying, setWarning);
 
   // Handle keyboard input for piano
   const { currentVolume } = useKeyboardInput(synthesizer, isPlaying, pianoEnabled);
@@ -123,7 +124,6 @@ export function useAudio(
     const convertMidi = async () => {
       setIsConverting(true);
       setConversionComplete(false);
-      setWarning(null);
 
       try {
         const notes = await convertAudioToMidi(mp3File, setProgress, onsetThreshold, frameThreshold, minDurationSec);
@@ -176,7 +176,6 @@ export function useAudio(
     isProcessing,
     isConverting,
     conversionComplete,
-    warning,
     progress,
     essentiaFeatures,
   };
