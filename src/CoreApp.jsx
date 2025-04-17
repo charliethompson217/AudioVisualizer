@@ -352,6 +352,7 @@ export default function CoreApp() {
           bpm={bpm}
           scaleKey={scaleKey}
           essentiaFeatures={essentiaFeatures}
+          mp3File={mp3File}
         />
       </div>
 
