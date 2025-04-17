@@ -328,3 +328,27 @@ h2 {
     justify-content: space-between;
   }
 }
+
+.responsive-controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.controls-panel,
+.keyboard-panel {
+  width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .responsive-controls-container {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .controls-panel,
+  .keyboard-panel {
+    flex: 1;
+  }
+}

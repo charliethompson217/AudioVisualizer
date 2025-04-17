@@ -65,7 +65,7 @@ export function useEssentia(audioContext, isPlaying, mp3File, bpmAndKey = true, 
           }
         };
       } catch (error) {
-        if (error.message.includes('decod')) {
+        if (error.message.includes('Decoding')) {
           setWarning('Failed to decode audio. File size may be too large.');
         } else {
           setWarning(`Failed to analyze audio: ${error.message}`);

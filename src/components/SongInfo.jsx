@@ -23,18 +23,14 @@ export default function SongInfo({ currentSongName, isProcessing, bpm, scaleKey,
     <div className="SongTitle">
       {currentSongName && <h1 style={{ color: 'white' }}>{currentSongName}</h1>}
       {isProcessing && <p>Analyzing audio...</p>}
-      {!isProcessing && bpm && scaleKey && (
-        <div className="audio-info">
-          <p>BPM: {Math.round(bpm)}</p>
-          <p>Key: {scaleKey}</p>
-        </div>
-      )}
-      {essentiaFeatures && (
-        <div className="audio-info">
-          <p>Current BPM estimate: {Math.round(essentiaFeatures.bpm)}</p>
-          <p>Current Key prediction: {essentiaFeatures.scaleKey}</p>
-        </div>
-      )}
+      <div className="audio-info" style={{ visibility: scaleKey && bpm ? 'visible' : 'hidden' }}>
+        <p>BPM: {Math.round(bpm)}</p>
+        <p>Key: {scaleKey}</p>
+      </div>
+      <div className="audio-info" style={{ visibility: essentiaFeatures ? 'visible' : 'hidden' }}>
+        <p>Current BPM estimate: {essentiaFeatures ? Math.round(essentiaFeatures.bpm) : 'N/A'}</p>
+        <p>Current Key prediction: {essentiaFeatures ? essentiaFeatures.scaleKey : 'N/A'}</p>
+      </div>
     </div>
   );
 }

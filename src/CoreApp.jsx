@@ -125,8 +125,9 @@ export default function CoreApp() {
   const [showWaveform, setShowWaveform] = useState(true);
   const [showSpectrograph, setShowSpectrograph] = useState(true);
   const [showWaterfallSpectrograph, setShowWaterfallSpectrograph] = useState(false);
-  const [chromaCircle, setChromaCircle] = useState(true);
+  const [chromaCircle, setChromaCircle] = useState(false);
   const [chromaLine, setChromaLine] = useState(false);
+  const [chromaBar, setChromaBar] = useState(true);
   const [rms, setRms] = useState(false);
   const [loudness, setLoudness] = useState(true);
   const [spectralSpreadGraph, setSpectralSpreadGraph] = useState(false);
@@ -239,14 +240,6 @@ export default function CoreApp() {
   return (
     <div className="App">
       <div className="main-container">
-        <SongInfo
-          currentSongName={currentSongName}
-          isProcessing={isProcessing}
-          bpm={bpm}
-          scaleKey={scaleKey}
-          essentiaFeatures={essentiaFeatures}
-        />
-
         {showColorSettings && (
           <ColorSettingsModal
             noteHues={noteHues}
@@ -286,37 +279,51 @@ export default function CoreApp() {
             />
           </div>
         )}
-        <VisualizationToggles
-          bpmAndKey={bpmAndKey}
-          setBpmAndKey={setBpmAndKey}
-          showWaveform={showWaveform}
-          setShowWaveform={setShowWaveform}
-          showSpectrograph={showSpectrograph}
-          setShowSpectrograph={setShowSpectrograph}
-          showWaterfallSpectrograph={showWaterfallSpectrograph}
-          setShowWaterfallSpectrograph={setShowWaterfallSpectrograph}
-          pianoEnabled={pianoEnabled}
-          setPianoEnabled={setPianoEnabled}
-          chromaCircle={chromaCircle}
-          setChromaCircle={setChromaCircle}
-          chromaLine={chromaLine}
-          setChromaLine={setChromaLine}
-          rms={rms}
-          setRms={setRms}
-          loudness={loudness}
-          setLoudness={setLoudness}
-          spectralSpreadGraph={spectralSpreadGraph}
-          setSpectralSpreadGraph={setSpectralSpreadGraph}
-          isPlaying={isPlaying}
-          meydaBufferSize={meydaBufferSize}
-          setMeydaBufferSize={setMeydaBufferSize}
-          meydaFeaturesToExtract={meydaFeaturesToExtract}
-          setMeydaFeaturesToExtract={setMeydaFeaturesToExtract}
-        />
 
-        <button className="control-button" onClick={() => setShowColorSettings(true)}>
-          Color Settings
-        </button>
+        <div className="responsive-controls-container">
+          <div className="controls-panel">
+            <VisualizationToggles
+              bpmAndKey={bpmAndKey}
+              setBpmAndKey={setBpmAndKey}
+              showWaveform={showWaveform}
+              setShowWaveform={setShowWaveform}
+              showSpectrograph={showSpectrograph}
+              setShowSpectrograph={setShowSpectrograph}
+              showWaterfallSpectrograph={showWaterfallSpectrograph}
+              setShowWaterfallSpectrograph={setShowWaterfallSpectrograph}
+              pianoEnabled={pianoEnabled}
+              setPianoEnabled={setPianoEnabled}
+              chromaCircle={chromaCircle}
+              setChromaCircle={setChromaCircle}
+              chromaLine={chromaLine}
+              setChromaLine={setChromaLine}
+              chromaBar={chromaBar}
+              setChromaBar={setChromaBar}
+              rms={rms}
+              setRms={setRms}
+              loudness={loudness}
+              setLoudness={setLoudness}
+              spectralSpreadGraph={spectralSpreadGraph}
+              setSpectralSpreadGraph={setSpectralSpreadGraph}
+              isPlaying={isPlaying}
+              meydaBufferSize={meydaBufferSize}
+              setMeydaBufferSize={setMeydaBufferSize}
+              meydaFeaturesToExtract={meydaFeaturesToExtract}
+              setMeydaFeaturesToExtract={setMeydaFeaturesToExtract}
+            />
+
+            <button className="control-button" onClick={() => setShowColorSettings(true)}>
+              Color Settings
+            </button>
+          </div>
+          <div className="keyboard-panel">
+            {pianoEnabled && (
+              <div className="keyboard-container">
+                <KeyboardSVG noteHues={noteHues} />
+              </div>
+            )}
+          </div>
+        </div>
 
         <PlaybackControls
           isPlaying={isPlaying}
@@ -339,11 +346,13 @@ export default function CoreApp() {
 
         {warning && <div>{warning}</div>}
 
-        {pianoEnabled && (
-          <div className="keyboard-container">
-            <KeyboardSVG noteHues={noteHues} />
-          </div>
-        )}
+        <SongInfo
+          currentSongName={currentSongName}
+          isProcessing={isProcessing}
+          bpm={bpm}
+          scaleKey={scaleKey}
+          essentiaFeatures={essentiaFeatures}
+        />
       </div>
 
       {isPlaying && (
@@ -377,6 +386,7 @@ export default function CoreApp() {
           chromaCircle={chromaCircle}
           spectralSpreadGraph={spectralSpreadGraph}
           chromaLine={chromaLine}
+          chromaBar={chromaBar}
           rms={rms}
           loudness={loudness}
           meydaBufferSize={meydaBufferSize}

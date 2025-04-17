@@ -33,6 +33,8 @@ export default function VisualizationToggles({
   setChromaCircle,
   chromaLine,
   setChromaLine,
+  chromaBar,
+  setChromaBar,
   rms,
   setRms,
   loudness,
@@ -48,7 +50,7 @@ export default function VisualizationToggles({
   useEffect(() => {
     const newFeatures = [];
 
-    if (chromaCircle || chromaLine) {
+    if (chromaCircle || chromaLine || chromaBar) {
       newFeatures.push('chroma');
     }
 
@@ -67,7 +69,16 @@ export default function VisualizationToggles({
     if (JSON.stringify(newFeatures) !== JSON.stringify(meydaFeaturesToExtract)) {
       setMeydaFeaturesToExtract(newFeatures);
     }
-  }, [chromaCircle, chromaLine, rms, loudness, spectralSpreadGraph, meydaFeaturesToExtract, setMeydaFeaturesToExtract]);
+  }, [
+    chromaCircle,
+    chromaLine,
+    chromaBar,
+    rms,
+    loudness,
+    spectralSpreadGraph,
+    meydaFeaturesToExtract,
+    setMeydaFeaturesToExtract,
+  ]);
 
   return (
     <div className="visualization-toggles">
@@ -134,6 +145,15 @@ export default function VisualizationToggles({
           type="checkbox"
           checked={chromaLine}
           onChange={() => setChromaLine(!chromaLine)}
+        />
+      </label>
+      <label className="control-label">
+        Chroma Bar Graph
+        <input
+          className="control-checkbox"
+          type="checkbox"
+          checked={chromaBar}
+          onChange={() => setChromaBar(!chromaBar)}
         />
       </label>
       <label className="control-label">
