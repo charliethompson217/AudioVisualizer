@@ -165,6 +165,7 @@ h2 {
 
 .control-checkbox {
   margin-left: 10px;
+  cursor: pointer;
 }
 
 .control-button {

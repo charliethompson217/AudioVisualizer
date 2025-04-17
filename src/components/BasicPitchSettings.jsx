@@ -12,17 +12,15 @@ export default function BasicPitchSettings({
 }) {
   return (
     <div>
-      <label className="control-label">
-        Generate MIDI
+      <div className="control-label">
         <input
+          className="control-checkbox"
           type="checkbox"
           checked={generateBrowserMIDI}
-          onChange={(e) => {
-            const checked = e.target.checked;
-            setGenerateBrowserMIDI(checked);
-          }}
+          onChange={() => setGenerateBrowserMIDI(!generateBrowserMIDI)}
         />
-      </label>
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Generate MIDI</label>
+      </div>
       {generateBrowserMIDI && (
         <>
           <label className="control-label">

@@ -83,106 +83,105 @@ export default function VisualizationToggles({
   return (
     <div className="visualization-toggles">
       {!isPlaying && (
-        <label className="control-label">
-          BPM and Key
+        <div className="control-label">
           <input
             className="control-checkbox"
             type="checkbox"
             checked={bpmAndKey}
             onChange={() => setBpmAndKey(!bpmAndKey)}
           />
-        </label>
+          <label style={{ pointerEvents: 'none', cursor: 'default' }}>BPM and Key</label>
+        </div>
       )}
-      <label className="control-label">
-        Waveform
+      <div className="control-label">
         <input
           className="control-checkbox"
           type="checkbox"
           checked={showWaveform}
           onChange={() => setShowWaveform(!showWaveform)}
         />
-      </label>
-      <label className="control-label">
-        Bar graph Spectrograph
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Waveform</label>
+      </div>
+      <div className="control-label">
         <input
           className="control-checkbox"
           type="checkbox"
           checked={showSpectrograph}
           onChange={() => setShowSpectrograph(!showSpectrograph)}
         />
-      </label>
-      <label className="control-label">
-        Waterfall Spectrograph
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Bar graph Spectrograph</label>
+      </div>
+      <div className="control-label">
         <input
           className="control-checkbox"
           type="checkbox"
           checked={showWaterfallSpectrograph}
           onChange={() => setShowWaterfallSpectrograph(!showWaterfallSpectrograph)}
         />
-      </label>
-      <label className="control-label">
-        Synthesizer
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Waterfall Spectrograph</label>
+      </div>
+      <div className="control-label">
         <input
           className="control-checkbox"
           type="checkbox"
           checked={pianoEnabled}
           onChange={() => setPianoEnabled(!pianoEnabled)}
         />
-      </label>
-      <label className="control-label">
-        Chroma Circle Graph
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Synthesizer</label>
+      </div>
+      <div className="control-label">
         <input
           className="control-checkbox"
           type="checkbox"
           checked={chromaCircle}
           onChange={() => setChromaCircle(!chromaCircle)}
         />
-      </label>
-      <label className="control-label">
-        Chroma Line Graph
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Chroma Circle Graph</label>
+      </div>
+      <div className="control-label">
         <input
           className="control-checkbox"
           type="checkbox"
           checked={chromaLine}
           onChange={() => setChromaLine(!chromaLine)}
         />
-      </label>
-      <label className="control-label">
-        Chroma Bar Graph
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Chroma Line Graph</label>
+      </div>
+      <div className="control-label">
         <input
           className="control-checkbox"
           type="checkbox"
           checked={chromaBar}
           onChange={() => setChromaBar(!chromaBar)}
         />
-      </label>
-      <label className="control-label">
-        RMS
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Chroma Bar Graph</label>
+      </div>
+      <div className="control-label">
         <input className="control-checkbox" type="checkbox" checked={rms} onChange={() => setRms(!rms)} />
-      </label>
-      <label className="control-label">
-        Spectral Centroid + Spread Graph
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>RMS</label>
+      </div>
+      <div className="control-label">
         <input
           className="control-checkbox"
           type="checkbox"
           checked={spectralSpreadGraph}
           onChange={() => setSpectralSpreadGraph(!spectralSpreadGraph)}
         />
-      </label>
-      <label className="control-label">
-        Perceptual Loudness
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Spectral Centroid + Spread Graph</label>
+      </div>
+      <div className="control-label">
         <input
           className="control-checkbox"
           type="checkbox"
           checked={loudness}
           onChange={() => setLoudness(!loudness)}
         />
-      </label>
-      <label className="control-label">
-        Meyda Buffer Size
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Perceptual Loudness</label>
+      </div>
+      <div className="control-label">
         <select
           value={meydaBufferSize}
-          onChange={(e) => setMeydaBufferSize(parseInt(e.target.value, 10))}
+          onChange={() => setMeydaBufferSize(parseInt(e.target.value, 10))}
           style={{ paddingLeft: '5px', paddingRight: '5px' }}
         >
           {[512, 1024, 2048, 4096, 8192, 16384].map((size) => (
@@ -191,7 +190,8 @@ export default function VisualizationToggles({
             </option>
           ))}
         </select>
-      </label>
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Meyda Buffer Size</label>
+      </div>
     </div>
   );
 }
