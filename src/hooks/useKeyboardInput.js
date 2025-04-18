@@ -20,7 +20,7 @@ import { useRef, useEffect } from 'react';
 
 export function useKeyboardInput(synthesizer, isPlaying, pianoEnabled) {
   const octaveRef = useRef(4);
-  const volumeRef = useRef(0.5);
+  const volumeRef = useRef(0.05);
   const activeKeysRef = useRef(new Set());
 
   useEffect(() => {
@@ -35,9 +35,9 @@ export function useKeyboardInput(synthesizer, isPlaying, pianoEnabled) {
       } else if (event.key === 'ArrowRight') {
         octaveRef.current = Math.min(9, octaveRef.current + 1);
       } else if (event.key === 'ArrowUp') {
-        volumeRef.current = Math.min(2, volumeRef.current + 0.1); // Increase volume
+        volumeRef.current = Math.min(1, volumeRef.current + 0.005); // Increase volume
       } else if (event.key === 'ArrowDown') {
-        volumeRef.current = Math.max(0.0, volumeRef.current - 0.1); // Decrease volume
+        volumeRef.current = Math.max(0.0, volumeRef.current - 0.005); // Decrease volume
       } else if (event.key === ' ') {
         synthesizer.stopAllNotes();
         return;

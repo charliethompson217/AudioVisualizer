@@ -36,6 +36,7 @@ export default function CoreApp() {
 
   const synthesizerPresets = {
     None: {
+      synthesisMode: 'additive',
       oscillatorType: 'custom',
       harmonicAmplitudes: {
         1: 1.0,
@@ -57,6 +58,7 @@ export default function CoreApp() {
       tremoloRate: 0,
     },
     Piano: {
+      synthesisMode: 'additive',
       oscillatorType: 'custom',
       harmonicAmplitudes: {
         1: 1.0,
@@ -78,6 +80,7 @@ export default function CoreApp() {
       tremoloRate: 0,
     },
     Violin: {
+      synthesisMode: 'additive',
       oscillatorType: 'custom',
       harmonicAmplitudes: {
         1: 1.0,
@@ -356,43 +359,41 @@ export default function CoreApp() {
         />
       </div>
 
-      {isPlaying && (
-        <VisualizersContainer
-          isPlaying={isPlaying}
-          showSpectrograph={showSpectrograph}
-          showWaterfallSpectrograph={showWaterfallSpectrograph}
-          showWaveform={showWaveform}
-          bins={bins}
-          setBins={setBins}
-          minDecibels={minDecibels}
-          setMinDecibels={setMinDecibels}
-          maxDecibels={maxDecibels}
-          setMaxDecibels={setMaxDecibels}
-          smoothing={smoothing}
-          setSmoothing={setSmoothing}
-          showLabels={showLabels}
-          setShowLabels={setShowLabels}
-          showScroll={showScroll}
-          setShowScroll={setShowScroll}
-          audio={audio}
-          noteHues={noteHues}
-          pianoEnabled={pianoEnabled}
-          midiFile={midiFile}
-          midiNotes={midiNotes}
-          synthesizerSettings={synthesizerSettings}
-          setSynthesizerSettings={setSynthesizerSettings}
-          selectedPreset={selectedPreset}
-          setSelectedPreset={setSelectedPreset}
-          presets={synthesizerPresets}
-          chromaCircle={chromaCircle}
-          spectralSpreadGraph={spectralSpreadGraph}
-          chromaLine={chromaLine}
-          chromaBar={chromaBar}
-          rms={rms}
-          loudness={loudness}
-          meydaBufferSize={meydaBufferSize}
-        />
-      )}
+      <VisualizersContainer
+        isPlaying={isPlaying}
+        showSpectrograph={showSpectrograph}
+        showWaterfallSpectrograph={showWaterfallSpectrograph}
+        showWaveform={showWaveform}
+        bins={bins}
+        setBins={setBins}
+        minDecibels={minDecibels}
+        setMinDecibels={setMinDecibels}
+        maxDecibels={maxDecibels}
+        setMaxDecibels={setMaxDecibels}
+        smoothing={smoothing}
+        setSmoothing={setSmoothing}
+        showLabels={showLabels}
+        setShowLabels={setShowLabels}
+        showScroll={showScroll}
+        setShowScroll={setShowScroll}
+        audio={audio}
+        noteHues={noteHues}
+        pianoEnabled={pianoEnabled}
+        midiFile={midiFile}
+        midiNotes={midiNotes}
+        synthesizerSettings={synthesizerSettings}
+        setSynthesizerSettings={setSynthesizerSettings}
+        selectedPreset={selectedPreset}
+        setSelectedPreset={setSelectedPreset}
+        presets={synthesizerPresets}
+        chromaCircle={chromaCircle}
+        spectralSpreadGraph={spectralSpreadGraph}
+        chromaLine={chromaLine}
+        chromaBar={chromaBar}
+        rms={rms}
+        loudness={loudness}
+        meydaBufferSize={meydaBufferSize}
+      />
       <Footer />
     </div>
   );

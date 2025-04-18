@@ -26,6 +26,8 @@ export default function SynthesizerSettings({
   presets,
 }) {
   const {
+    synthesisMode = 'additive',
+    instrument = 'piano',
     oscillatorType,
     harmonicAmplitudes,
     attackTime,
@@ -57,178 +59,273 @@ export default function SynthesizerSettings({
     }));
   };
 
+  const sampleInstruments = [
+    'bass-electric',
+    'contrabass',
+    'guitar-electric',
+    'organ',
+    'trumpet',
+    'bassoon',
+    'flute',
+    'guitar-nylon',
+    'piano',
+    'tuba',
+    'cello',
+    'french-horn',
+    'harmonium',
+    'saxophone',
+    'violin',
+    'clarinet',
+    'guitar-acoustic',
+    'harp',
+    'trombone',
+    'xylophone',
+  ];
+
   return (
     <div className="synthesizer-settings">
       <h2>Synthesizer Settings</h2>
-      <div className="preset-options">
-        {Object.keys(presets).map((preset) => (
-          <label key={preset}>
-            <input
-              type="radio"
-              name="preset"
-              value={preset}
-              checked={selectedPreset === preset}
-              onChange={(e) => setSelectedPreset(e.target.value)}
-            />
-            {preset}
-          </label>
-        ))}
+
+      {/* Synthesis Mode Selection */}
+      <div className="synthesis-mode">
+        <label>
+          <input
+            type="radio"
+            name="synthesisMode"
+            value="additive"
+            checked={synthesisMode === 'additive'}
+            onChange={() => updateSetting('synthesisMode', 'additive')}
+          />
+          Additive Synthesis
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="synthesisMode"
+            value="sample"
+            checked={synthesisMode === 'sample'}
+            onChange={() => {
+              setSynthesizerSettings((prevSettings) => ({
+                ...prevSettings,
+                synthesisMode: 'sample',
+                instrument: prevSettings.instrument || 'piano',
+              }));
+            }}
+          />
+          Sample-based Synthesis
+        </label>
       </div>
 
-      <div>
-        <div className="oscillator-type">
-          <label>
-            Oscillator Type:
-            <select value={oscillatorType} onChange={(e) => updateSetting('oscillatorType', e.target.value)}>
-              <option value="custom">Custom harmonics</option>
-              <option value="sine">Sine</option>
-              <option value="square">Square</option>
-              <option value="sawtooth">Sawtooth</option>
-              <option value="triangle">Triangle</option>
-            </select>
-          </label>
-        </div>
-
-        {oscillatorType === 'custom' && (
-          <div className="harmonic-controls">
-            {/* harmonic sliders */}
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((harmonic) => (
-              <div key={harmonic}>
-                <label>
-                  Harmonic {harmonic}: {harmonicAmplitudes[harmonic].toFixed(4)}
+      {/* Sample-based Synthesis Settings */}
+      {synthesisMode === 'sample' ? (
+        <>
+          <div className="sample-instrument-selection">
+            <h3>Choose Instrument</h3>
+            <div className="instrument-options">
+              {sampleInstruments.map((instrumentOption) => (
+                <label key={instrumentOption}>
                   <input
-                    type="range"
-                    min="0.000"
-                    max="1.00"
-                    step="0.001"
-                    value={harmonicAmplitudes[harmonic]}
-                    onChange={(e) => handleHarmonicChange(harmonic, parseFloat(e.target.value))}
-                    className="harmonic-slider"
+                    type="radio"
+                    name="instrument"
+                    value={instrumentOption}
+                    checked={instrument === instrumentOption}
+                    onChange={(e) => updateSetting('instrument', e.target.value)}
                   />
+                  {instrumentOption.charAt(0).toUpperCase() + instrumentOption.slice(1)}
                 </label>
-              </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label>
+              Release Time: {releaseTime.toFixed(4)}s
+              <input
+                type="range"
+                min="0.001"
+                max="5"
+                step="0.001"
+                value={releaseTime}
+                onChange={(e) => updateSetting('releaseTime', parseFloat(e.target.value))}
+                className="harmonic-slider"
+              />
+            </label>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Presets for Additive Synthesis */}
+          <div className="preset-options">
+            <h3>Choose Preset</h3>
+            {Object.keys(presets).map((preset) => (
+              <label key={preset}>
+                <input
+                  type="radio"
+                  name="preset"
+                  value={preset}
+                  checked={selectedPreset === preset}
+                  onChange={(e) => setSelectedPreset(e.target.value)}
+                />
+                {preset}
+              </label>
             ))}
           </div>
-        )}
-      </div>
 
-      <br />
-      {/* ADSR sliders */}
-      <div>
-        <label>
-          Attack Time: {attackTime.toFixed(4)}s
-          <input
-            type="range"
-            min="0.001"
-            max="2"
-            step="0.001"
-            value={attackTime}
-            onChange={(e) => updateSetting('attackTime', parseFloat(e.target.value))}
-            className="harmonic-slider"
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          Decay Time: {decayTime.toFixed(4)}s
-          <input
-            type="range"
-            min="0.001"
-            max="2"
-            step="0.001"
-            value={decayTime}
-            onChange={(e) => updateSetting('decayTime', parseFloat(e.target.value))}
-            className="harmonic-slider"
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          Sustain Level: {sustainLevel.toFixed(4)}
-          <input
-            type="range"
-            min="0.001"
-            max="1"
-            step="0.001"
-            value={sustainLevel}
-            onChange={(e) => updateSetting('sustainLevel', parseFloat(e.target.value))}
-            className="harmonic-slider"
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          Release Time: {releaseTime.toFixed(4)}s
-          <input
-            type="range"
-            min="0.001"
-            max="5"
-            step="0.001"
-            value={releaseTime}
-            onChange={(e) => updateSetting('releaseTime', parseFloat(e.target.value))}
-            className="harmonic-slider"
-          />
-        </label>
-      </div>
-      <br />
-      {/* Vibrato Sliders */}
-      <div>
-        <label>
-          Vibrato Depth: {vibratoDepth.toFixed(4)}
-          <input
-            type="range"
-            min="0.000"
-            max="100.00"
-            step="0.001"
-            value={vibratoDepth}
-            onChange={(e) => updateSetting('vibratoDepth', parseFloat(e.target.value))}
-            className="harmonic-slider"
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          Vibrato Rate: {vibratoRate.toFixed(4)} Hz
-          <input
-            type="range"
-            min="0.000"
-            max="20.00"
-            step="0.001"
-            value={vibratoRate}
-            onChange={(e) => updateSetting('vibratoRate', parseFloat(e.target.value))}
-            className="harmonic-slider"
-          />
-        </label>
-      </div>
-      {/* Tremolo Sliders */}
-      <div>
-        <label>
-          Tremolo Depth: {tremoloDepth.toFixed(4)}
-          <input
-            type="range"
-            min="0.000"
-            max="1.00"
-            step="0.001"
-            value={tremoloDepth}
-            onChange={(e) => updateSetting('tremoloDepth', parseFloat(e.target.value))}
-            className="harmonic-slider"
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          Tremolo Rate: {tremoloRate.toFixed(4)} Hz
-          <input
-            type="range"
-            min="0.000"
-            max="20.00"
-            step="0.001"
-            value={tremoloRate}
-            onChange={(e) => updateSetting('tremoloRate', parseFloat(e.target.value))}
-            className="harmonic-slider"
-          />
-        </label>
-      </div>
+          <div>
+            <div className="oscillator-type">
+              <label>
+                Oscillator Type:
+                <select value={oscillatorType} onChange={(e) => updateSetting('oscillatorType', e.target.value)}>
+                  <option value="custom">Custom harmonics</option>
+                  <option value="sine">Sine</option>
+                  <option value="square">Square</option>
+                  <option value="sawtooth">Sawtooth</option>
+                  <option value="triangle">Triangle</option>
+                </select>
+              </label>
+            </div>
+
+            {oscillatorType === 'custom' && (
+              <div className="harmonic-controls">
+                {/* harmonic sliders */}
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((harmonic) => (
+                  <div key={harmonic}>
+                    <label>
+                      Harmonic {harmonic}: {harmonicAmplitudes[harmonic].toFixed(4)}
+                      <input
+                        type="range"
+                        min="0.000"
+                        max="1.00"
+                        step="0.001"
+                        value={harmonicAmplitudes[harmonic]}
+                        onChange={(e) => handleHarmonicChange(harmonic, parseFloat(e.target.value))}
+                        className="harmonic-slider"
+                      />
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <br />
+          {/* ADSR sliders */}
+          <div>
+            <label>
+              Attack Time: {attackTime.toFixed(4)}s
+              <input
+                type="range"
+                min="0.001"
+                max="2"
+                step="0.001"
+                value={attackTime}
+                onChange={(e) => updateSetting('attackTime', parseFloat(e.target.value))}
+                className="harmonic-slider"
+              />
+            </label>
+          </div>
+          <div>
+            <label>
+              Decay Time: {decayTime.toFixed(4)}s
+              <input
+                type="range"
+                min="0.001"
+                max="2"
+                step="0.001"
+                value={decayTime}
+                onChange={(e) => updateSetting('decayTime', parseFloat(e.target.value))}
+                className="harmonic-slider"
+              />
+            </label>
+          </div>
+          <div>
+            <label>
+              Sustain Level: {sustainLevel.toFixed(4)}
+              <input
+                type="range"
+                min="0.001"
+                max="1"
+                step="0.001"
+                value={sustainLevel}
+                onChange={(e) => updateSetting('sustainLevel', parseFloat(e.target.value))}
+                className="harmonic-slider"
+              />
+            </label>
+          </div>
+          <div>
+            <label>
+              Release Time: {releaseTime.toFixed(4)}s
+              <input
+                type="range"
+                min="0.001"
+                max="5"
+                step="0.001"
+                value={releaseTime}
+                onChange={(e) => updateSetting('releaseTime', parseFloat(e.target.value))}
+                className="harmonic-slider"
+              />
+            </label>
+          </div>
+          <br />
+          {/* Vibrato Sliders */}
+          <div>
+            <label>
+              Vibrato Depth: {vibratoDepth.toFixed(4)}
+              <input
+                type="range"
+                min="0.000"
+                max="100.00"
+                step="0.001"
+                value={vibratoDepth}
+                onChange={(e) => updateSetting('vibratoDepth', parseFloat(e.target.value))}
+                className="harmonic-slider"
+              />
+            </label>
+          </div>
+          <div>
+            <label>
+              Vibrato Rate: {vibratoRate.toFixed(4)} Hz
+              <input
+                type="range"
+                min="0.000"
+                max="20.00"
+                step="0.001"
+                value={vibratoRate}
+                onChange={(e) => updateSetting('vibratoRate', parseFloat(e.target.value))}
+                className="harmonic-slider"
+              />
+            </label>
+          </div>
+          {/* Tremolo Sliders */}
+          <div>
+            <label>
+              Tremolo Depth: {tremoloDepth.toFixed(4)}
+              <input
+                type="range"
+                min="0.000"
+                max="1.00"
+                step="0.001"
+                value={tremoloDepth}
+                onChange={(e) => updateSetting('tremoloDepth', parseFloat(e.target.value))}
+                className="harmonic-slider"
+              />
+            </label>
+          </div>
+          <div>
+            <label>
+              Tremolo Rate: {tremoloRate.toFixed(4)} Hz
+              <input
+                type="range"
+                min="0.000"
+                max="20.00"
+                step="0.001"
+                value={tremoloRate}
+                onChange={(e) => updateSetting('tremoloRate', parseFloat(e.target.value))}
+                className="harmonic-slider"
+              />
+            </label>
+          </div>
+        </>
+      )}
       <br />
     </div>
   );

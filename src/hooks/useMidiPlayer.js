@@ -59,17 +59,49 @@ export function useMidiPlayer(midiFile, synthesizer, isPlaying, setWarning) {
     function buildNotes(parsedMidi) {
       const notesResult = [];
       const ticksPerBeat = parsedMidi.header.ticksPerBeat || 480;
-      let microsecondsPerBeat = 500000;
+      const tempoChanges = []; // Store all tempo changes with their absolute tick time
+      let currentMicrosecondsPerBeat = 500000; // Default tempo (120 BPM)
+
       parsedMidi.tracks.forEach((track) => {
-        let currentTime = 0;
-        const activeMap = {};
+        let trackTime = 0;
         track.forEach((event) => {
-          currentTime += event.deltaTime;
+          trackTime += event.deltaTime;
           if (event.meta && event.type === 'setTempo') {
-            microsecondsPerBeat = event.microsecondsPerBeat;
+            tempoChanges.push({
+              tickTime: trackTime,
+              microsecondsPerBeat: event.microsecondsPerBeat,
+            });
           }
-          const secondsPerTick = microsecondsPerBeat / 1_000_000 / ticksPerBeat;
-          const eventTimeSec = currentTime * secondsPerTick;
+        });
+      });
+
+      tempoChanges.sort((a, b) => a.tickTime - b.tickTime);
+
+      parsedMidi.tracks.forEach((track) => {
+        let trackTime = 0;
+        let currentTempoIndex = 0;
+        let absoluteTimeSec = 0;
+        const activeMap = {};
+
+        track.forEach((event) => {
+          trackTime += event.deltaTime;
+
+          while (currentTempoIndex < tempoChanges.length && trackTime >= tempoChanges[currentTempoIndex].tickTime) {
+            const ticksSinceLastTempo =
+              tempoChanges[currentTempoIndex].tickTime -
+              (currentTempoIndex > 0 ? tempoChanges[currentTempoIndex - 1].tickTime : 0);
+            const secondsPerTick = currentMicrosecondsPerBeat / 1_000_000 / ticksPerBeat;
+            absoluteTimeSec += ticksSinceLastTempo * secondsPerTick;
+
+            currentMicrosecondsPerBeat = tempoChanges[currentTempoIndex].microsecondsPerBeat;
+            currentTempoIndex++;
+          }
+
+          const secondsPerTick = currentMicrosecondsPerBeat / 1_000_000 / ticksPerBeat;
+          const eventTimeSec =
+            absoluteTimeSec +
+            (trackTime - (currentTempoIndex > 0 ? tempoChanges[currentTempoIndex - 1]?.tickTime : 0)) * secondsPerTick;
+
           if (event.type === 'noteOn' && event.velocity > 0) {
             activeMap[event.noteNumber] = {
               startTime: eventTimeSec,
@@ -89,33 +121,63 @@ export function useMidiPlayer(midiFile, synthesizer, isPlaying, setWarning) {
           }
         });
       });
+
       return notesResult;
     }
 
     function playMidi(parsedMidi) {
-      const ticksPerBeat = parsedMidi.header.ticksPerBeat;
-      let microsecondsPerBeat = 500000;
+      const ticksPerBeat = parsedMidi.header.ticksPerBeat || 480;
+      const tempoChanges = [];
+      let currentMicrosecondsPerBeat = 500000;
 
       parsedMidi.tracks.forEach((track) => {
         let trackTime = 0;
+        track.forEach((event) => {
+          trackTime += event.deltaTime;
+          if (event.meta && event.type === 'setTempo') {
+            tempoChanges.push({
+              tickTime: trackTime,
+              microsecondsPerBeat: event.microsecondsPerBeat,
+            });
+          }
+        });
+      });
+
+      tempoChanges.sort((a, b) => a.tickTime - b.tickTime);
+
+      parsedMidi.tracks.forEach((track) => {
+        let trackTime = 0;
+        let currentTempoIndex = 0;
+        let absoluteTimeSec = 0;
 
         track.forEach((event) => {
-          if (event.meta && event.type === 'setTempo') {
-            microsecondsPerBeat = event.microsecondsPerBeat;
+          trackTime += event.deltaTime;
+
+          while (currentTempoIndex < tempoChanges.length && trackTime >= tempoChanges[currentTempoIndex].tickTime) {
+            const ticksSinceLastTempo =
+              tempoChanges[currentTempoIndex].tickTime -
+              (currentTempoIndex > 0 ? tempoChanges[currentTempoIndex - 1].tickTime : 0);
+            const secondsPerTick = currentMicrosecondsPerBeat / 1_000_000 / ticksPerBeat;
+            absoluteTimeSec += ticksSinceLastTempo * secondsPerTick;
+
+            currentMicrosecondsPerBeat = tempoChanges[currentTempoIndex].microsecondsPerBeat;
+            currentTempoIndex++;
           }
 
-          trackTime += event.deltaTime;
-          const delay = (trackTime / ticksPerBeat) * (microsecondsPerBeat / 1000000);
+          const secondsPerTick = currentMicrosecondsPerBeat / 1_000_000 / ticksPerBeat;
+          const eventTimeSec =
+            absoluteTimeSec +
+            (trackTime - (currentTempoIndex > 0 ? tempoChanges[currentTempoIndex - 1]?.tickTime : 0)) * secondsPerTick;
 
           if (event.type === 'noteOn' && event.velocity > 0) {
             const timeoutId = setTimeout(() => {
-              synthesizer?.noteOn(event.noteNumber, event.velocity, true);
-            }, delay * 1000);
+              synthesizer?.noteOn(event.noteNumber, event.velocity);
+            }, eventTimeSec * 1000);
             timeoutsRef.current.push(timeoutId);
           } else if (event.type === 'noteOff' || (event.type === 'noteOn' && event.velocity === 0)) {
             const timeoutId = setTimeout(() => {
               synthesizer?.noteOff(event.noteNumber);
-            }, delay * 1000);
+            }, eventTimeSec * 1000);
             timeoutsRef.current.push(timeoutId);
           }
         });
@@ -129,7 +191,7 @@ export function useMidiPlayer(midiFile, synthesizer, isPlaying, setWarning) {
       timeoutsRef.current.forEach(clearTimeout);
       timeoutsRef.current = [];
     };
-  }, [midiFile, synthesizer, isPlaying]);
+  }, [midiFile, synthesizer, isPlaying, setWarning]);
 
   return {
     midiNotes,

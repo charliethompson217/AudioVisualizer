@@ -32,6 +32,9 @@ export function useSynthesizer(audioContext, analyser, isPlaying, settings, volu
 
     if (!synthesizerRef.current) {
       const synthesizer = new Synthesizer(audioContext, {
+        synthesisMode: settings.synthesisMode,
+        instrument: settings.instrument,
+        sampleBaseUrl: 'https://audio-visualizer-zongs.s3.us-east-2.amazonaws.com/samples',
         harmonicAmplitudes: settings.harmonicAmplitudes,
         attackTime: settings.attackTime,
         decayTime: settings.decayTime,
@@ -56,30 +59,31 @@ export function useSynthesizer(audioContext, analyser, isPlaying, settings, volu
     };
   }, [isPlaying, audioContext, analyser]);
 
-  // Update all synthesizer settings in a single useEffect
   useEffect(() => {
     if (synthesizerRef.current) {
-      // Update oscillator type
-      synthesizerRef.current.updateOscillatorType(settings.oscillatorType);
-
-      // Update harmonic amplitudes
-      synthesizerRef.current.updateHarmonicAmplitudes(settings.harmonicAmplitudes);
-
-      // Update ADSR
-      synthesizerRef.current.updateADSR({
-        attackTime: settings.attackTime,
-        decayTime: settings.decayTime,
-        sustainLevel: settings.sustainLevel,
-        releaseTime: settings.releaseTime,
-      });
-
-      // Update vibrato and tremolo
-      synthesizerRef.current.updateVibratoAndTremolo({
-        vibratoDepth: settings.vibratoDepth,
-        vibratoRate: settings.vibratoRate,
-        tremoloDepth: settings.tremoloDepth,
-        tremoloRate: settings.tremoloRate,
-      });
+      if (settings.synthesisMode === 'sample') {
+        synthesizerRef.current.updateSamplerSettings({
+          instrument: settings.instrument,
+          releaseTime: settings.releaseTime,
+        });
+        synthesizerRef.current.updateSynthesisMode(settings.synthesisMode);
+      } else {
+        synthesizerRef.current.updateSynthesisMode(settings.synthesisMode);
+        synthesizerRef.current.updateOscillatorType(settings.oscillatorType);
+        synthesizerRef.current.updateHarmonicAmplitudes(settings.harmonicAmplitudes);
+        synthesizerRef.current.updateADSR({
+          attackTime: settings.attackTime,
+          decayTime: settings.decayTime,
+          sustainLevel: settings.sustainLevel,
+          releaseTime: settings.releaseTime,
+        });
+        synthesizerRef.current.updateVibratoAndTremolo({
+          vibratoDepth: settings.vibratoDepth,
+          vibratoRate: settings.vibratoRate,
+          tremoloDepth: settings.tremoloDepth,
+          tremoloRate: settings.tremoloRate,
+        });
+      }
     }
   }, [settings]);
 

@@ -67,54 +67,68 @@ export default function VisualizersContainer({
 }) {
   return (
     <div className="Visualizers-Container">
-      {chromaCircle && <ChromavectorCircleGraph chroma={audio.chroma} isPlaying={isPlaying} noteHues={noteHues} />}
-
-      {spectralSpreadGraph && (
-        <SpectralSpreadGraph
-          spectralCentroid={audio.spectralCentroid}
-          spectralSpread={audio.spectralSpread}
-          isPlaying={isPlaying}
-          sampleRate={audio.sampleRate}
-          bufferSize={meydaBufferSize}
-        />
-      )}
-
-      {chromaLine && <ChromevectorLineGraph chroma={audio.chroma} isPlaying={isPlaying} noteHues={noteHues} />}
-
-      {chromaBar && <ChromavectorBarGraph chroma={audio.chroma} isPlaying={isPlaying} noteHues={noteHues} />}
-
-      {rms && <RMS rms={audio.rms} isPlaying={isPlaying} />}
-
-      {loudness && <Loudness loudness={audio.loudness} isPlaying={isPlaying} />}
-
-      {(showSpectrograph || showWaterfallSpectrograph) && (
+      {isPlaying && (
         <>
-          <SpectrographControls
-            bins={bins}
-            setBins={setBins}
-            minDecibels={minDecibels}
-            setMinDecibels={setMinDecibels}
-            maxDecibels={maxDecibels}
-            setMaxDecibels={setMaxDecibels}
-            smoothing={smoothing}
-            setSmoothing={setSmoothing}
-            showLabels={showLabels}
-            setShowLabels={setShowLabels}
-            showScroll={showScroll}
-            setShowScroll={setShowScroll}
-          />
+          {chromaCircle && <ChromavectorCircleGraph chroma={audio.chroma} isPlaying={isPlaying} noteHues={noteHues} />}
 
-          {showSpectrograph && (
-            <BarGraphSpectrograph showLabels={showLabels} showScroll={showScroll} audio={audio} noteHues={noteHues} />
+          {spectralSpreadGraph && (
+            <SpectralSpreadGraph
+              spectralCentroid={audio.spectralCentroid}
+              spectralSpread={audio.spectralSpread}
+              isPlaying={isPlaying}
+              sampleRate={audio.sampleRate}
+              bufferSize={meydaBufferSize}
+            />
           )}
 
-          {showWaterfallSpectrograph && (
-            <WaterfallSpectrograph showLabels={showLabels} showScroll={showScroll} audio={audio} noteHues={noteHues} />
+          {chromaLine && <ChromevectorLineGraph chroma={audio.chroma} isPlaying={isPlaying} noteHues={noteHues} />}
+
+          {chromaBar && <ChromavectorBarGraph chroma={audio.chroma} isPlaying={isPlaying} noteHues={noteHues} />}
+
+          {rms && <RMS rms={audio.rms} isPlaying={isPlaying} />}
+
+          {loudness && <Loudness loudness={audio.loudness} isPlaying={isPlaying} />}
+
+          {(showSpectrograph || showWaterfallSpectrograph) && (
+            <>
+              <SpectrographControls
+                bins={bins}
+                setBins={setBins}
+                minDecibels={minDecibels}
+                setMinDecibels={setMinDecibels}
+                maxDecibels={maxDecibels}
+                setMaxDecibels={setMaxDecibels}
+                smoothing={smoothing}
+                setSmoothing={setSmoothing}
+                showLabels={showLabels}
+                setShowLabels={setShowLabels}
+                showScroll={showScroll}
+                setShowScroll={setShowScroll}
+              />
+
+              {showSpectrograph && (
+                <BarGraphSpectrograph
+                  showLabels={showLabels}
+                  showScroll={showScroll}
+                  audio={audio}
+                  noteHues={noteHues}
+                />
+              )}
+
+              {showWaterfallSpectrograph && (
+                <WaterfallSpectrograph
+                  showLabels={showLabels}
+                  showScroll={showScroll}
+                  audio={audio}
+                  noteHues={noteHues}
+                />
+              )}
+            </>
           )}
+
+          {showWaveform && <Waveform audio={audio} />}
         </>
       )}
-
-      {showWaveform && <Waveform audio={audio} />}
 
       {(pianoEnabled || midiFile) && (
         <SynthesizerSettings
@@ -126,7 +140,9 @@ export default function VisualizersContainer({
         />
       )}
 
-      {midiNotes && midiNotes.length > 0 && <PianoRoll notes={midiNotes} isPlaying={isPlaying} noteHues={noteHues} />}
+      {isPlaying && midiNotes && midiNotes.length > 0 && (
+        <PianoRoll notes={midiNotes} isPlaying={isPlaying} noteHues={noteHues} />
+      )}
     </div>
   );
 }
