@@ -21,7 +21,6 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 export function useAudioContext(mp3File, useMic, isPlaying, synthesizer) {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
-  const gainNodeRef = useRef(null);
   const audioElementRef = useRef(null);
   const sourceRef = useRef(null);
   const mixerNodeRef = useRef(null);
@@ -49,93 +48,95 @@ export function useAudioContext(mp3File, useMic, isPlaying, synthesizer) {
     }
   }, [synthesizer]);
 
+  // Pre-initialize AudioContext and nodes
   useEffect(() => {
-    if (!isPlaying) {
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
-      }
-      if (analyserRef.current) {
-        analyserRef.current.disconnect();
-        analyserRef.current = null;
-      }
-      if (gainNodeRef.current) {
-        gainNodeRef.current.disconnect();
-        gainNodeRef.current = null;
-      }
-      if (mixerNodeRef.current) {
-        mixerNodeRef.current.disconnect();
-        mixerNodeRef.current = null;
-      }
-      return;
-    }
-
     if (!audioContextRef.current) {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)({
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({
         latencyHint: 'interactive',
       });
-      audioContextRef.current = audioContext;
-
-      const analyser = audioContext.createAnalyser();
+      audioContextRef.current.suspend();
+      const analyser = audioContextRef.current.createAnalyser();
       analyserRef.current = analyser;
-      setSampleRate(audioContext.sampleRate);
+      setSampleRate(audioContextRef.current.sampleRate);
 
-      const gainNode = audioContext.createGain();
-      gainNode.gain.value = 1.0;
-      gainNodeRef.current = gainNode;
-
-      const mixerNode = audioContext.createGain();
+      const mixerNode = audioContextRef.current.createGain();
       mixerNode.gain.value = 1.0;
       mixerNodeRef.current = mixerNode;
 
       mixerNodeRef.current.connect(analyserRef.current);
-      analyserRef.current.connect(gainNodeRef.current);
-      gainNodeRef.current.connect(audioContext.destination);
+      analyserRef.current.connect(audioContextRef.current.destination);
+      console.log('AudioContext initialized, nodes connected');
+    }
+  }, []);
+
+  // Handle playback
+  useEffect(() => {
+    if (!isPlaying) {
+      if (audioContextRef.current) {
+        audioContextRef.current.suspend();
+      }
+      return;
     }
 
     let fileURL = null;
+    audioContextRef.current
+      .resume()
+      .then(() => {
+        console.log('AudioContext state:', audioContextRef.current.state);
+        if (useMic) {
+          navigator.mediaDevices
+            .getUserMedia({ audio: true })
+            .then((stream) => {
+              const source = audioContextRef.current.createMediaStreamSource(stream);
+              source.connect(mixerNodeRef.current);
+              sourceRef.current = source;
 
-    if (useMic) {
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        const source = audioContextRef.current.createMediaStreamSource(stream);
-        source.connect(mixerNodeRef.current);
-        sourceRef.current = source;
+              // Mute output when using microphone to prevent feedback
+              mixerNodeRef.current.gain.value = 0;
+              console.log('Microphone source connected');
+            })
+            .catch((e) => console.error('Microphone access failed:', e));
+        } else if (mp3File) {
+          mixerNodeRef.current.gain.value = 1.0;
+          let audioElement;
+          if (typeof mp3File === 'string') {
+            audioElement = new Audio();
+            audioElement.src = mp3File;
+          } else if (mp3File instanceof File) {
+            fileURL = URL.createObjectURL(mp3File);
+            audioElement = new Audio();
+            audioElement.src = fileURL;
+          }
+          audioElement.crossOrigin = 'anonymous';
+          // Do not append to DOM to prevent direct playback
+          audioElementRef.current = audioElement;
+          const source = audioContextRef.current.createMediaElementSource(audioElement);
+          source.connect(mixerNodeRef.current);
+          sourceRef.current = source;
+          audioElement.play().catch((e) => console.error('Audio playback failed:', e));
+          audioElement.addEventListener('loadedmetadata', () => {
+            setDuration(audioElement.duration);
+            console.log('Audio duration:', audioElement.duration);
+          });
+        }
 
-        // Mute output when using microphone to prevent feedback
-        gainNodeRef.current.gain.value = 0;
-      });
-    } else if (mp3File) {
-      gainNodeRef.current.gain.value = 1.0;
-
-      let audioElement;
-      if (typeof mp3File === 'string') {
-        audioElement = new Audio(mp3File);
-      } else if (mp3File instanceof File) {
-        fileURL = URL.createObjectURL(mp3File);
-        audioElement = new Audio(fileURL);
-      }
-      audioElement.crossOrigin = 'anonymous';
-      const source = audioContextRef.current.createMediaElementSource(audioElement);
-      source.connect(mixerNodeRef.current);
-      sourceRef.current = source;
-      audioElement.play();
-      audioElement.addEventListener('loadedmetadata', () => {
-        setDuration(audioElement.duration);
-      });
-      // Store audioElement in ref
-      audioElementRef.current = audioElement;
-    }
-
-    connectSynthesizer();
+        connectSynthesizer();
+      })
+      .catch((e) => console.error('AudioContext resume failed:', e));
 
     return () => {
       if (sourceRef.current && sourceRef.current instanceof MediaStreamAudioSourceNode) {
-        const tracks = sourceRef.current.mediaStream.getTracks();
-        tracks.forEach((track) => track.stop());
+        sourceRef.current.mediaStream.getTracks().forEach((track) => track.stop());
       }
       if (fileURL) {
         URL.revokeObjectURL(fileURL);
       }
+      if (audioElementRef.current) {
+        audioElementRef.current.pause();
+        audioElementRef.current.src = '';
+        audioElementRef.current = null;
+      }
+      console.log('Cleanup completed');
     };
   }, [isPlaying, mp3File, useMic, connectSynthesizer]);
 
@@ -144,8 +145,8 @@ export function useAudioContext(mp3File, useMic, isPlaying, synthesizer) {
   }, [synthesizer, connectSynthesizer]);
 
   useEffect(() => {
-    if (gainNodeRef.current) {
-      gainNodeRef.current.gain.value = useMic ? 0 : 1.0;
+    if (mixerNodeRef.current) {
+      mixerNodeRef.current.gain.value = useMic ? 0 : 1.0;
     }
   }, [useMic]);
 
@@ -174,7 +175,6 @@ export function useAudioContext(mp3File, useMic, isPlaying, synthesizer) {
   return {
     audioContext: audioContextRef.current,
     analyser: analyserRef.current,
-    gainNode: gainNodeRef.current,
     audioElement: audioElementRef.current,
     sampleRate,
     duration,
