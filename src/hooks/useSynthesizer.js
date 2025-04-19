@@ -18,6 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { useRef, useEffect } from 'react';
 import Synthesizer from '../utils/Synthesizer';
+import * as Tone from 'tone';
 
 export function useSynthesizer(audioContext, analyser, isPlaying, settings, volumeRef) {
   const synthesizerRef = useRef(null);
@@ -31,6 +32,8 @@ export function useSynthesizer(audioContext, analyser, isPlaying, settings, volu
     }
 
     if (!synthesizerRef.current) {
+      Tone.setContext(audioContext);
+
       const synthesizer = new Synthesizer(audioContext, {
         synthesisMode: settings.synthesisMode,
         instrument: settings.instrument,

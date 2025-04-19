@@ -45,6 +45,7 @@ export function useAudio(
   setWarning
 ) {
   const volumeRef = useRef(0.5);
+  const synthRef = useRef(null);
 
   // States for MIDI conversion
   const [convertedMidiNotes, setConvertedMidiNotes] = useState(null);
@@ -56,11 +57,16 @@ export function useAudio(
   const { audioContext, analyser, sampleRate, duration, play, pause, seek, getCurrentTime, source } = useAudioContext(
     mp3File,
     useMic,
-    isPlaying
+    isPlaying,
+    synthRef.current
   );
 
   // Initialize and manage synthesizer
   const synthesizer = useSynthesizer(audioContext, analyser, isPlaying, synthesizerSettings, volumeRef);
+
+  useEffect(() => {
+    synthRef.current = synthesizer;
+  }, [synthesizer]);
 
   // Setup audio analysis with Web Audio API and Meyda
   const {

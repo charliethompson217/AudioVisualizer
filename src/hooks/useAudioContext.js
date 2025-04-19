@@ -18,15 +18,36 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 
-export function useAudioContext(mp3File, useMic, isPlaying) {
+export function useAudioContext(mp3File, useMic, isPlaying, synthesizer) {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const gainNodeRef = useRef(null);
   const audioElementRef = useRef(null);
   const sourceRef = useRef(null);
+  const mixerNodeRef = useRef(null);
 
   const [sampleRate, setSampleRate] = useState(44100);
   const [duration, setDuration] = useState(0);
+
+  const connectSynthesizer = useCallback(() => {
+    if (synthesizer && mixerNodeRef.current) {
+      try {
+        const synthOutput = synthesizer.getOutputNode();
+        if (synthOutput) {
+          // First disconnect to prevent multiple connections
+          try {
+            synthOutput.disconnect(mixerNodeRef.current);
+          } catch (e) {
+            // It's okay if it wasn't previously connected
+          }
+          synthOutput.connect(mixerNodeRef.current);
+          console.log('Synthesizer connected to mixer');
+        }
+      } catch (e) {
+        console.error('Failed to connect synthesizer:', e);
+      }
+    }
+  }, [synthesizer]);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -41,6 +62,10 @@ export function useAudioContext(mp3File, useMic, isPlaying) {
       if (gainNodeRef.current) {
         gainNodeRef.current.disconnect();
         gainNodeRef.current = null;
+      }
+      if (mixerNodeRef.current) {
+        mixerNodeRef.current.disconnect();
+        mixerNodeRef.current = null;
       }
       return;
     }
@@ -59,11 +84,13 @@ export function useAudioContext(mp3File, useMic, isPlaying) {
       gainNode.gain.value = 1.0;
       gainNodeRef.current = gainNode;
 
-      // Connect analyser to GainNode only if not using microphone
-      if (!useMic) {
-        analyser.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-      }
+      const mixerNode = audioContext.createGain();
+      mixerNode.gain.value = 1.0;
+      mixerNodeRef.current = mixerNode;
+
+      mixerNodeRef.current.connect(analyserRef.current);
+      analyserRef.current.connect(gainNodeRef.current);
+      gainNodeRef.current.connect(audioContext.destination);
     }
 
     let fileURL = null;
@@ -71,10 +98,15 @@ export function useAudioContext(mp3File, useMic, isPlaying) {
     if (useMic) {
       navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
         const source = audioContextRef.current.createMediaStreamSource(stream);
-        source.connect(analyserRef.current);
+        source.connect(mixerNodeRef.current);
         sourceRef.current = source;
+
+        // Mute output when using microphone to prevent feedback
+        gainNodeRef.current.gain.value = 0;
       });
     } else if (mp3File) {
+      gainNodeRef.current.gain.value = 1.0;
+
       let audioElement;
       if (typeof mp3File === 'string') {
         audioElement = new Audio(mp3File);
@@ -84,8 +116,7 @@ export function useAudioContext(mp3File, useMic, isPlaying) {
       }
       audioElement.crossOrigin = 'anonymous';
       const source = audioContextRef.current.createMediaElementSource(audioElement);
-      source.connect(analyserRef.current);
-      analyserRef.current.connect(audioContextRef.current.destination);
+      source.connect(mixerNodeRef.current);
       sourceRef.current = source;
       audioElement.play();
       audioElement.addEventListener('loadedmetadata', () => {
@@ -94,6 +125,8 @@ export function useAudioContext(mp3File, useMic, isPlaying) {
       // Store audioElement in ref
       audioElementRef.current = audioElement;
     }
+
+    connectSynthesizer();
 
     return () => {
       if (sourceRef.current && sourceRef.current instanceof MediaStreamAudioSourceNode) {
@@ -104,21 +137,17 @@ export function useAudioContext(mp3File, useMic, isPlaying) {
         URL.revokeObjectURL(fileURL);
       }
     };
-  }, [isPlaying, mp3File, useMic]);
+  }, [isPlaying, mp3File, useMic, connectSynthesizer]);
 
   useEffect(() => {
-    if (isPlaying && !useMic && analyserRef.current && gainNodeRef.current) {
-      analyserRef.current.connect(gainNodeRef.current);
-      gainNodeRef.current.connect(audioContextRef.current.destination);
-    } else if (useMic && analyserRef.current && gainNodeRef.current) {
-      try {
-        analyserRef.current.disconnect(gainNodeRef.current);
-        gainNodeRef.current.disconnect(audioContextRef.current.destination);
-      } catch (error) {
-        console.warn('Disconnect failed:', error);
-      }
+    connectSynthesizer();
+  }, [synthesizer, connectSynthesizer]);
+
+  useEffect(() => {
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = useMic ? 0 : 1.0;
     }
-  }, [useMic, isPlaying]);
+  }, [useMic]);
 
   const play = useCallback(() => {
     if (audioElementRef.current) {
@@ -153,6 +182,6 @@ export function useAudioContext(mp3File, useMic, isPlaying) {
     pause,
     seek,
     getCurrentTime,
-    source: sourceRef.current,
+    source: mixerNodeRef.current,
   };
 }

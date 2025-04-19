@@ -38,6 +38,7 @@ export default class Synthesizer {
     this.activeNotes = new Map();
     this.oscillatorType = options.oscillatorType;
     this.sampler = null;
+    this.outputNode = new Tone.Gain(1);
 
     if (this.synthesisMode === 'sample') {
       this.initializeSampler();
@@ -80,7 +81,12 @@ export default class Synthesizer {
       urls: samples,
       release: this.releaseTime,
       onload: () => console.log(`Sampler loaded with instrument: ${this.instrument}`),
-    }).connect(this.analyserNode);
+    });
+    this.sampler.connect(this.outputNode);
+  }
+
+  getOutputNode() {
+    return this.outputNode;
   }
 
   updateOscillatorType(newOscillatorType) {
@@ -162,8 +168,9 @@ export default class Synthesizer {
     if (this.synthesisMode === 'sample' && this.sampler) {
       const noteName = Tone.Frequency(noteNumber, 'midi').toNote();
       const volume = (velocity / 127) * this.getVolume();
-      const gain = new Tone.Gain(volume).connect(this.analyserNode);
+      const gain = new Tone.Gain(volume);
       this.sampler.connect(gain);
+      gain.connect(this.outputNode);
       this.sampler.triggerAttack(noteName, Tone.now(), volume);
       const noteId = `${noteNumber}_${performance.now()}`;
       this.activeNotes.set(noteId, { sampler: this.sampler, gain, noteName });
@@ -191,7 +198,7 @@ export default class Synthesizer {
 
       const volumeGain = new Tone.Gain(volume);
       synth.connect(volumeGain);
-      volumeGain.connect(this.analyserNode);
+      volumeGain.connect(this.outputNode);
 
       let vibratoLFO = null;
       if (this.vibratoDepth > 0 && this.vibratoRate > 0) {
