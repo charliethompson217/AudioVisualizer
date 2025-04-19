@@ -91,6 +91,10 @@ export default function About() {
         All samples used by the synthesizer are released under{' '}
         <a href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution (CC-BY 3.0)</a>
       </p>
+      <p style={{ marginLeft: '20px' }}>
+        The sample library is from <a href="https://github.com/nbrosowsky/tonejs-instruments">tonejs-instruments</a>.
+        The sources listed below are the original sources from which those samples were aggregated and edited.
+      </p>
       <ul>
         <li>
           <a href="https://www.karoryfer.com/karoryfer-samples">Karoryfer</a> - Bass, Electric Guitar, Saxophone
