@@ -30,6 +30,7 @@ import VisualizersContainer from './components/VisualizersContainer.jsx';
 import SongInfo from './components/SongInfo.jsx';
 import Footer from './components/Footer.jsx';
 import BasicPitchSettings from './components/BasicPitchSettings.jsx';
+import MidiSelector from './components/MidiSelector.jsx';
 
 export default function CoreApp() {
   const defaultNoteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
@@ -140,6 +141,7 @@ export default function CoreApp() {
   const [frameThreshold, setFrameThreshold] = useState(0.3);
   const [minDurationSec, setMinDurationSec] = useState(0.1);
 
+  const [selectedMidiFileName, setSelectedMidiFileName] = useState('');
   const [selectedSongFileName, setSelectedSongFileName] = useState('');
   const [fetchingSong, setFetchingSong] = useState(false);
 
@@ -176,10 +178,21 @@ export default function CoreApp() {
 
   const handleSongSelect = async (selectedFileName, file, songName) => {
     setSelectedSongFileName(selectedFileName);
+    setSelectedMidiFileName("");
     setCurrentSongName(songName);
     setFetchingSong(false);
     setMp3File(file);
     setMidiFile(null);
+  };
+
+  const handleMidiSelect = (selectedFileName, file, midiName) => {
+    setSelectedMidiFileName(selectedFileName);
+    setSelectedSongFileName("");
+    setCurrentSongName(midiName);
+    setFetchingSong(false);
+    setMidiFile(file);
+    setMp3File(null);
+    setPianoEnabled(true);
   };
 
   function handleStartStop() {
@@ -254,21 +267,31 @@ export default function CoreApp() {
 
         {!isPlaying && (
           <div>
-            <SongSelector
-              onSongSelect={handleSongSelect}
-              selectedSongFileName={selectedSongFileName}
-              setWarning={setWarning}
-              setCurrentSongName={setCurrentSongName}
-              setFetchingSong={setFetchingSong}
-            />
+            <div className="song-selector-container" style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
+              <FileUploader
+                setCurrentSongName={setCurrentSongName}
+                setMidiFile={setMidiFile}
+                setMp3File={setMp3File}
+                setPianoEnabled={setPianoEnabled}
+                setSelectedSongFileName={setSelectedSongFileName}
+              />
 
-            <FileUploader
-              setCurrentSongName={setCurrentSongName}
-              setMidiFile={setMidiFile}
-              setMp3File={setMp3File}
-              setPianoEnabled={setPianoEnabled}
-              setSelectedSongFileName={setSelectedSongFileName}
-            />
+              <SongSelector
+                onSongSelect={handleSongSelect}
+                selectedSongFileName={selectedSongFileName}
+                setWarning={setWarning}
+                setCurrentSongName={setCurrentSongName}
+                setFetchingSong={setFetchingSong}
+              />
+
+              <MidiSelector
+                onMidiSelect={handleMidiSelect}
+                selectedMidiFileName={selectedMidiFileName}
+                setWarning={setWarning}
+                setCurrentSongName={setCurrentSongName}
+                setFetchingMidi={setFetchingSong}
+              />
+            </div>
 
             <BasicPitchSettings
               generateBrowserMIDI={generateBrowserMIDI}

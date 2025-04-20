@@ -21,16 +21,21 @@ import { Link } from 'react-router-dom';
 
 export default function About() {
   const [songs, setSongs] = useState([]);
+  const [midis, setMidis] = useState([]);
 
   useEffect(() => {
     fetch('/songs.json')
       .then((response) => response.json())
       .then((data) => setSongs(data))
       .catch((error) => console.error('Error loading songs:', error));
+    fetch('/midis.json')
+      .then((response) => response.json())
+      .then((data) => setMidis(data))
+      .catch((error) => console.error('Error loading MIDI files:', error));
   }, []);
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
       <h1>About Audio Visualizer</h1>
       <p>
         This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero
@@ -118,11 +123,30 @@ export default function About() {
 
       {songs.length > 0 && (
         <ul style={{ marginLeft: '20px', lineHeight: '25px' }}>
-          {songs.sort((a, b) => a.title.localeCompare(b.title)).map((song, index) => (
-            <li key={index}>
-              {song.title} By {song.artist} {song.license}
-            </li>
-          ))}
+          {songs
+            .sort((a, b) => a.title.localeCompare(b.title))
+            .map((song, index) => (
+              <li key={index}>
+                {song.title} By {song.artist} {song.license}
+              </li>
+            ))}
+        </ul>
+      )}
+
+      <h2>MIDI Files</h2>
+      <p style={{ marginLeft: '20px' }}>
+        All MIDI files in the MIDI library are from <a href="https://www.mutopiaproject.org">Mutopia Project</a>
+      </p>
+
+      {midis.length > 0 && (
+        <ul style={{ marginLeft: '20px', lineHeight: '25px' }}>
+          {midis
+            .sort((a, b) => a.title.localeCompare(b.title))
+            .map((midi, index) => (
+              <li key={index}>
+                {midi.title} By {midi.artist} {midi.license}
+              </li>
+            ))}
         </ul>
       )}
 
