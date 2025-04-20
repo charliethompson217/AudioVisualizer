@@ -18,7 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React, { useState, useEffect } from 'react';
 
-const S3_BASE_URL = 'https://audio-visualizer-zongs.s3.us-east-2.amazonaws.com';
+const S3_BASE_URL = 'https://audio-visualizer-zongs.s3.us-east-2.amazonaws.com/songs';
 
 export default function SongSelector({
   onSongSelect,
@@ -53,7 +53,7 @@ export default function SongSelector({
     setFetchingSong(true);
 
     try {
-      const songUrl = `${S3_BASE_URL}/${selectedFileName.replace(' ', '+')}`;
+      const songUrl = `${S3_BASE_URL}/${selectedFileName}`;
       const response = await fetch(songUrl);
       const blob = await response.blob();
       const file = new File([blob], selectedFileName, {
@@ -86,17 +86,18 @@ export default function SongSelector({
           className="song-select"
         >
           <option value="">Choose from library</option>
-          {songs.map((song) => (
-            <option key={song.fileName} value={song.fileName}>
-              {song.title} by {song.artist}
-            </option>
-          ))}
+          {songs
+            .sort((a, b) => a.title.localeCompare(b.title))
+            .map((song) => (
+              <option key={song.fileName} value={song.fileName}>
+                {song.title} by {song.artist} {song.license}
+              </option>
+            ))}
         </select>
       </label>
       {isLoading && <p>Loading song...</p>}
       <p style={{ maxWidth: '100%', wordWrap: 'break-word' }}>
-        All music is from <a href="https://freemusicarchive.org">Free Music Archive</a> under the Creative Commons
-        liscence Attribution-NonCommercial-ShareAlike (CC BY-NC-SA).
+        All songs are from <a href="https://freemusicarchive.org">Free Music Archive</a>
       </p>
     </div>
   );

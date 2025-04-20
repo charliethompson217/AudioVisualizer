@@ -16,10 +16,19 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function About() {
+  const [songs, setSongs] = useState([]);
+
+  useEffect(() => {
+    fetch('/songs.json')
+      .then((response) => response.json())
+      .then((data) => setSongs(data))
+      .catch((error) => console.error('Error loading songs:', error));
+  }, []);
+
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
       <h1>About Audio Visualizer</h1>
@@ -77,15 +86,6 @@ export default function About() {
         </li>
       </ul>
 
-      <h2>Songs</h2>
-      <p style={{ marginLeft: '20px' }}>
-        All music in the song library is from <a href="https://freemusicarchive.org">Free Music Archive</a> under
-        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
-          {' '}
-          Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)
-        </a>
-      </p>
-
       <h2>Synthesizer Samples</h2>
       <p style={{ marginLeft: '20px' }}>
         All samples used by the synthesizer are released under{' '}
@@ -110,6 +110,21 @@ export default function About() {
           <a href="http://theremin.music.uiowa.edu/">University of Iowa</a> - Acoustic Guitar
         </li>
       </ul>
+
+      <h2>Songs</h2>
+      <p style={{ marginLeft: '20px' }}>
+        All music in the song library is from <a href="https://freemusicarchive.org">Free Music Archive</a>
+      </p>
+
+      {songs.length > 0 && (
+        <ul style={{ marginLeft: '20px', lineHeight: '25px' }}>
+          {songs.sort((a, b) => a.title.localeCompare(b.title)).map((song, index) => (
+            <li key={index}>
+              {song.title} By {song.artist} {song.license}
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div style={{ marginTop: '20px' }}>
         <Link to="/" style={{ color: '#0077cc', textDecoration: 'none' }}>
