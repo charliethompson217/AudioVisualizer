@@ -62,13 +62,33 @@ function downsampleArray(audioIn, sampleRateIn, sampleRateOut) {
   return result;
 }
 
-let audioChunks = [];
+function concatenateChunks(chunks) {
+  const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const result = new Float32Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return result;
+}
+
+let minSecondsToAccumulate = 3;
+let maxSecondsToAccumulate = 30; 
+let processingIntervalSeconds = 3;
+
+let minWindowSamples;
+let maxWindowSamples;
+let processingIntervalSamples;
+
+let inputBuffer = [];
+let windowBuffer = [];
+let inputSampleCount = 0;
+let windowSampleCount = 0;
+
 let sampleRate = 44100;
 let targetSampleRate = 22050;
 let essentia = null;
-let sampleCount = 0;
-let secondsToAccumulate = 15;
-
 let exports = {};
 
 async function initializeEssentia() {
@@ -85,26 +105,34 @@ async function initializeEssentia() {
 }
 
 async function processAudioChunk(audioData) {
-  audioChunks.push(audioData);
-  sampleCount += audioData.length;
+  inputBuffer.push(audioData);
+  inputSampleCount += audioData.length;
 
-  const requiredSamples = secondsToAccumulate * sampleRate;
+  if (inputSampleCount >= processingIntervalSamples) {
+    windowBuffer = windowBuffer.concat(inputBuffer);
+    windowSampleCount += inputSampleCount;
 
-  if (sampleCount >= requiredSamples) {
-    const concatenated = new Float32Array(sampleCount);
-    let offset = 0;
+    inputBuffer = [];
+    inputSampleCount = 0;
 
-    for (const chunk of audioChunks) {
-      concatenated.set(chunk, offset);
-      offset += chunk.length;
+    while (windowSampleCount > maxWindowSamples && windowBuffer.length > 0) {
+      let oldestChunk = windowBuffer[0];
+      if (oldestChunk.length <= windowSampleCount - maxWindowSamples) {
+        windowBuffer.shift();
+        windowSampleCount -= oldestChunk.length;
+      } else {
+        let samplesToRemove = windowSampleCount - maxWindowSamples;
+        oldestChunk = oldestChunk.subarray(samplesToRemove);
+        windowBuffer[0] = oldestChunk;
+        windowSampleCount -= samplesToRemove;
+      }
     }
 
-    audioChunks = [];
-    sampleCount = 0;
-
-    return await analyzeAudio(concatenated);
+    if (windowSampleCount >= minWindowSamples) {
+      const concatenated = concatenateChunks(windowBuffer);
+      return await analyzeAudio(concatenated);
+    }
   }
-
   return null;
 }
 
@@ -165,7 +193,10 @@ async function analyzeAudio(audioData) {
 self.onmessage = async (event) => {
   if (event.data.type === 'init') {
     sampleRate = event.data.sampleRate;
-    if (!essentia)
+    minWindowSamples = minSecondsToAccumulate * sampleRate;
+    maxWindowSamples = maxSecondsToAccumulate * sampleRate;
+    processingIntervalSamples = processingIntervalSeconds * sampleRate;
+    if (!essentia) {
       try {
         await initializeEssentia();
         self.postMessage({ type: 'initialized' });
@@ -173,6 +204,7 @@ self.onmessage = async (event) => {
         self.postMessage({ type: 'error', message: 'Failed to initialize Essentia' });
         console.error('Essentia initialization failed:', error);
       }
+    }
   } else if (event.data.type === 'audioChunk') {
     try {
       if (!essentia) {
