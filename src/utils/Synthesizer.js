@@ -26,9 +26,12 @@ export default class Synthesizer {
     this.sampleBaseUrl = options.sampleBaseUrl;
     this.harmonicAmplitudes = options.harmonicAmplitudes;
     this.attackTime = options.attackTime;
+    this.attackCurve = options.attackCurve;
     this.decayTime = options.decayTime;
+    this.decayCurve = options.decayCurve;
     this.sustainLevel = options.sustainLevel;
     this.releaseTime = options.releaseTime;
+    this.releaseCurve = options.releaseCurve;
     this.analyserNode = options.analyserNode;
     this.getVolume = options.getVolume;
     this.vibratoDepth = options.vibratoDepth;
@@ -79,7 +82,10 @@ export default class Synthesizer {
 
     this.sampler = new Tone.Sampler({
       urls: samples,
+      attack: this.attackTime,
+      attackCurve: this.attackCurve,
       release: this.releaseTime,
+      releaseCurve: this.releaseCurve,
       onload: () => console.log(`Sampler loaded with instrument: ${this.instrument}`),
     });
     this.sampler.connect(this.outputNode);
@@ -101,12 +107,15 @@ export default class Synthesizer {
     }
   }
 
-  updateADSR({ attackTime, decayTime, sustainLevel, releaseTime }) {
+  updateADSR({ attackTime, attackCurve, decayTime, decayCruve, sustainLevel, releaseTime, releaseCurve }) {
     if (this.synthesisMode === 'additive') {
       this.attackTime = attackTime;
+      this.attackCurve = attackCurve;
       this.decayTime = decayTime;
+      this.decayCruve = decayCruve;
       this.sustainLevel = sustainLevel;
       this.releaseTime = releaseTime;
+      this.releaseCurve = releaseCurve;
     }
   }
 
@@ -119,13 +128,18 @@ export default class Synthesizer {
     }
   }
 
-  updateSamplerSettings({ instrument, releaseTime }) {
+  updateSamplerSettings({ instrument, releaseTime, releaseCurve, attackTime, attackCurve }) {
     const instrumentChanged = instrument && instrument !== this.instrument;
     if (instrument) this.instrument = instrument;
-    if (releaseTime !== undefined) this.releaseTime = releaseTime;
-
+    this.releaseTime = releaseTime;
+    this.releaseCurve = releaseCurve;
+    this.attackTime = attackTime;
+    this.attackCurve = attackCurve;
     if (this.sampler && !instrumentChanged) {
       this.sampler.release = this.releaseTime;
+      this.sampler.releaseCurve = this.releaseCurve;
+      this.sampler.attack = this.attackTime;
+      this.sampler.attackCurve = this.attackCurve;
     }
 
     if (instrumentChanged && this.synthesisMode === 'sample') {
@@ -179,7 +193,7 @@ export default class Synthesizer {
       const volume = (velocity / 127) * this.getVolume();
       const partials = Array.from({ length: 8 }, (_, i) => this.harmonicAmplitudes[i + 1] || 0);
 
-      const { attackTime, decayTime, sustainLevel, releaseTime } = this;
+      const { attackTime, attackCurve, decayTime, decayCurve, sustainLevel, releaseTime, releaseCurve } = this;
 
       const oscillatorConfig = {
         type: this.oscillatorType,
@@ -190,9 +204,12 @@ export default class Synthesizer {
         oscillator: oscillatorConfig,
         envelope: {
           attack: attackTime,
+          attackCurve: attackCurve,
           decay: decayTime,
+          decayCurve: decayCurve,
           sustain: sustainLevel,
           release: releaseTime,
+          releaseCurve: releaseCurve,
         },
       });
 

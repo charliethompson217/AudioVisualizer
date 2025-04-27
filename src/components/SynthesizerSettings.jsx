@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function SynthesizerSettings({
   synthesizerSettings,
@@ -25,15 +25,20 @@ export default function SynthesizerSettings({
   setSelectedPreset,
   presets,
 }) {
+  const [showSettings, setShowSettings] = useState(true);
+
   const {
     synthesisMode = 'additive',
     instrument = 'piano',
     oscillatorType,
     harmonicAmplitudes,
     attackTime,
+    attackCurve,
     decayTime,
+    decayCurve,
     sustainLevel,
     releaseTime,
+    releaseCurve,
     vibratoDepth,
     vibratoRate,
     tremoloDepth,
@@ -82,9 +87,21 @@ export default function SynthesizerSettings({
     'xylophone',
   ];
 
+  if (!showSettings) {
+    return (
+      <label>
+        <input type="checkbox" checked={showSettings} onChange={() => setShowSettings(!showSettings)} />
+        Show Synthesizer Settings
+      </label>
+    );
+  }
+
   return (
     <div className="synthesizer-settings">
-      <h2>Synthesizer Settings</h2>
+      <h2>
+        Synthesizer Settings
+        <input type="checkbox" checked={showSettings} onChange={() => setShowSettings(!showSettings)} />
+      </h2>
 
       {/* Synthesis Mode Selection */}
       <div className="synthesis-mode">
@@ -109,6 +126,7 @@ export default function SynthesizerSettings({
                 ...prevSettings,
                 synthesisMode: 'sample',
                 instrument: prevSettings.instrument || 'piano',
+                attackTime: 0.001
               }));
             }}
           />
@@ -129,11 +147,51 @@ export default function SynthesizerSettings({
                     name="instrument"
                     value={instrumentOption}
                     checked={instrument === instrumentOption}
-                    onChange={(e) => updateSetting('instrument', e.target.value)}
+                    onChange={(e) => {
+                      updateSetting('instrument', e.target.value);
+                      updateSetting('attackTime', 0.001);
+                    }}
                   />
                   {instrumentOption.charAt(0).toUpperCase() + instrumentOption.slice(1)}
                 </label>
               ))}
+            </div>
+          </div>
+          <h3>ADSR Envelopes</h3>
+          <div>
+            <label>
+              Attack Time: {attackTime.toFixed(4)}s
+              <input
+                type="range"
+                min="0.001"
+                max="2"
+                step="0.001"
+                value={attackTime}
+                onChange={(e) => updateSetting('attackTime', parseFloat(e.target.value))}
+                className="harmonic-slider"
+              />
+            </label>
+            <div className="curve-selection">
+              <label>
+                <input
+                  type="radio"
+                  name="attackCurve"
+                  value="linear"
+                  checked={attackCurve === 'linear'}
+                  onChange={() => updateSetting('attackCurve', 'linear')}
+                />
+                Linear
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="attackCurve"
+                  value="exponential"
+                  checked={attackCurve === 'exponential'}
+                  onChange={() => updateSetting('attackCurve', 'exponential')}
+                />
+                Exponential
+              </label>
             </div>
           </div>
           <div>
@@ -149,6 +207,28 @@ export default function SynthesizerSettings({
                 className="harmonic-slider"
               />
             </label>
+            <div className="curve-selection">
+              <label>
+                <input
+                  type="radio"
+                  name="releaseCurve"
+                  value="linear"
+                  checked={releaseCurve === 'linear'}
+                  onChange={() => updateSetting('releaseCurve', 'linear')}
+                />
+                Linear
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="releaseCurve"
+                  value="exponential"
+                  checked={releaseCurve === 'exponential'}
+                  onChange={() => updateSetting('releaseCurve', 'exponential')}
+                />
+                Exponential
+              </label>
+            </div>
           </div>
         </>
       ) : (
@@ -207,7 +287,7 @@ export default function SynthesizerSettings({
             )}
           </div>
 
-          <br />
+          <h3>ADSR Envelopes</h3>
           {/* ADSR sliders */}
           <div>
             <label>
@@ -222,6 +302,28 @@ export default function SynthesizerSettings({
                 className="harmonic-slider"
               />
             </label>
+            <div className="curve-selection">
+              <label>
+                <input
+                  type="radio"
+                  name="attackCurve"
+                  value="linear"
+                  checked={attackCurve === 'linear'}
+                  onChange={() => updateSetting('attackCurve', 'linear')}
+                />
+                Linear
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="attackCurve"
+                  value="exponential"
+                  checked={attackCurve === 'exponential'}
+                  onChange={() => updateSetting('attackCurve', 'exponential')}
+                />
+                Exponential
+              </label>
+            </div>
           </div>
           <div>
             <label>
@@ -236,6 +338,28 @@ export default function SynthesizerSettings({
                 className="harmonic-slider"
               />
             </label>
+            <div className="curve-selection">
+              <label>
+                <input
+                  type="radio"
+                  name="decayCurve"
+                  value="linear"
+                  checked={decayCurve === 'linear'}
+                  onChange={() => updateSetting('decayCurve', 'linear')}
+                />
+                Linear
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="decayCurve"
+                  value="exponential"
+                  checked={decayCurve === 'exponential'}
+                  onChange={() => updateSetting('decayCurve', 'exponential')}
+                />
+                Exponential
+              </label>
+            </div>
           </div>
           <div>
             <label>
@@ -264,8 +388,30 @@ export default function SynthesizerSettings({
                 className="harmonic-slider"
               />
             </label>
+            <div className="curve-selection">
+              <label>
+                <input
+                  type="radio"
+                  name="releaseCurve"
+                  value="linear"
+                  checked={releaseCurve === 'linear'}
+                  onChange={() => updateSetting('releaseCurve', 'linear')}
+                />
+                Linear
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="releaseCurve"
+                  value="exponential"
+                  checked={releaseCurve === 'exponential'}
+                  onChange={() => updateSetting('releaseCurve', 'exponential')}
+                />
+                Exponential
+              </label>
+            </div>
           </div>
-          <br />
+          <h3>Modulation</h3>
           {/* Vibrato Sliders */}
           <div>
             <label>

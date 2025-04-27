@@ -40,9 +40,12 @@ export function useSynthesizer(audioContext, analyser, isPlaying, settings, volu
         sampleBaseUrl: 'https://audio-visualizer-zongs.s3.us-east-2.amazonaws.com/samples',
         harmonicAmplitudes: settings.harmonicAmplitudes,
         attackTime: settings.attackTime,
+        attackCurve: settings.attackCurve,
         decayTime: settings.decayTime,
+        decayCurve: settings.decayCurve,
         sustainLevel: settings.sustainLevel,
         releaseTime: settings.releaseTime,
+        releaseCurve: settings.releaseCurve,
         analyserNode: analyser,
         getVolume: () => volumeRef.current,
         vibratoDepth: settings.vibratoDepth,
@@ -67,7 +70,10 @@ export function useSynthesizer(audioContext, analyser, isPlaying, settings, volu
       if (settings.synthesisMode === 'sample') {
         synthesizerRef.current.updateSamplerSettings({
           instrument: settings.instrument,
+          attackTime: settings.attackTime,
+          attackCurve: settings.attackCurve,
           releaseTime: settings.releaseTime,
+          releaseCurve: settings.releaseCurve,
         });
         synthesizerRef.current.updateSynthesisMode(settings.synthesisMode);
       } else {
@@ -76,9 +82,12 @@ export function useSynthesizer(audioContext, analyser, isPlaying, settings, volu
         synthesizerRef.current.updateHarmonicAmplitudes(settings.harmonicAmplitudes);
         synthesizerRef.current.updateADSR({
           attackTime: settings.attackTime,
+          attackCurve: settings.attackCurve,
           decayTime: settings.decayTime,
+          decayCurve: settings.decayCurve,
           sustainLevel: settings.sustainLevel,
           releaseTime: settings.releaseTime,
+          releaseCurve: settings.releaseCurve,
         });
         synthesizerRef.current.updateVibratoAndTremolo({
           vibratoDepth: settings.vibratoDepth,

@@ -50,9 +50,12 @@ export default function CoreApp() {
         8: 0.0,
       },
       attackTime: 0.01,
+      attackCurve: 'exponential',
       decayTime: 0.3,
+      decayCurve: 'exponential',
       sustainLevel: 0.2,
       releaseTime: 0.5,
+      releaseCurve: 'exponential',
       vibratoDepth: 0,
       vibratoRate: 0,
       tremoloDepth: 0,
@@ -72,9 +75,12 @@ export default function CoreApp() {
         8: 0.001,
       },
       attackTime: 0.01,
+      attackCurve: 'exponential',
       decayTime: 0.3,
+      decayCurve: 'exponential',
       sustainLevel: 0.2,
       releaseTime: 0.5,
+      releaseCurve: 'exponential',
       vibratoDepth: 0,
       vibratoRate: 0,
       tremoloDepth: 0,
@@ -94,9 +100,12 @@ export default function CoreApp() {
         8: 0.01,
       },
       attackTime: 1.3,
+      attackCurve: 'exponential',
       decayTime: 1.0,
+      decayCurve: 'exponential',
       sustainLevel: 0.6,
       releaseTime: 0.5,
+      releaseCurve: 'exponential',
       vibratoDepth: 0,
       vibratoRate: 0,
       tremoloDepth: 0,
@@ -178,7 +187,7 @@ export default function CoreApp() {
 
   const handleSongSelect = async (selectedFileName, file, songName) => {
     setSelectedSongFileName(selectedFileName);
-    setSelectedMidiFileName("");
+    setSelectedMidiFileName('');
     setCurrentSongName(songName);
     setFetchingSong(false);
     setMp3File(file);
@@ -187,7 +196,7 @@ export default function CoreApp() {
 
   const handleMidiSelect = (selectedFileName, file, midiName) => {
     setSelectedMidiFileName(selectedFileName);
-    setSelectedSongFileName("");
+    setSelectedSongFileName('');
     setCurrentSongName(midiName);
     setFetchingSong(false);
     setMidiFile(file);

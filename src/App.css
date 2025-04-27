@@ -191,6 +191,10 @@ h2 {
   border-radius: 20px;
 }
 
+.synthesizer-settings h2 {
+  margin-left: 0;
+}
+
 .synthesizer-settings label {
   display: flex;
   align-items: center;
@@ -201,6 +205,17 @@ h2 {
 .harmonic-slider {
   margin-left: 10px;
   width: 80vw;
+}
+
+.instrument-options,
+.curve-selection {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.curve-selection label,
+.instrument-options label {
+  margin-left: 20px;
 }
 
 .SongTitle {

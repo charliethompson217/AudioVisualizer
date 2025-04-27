@@ -25,8 +25,9 @@ export default function PianoRoll({
   isPlaying,
   noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330],
 }) {
-  const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
-  const rollHeight = screenHeight * 2;
+  const screenHeight = window.innerHeight;
+  const screenWidth = window.innerWidth;
+  const rollHeight = Math.min(screenHeight * 2, screenWidth * 2);
   const noteRange = 108 - 12;
   const noteHeight = rollHeight / noteRange;
   const [timeScale, setTimeScale] = useState(50);
