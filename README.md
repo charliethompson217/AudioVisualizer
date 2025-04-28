@@ -50,6 +50,8 @@ Check out the live demo at [AudioVisualizer.org](https://audiovisualizer.org)
 
 -   **BPM and Key detection**: Allows for detection of BPM and key using [essentia.js](https://github.com/MTG/essentia.js)
 
+-   **Metadata Parsing**: Extracts metadata (e.g., title, artist, album, lyrics, genre) from audio files using [music-metadata](https://github.com/Borewit/music-metadata)
+
 ### Virtual Piano Keyboard
 
 -   **Enable Piano**: Check the "Piano" checkbox to enable the virtual piano.
