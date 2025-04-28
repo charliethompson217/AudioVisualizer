@@ -83,6 +83,10 @@ export default function useMetadataExtractor(audioFile) {
           title: common.title || null,
           artist: common.artist || null,
           album: common.album || null,
+          genre: common.genre?.join(', ') || null,
+          mood: common.mood || null,
+          bpm: common.bpm || null,
+          lyrics: common.lyrics || null,
           coverArt,
         });
       } catch (err) {

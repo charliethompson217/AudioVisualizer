@@ -364,7 +364,16 @@ export default function CoreApp() {
             )}
           </div>
         </div>
-
+        {isPlaying && (
+          <SongInfo
+            currentSongName={currentSongName}
+            isProcessing={isProcessing}
+            bpm={bpm}
+            scaleKey={scaleKey}
+            essentiaFeatures={essentiaFeatures}
+            mp3File={mp3File}
+          />
+        )}
         <PlaybackControls
           isPlaying={isPlaying}
           isPaused={isPaused}
@@ -385,15 +394,6 @@ export default function CoreApp() {
         />
 
         {warning && <div>{warning}</div>}
-
-        <SongInfo
-          currentSongName={currentSongName}
-          isProcessing={isProcessing}
-          bpm={bpm}
-          scaleKey={scaleKey}
-          essentiaFeatures={essentiaFeatures}
-          mp3File={mp3File}
-        />
       </div>
 
       <VisualizersContainer
