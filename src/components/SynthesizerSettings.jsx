@@ -126,7 +126,7 @@ export default function SynthesizerSettings({
                 ...prevSettings,
                 synthesisMode: 'sample',
                 instrument: prevSettings.instrument || 'piano',
-                attackTime: 0.001
+                attackTime: 0.001,
               }));
             }}
           />

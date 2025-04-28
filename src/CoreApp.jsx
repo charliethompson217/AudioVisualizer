@@ -119,6 +119,7 @@ export default function CoreApp() {
   const [mp3File, setMp3File] = useState(null);
   const [midiFile, setMidiFile] = useState(null);
   const [useMic, setUseMic] = useState(false);
+  const [muteMic, setMuteMic] = useState(true);
 
   const [bins, setBins] = useState(32768);
   const [smoothing, setSmoothing] = useState(0.01);
@@ -165,6 +166,7 @@ export default function CoreApp() {
     mp3File,
     midiFile,
     useMic,
+    muteMic,
     bins,
     smoothing,
     isPlaying,
@@ -341,6 +343,9 @@ export default function CoreApp() {
               spectralSpreadGraph={spectralSpreadGraph}
               setSpectralSpreadGraph={setSpectralSpreadGraph}
               isPlaying={isPlaying}
+              useMic={useMic}
+              muteMic={muteMic}
+              setMuteMic={setMuteMic}
               meydaBufferSize={meydaBufferSize}
               setMeydaBufferSize={setMeydaBufferSize}
               meydaFeaturesToExtract={meydaFeaturesToExtract}

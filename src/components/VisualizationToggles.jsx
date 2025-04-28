@@ -42,6 +42,9 @@ export default function VisualizationToggles({
   spectralSpreadGraph,
   setSpectralSpreadGraph,
   isPlaying,
+  useMic,
+  muteMic,
+  setMuteMic,
   meydaBufferSize,
   setMeydaBufferSize,
   meydaFeaturesToExtract,
@@ -192,6 +195,12 @@ export default function VisualizationToggles({
         </select>
         <label style={{ pointerEvents: 'none', cursor: 'default' }}>Meyda Buffer Size</label>
       </div>
+      {useMic && (
+        <div className="control-label">
+          <input className="control-checkbox" type="checkbox" checked={muteMic} onChange={() => setMuteMic(!muteMic)} />
+          <label style={{ pointerEvents: 'none', cursor: 'default' }}>Mute</label>
+        </div>
+      )}
     </div>
   );
 }

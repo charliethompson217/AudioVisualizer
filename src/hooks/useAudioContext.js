@@ -18,12 +18,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 
-export function useAudioContext(mp3File, useMic, isPlaying, synthesizer) {
+export function useAudioContext(mp3File, useMic, muteMic, isPlaying, synthesizer) {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const audioElementRef = useRef(null);
   const sourceRef = useRef(null);
   const mixerNodeRef = useRef(null);
+  const outputGainNodeRef = useRef(null);
 
   const [sampleRate, setSampleRate] = useState(44100);
   const [duration, setDuration] = useState(0);
@@ -63,8 +64,12 @@ export function useAudioContext(mp3File, useMic, isPlaying, synthesizer) {
       mixerNode.gain.value = 1.0;
       mixerNodeRef.current = mixerNode;
 
+      const outputGainNode = audioContextRef.current.createGain();
+      outputGainNodeRef.current = outputGainNode;
+
       mixerNodeRef.current.connect(analyserRef.current);
-      analyserRef.current.connect(audioContextRef.current.destination);
+      mixerNodeRef.current.connect(outputGainNodeRef.current);
+      outputGainNodeRef.current.connect(audioContextRef.current.destination);
       console.log('AudioContext initialized, nodes connected');
     }
   }, []);
@@ -92,7 +97,7 @@ export function useAudioContext(mp3File, useMic, isPlaying, synthesizer) {
               sourceRef.current = source;
 
               // Mute output when using microphone to prevent feedback
-              mixerNodeRef.current.gain.value = 0;
+              if (muteMic) outputGainNodeRef.current.gain.value = 0;
               console.log('Microphone source connected');
             })
             .catch((e) => console.error('Microphone access failed:', e));
@@ -146,9 +151,9 @@ export function useAudioContext(mp3File, useMic, isPlaying, synthesizer) {
 
   useEffect(() => {
     if (mixerNodeRef.current) {
-      mixerNodeRef.current.gain.value = useMic ? 0 : 1.0;
+      outputGainNodeRef.current.gain.value = useMic && muteMic ? 0 : 1.0;
     }
-  }, [useMic]);
+  }, [useMic, muteMic]);
 
   const play = useCallback(() => {
     if (audioElementRef.current) {

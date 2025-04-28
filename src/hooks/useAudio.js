@@ -28,6 +28,7 @@ export function useAudio(
   mp3File,
   midiFile,
   useMic,
+  muteMic,
   bins,
   smoothing,
   isPlaying,
@@ -57,6 +58,7 @@ export function useAudio(
   const { audioContext, analyser, sampleRate, duration, play, pause, seek, getCurrentTime, source } = useAudioContext(
     mp3File,
     useMic,
+    muteMic,
     isPlaying,
     synthRef.current
   );
