@@ -20,8 +20,14 @@ import { useRef, useEffect } from 'react';
 
 export function useKeyboardInput(synthesizer, isPlaying, pianoEnabled) {
   const octaveRef = useRef(4);
-  const volumeRef = useRef(0.05);
+  const volumeRef = useRef(0.1);
   const activeKeysRef = useRef(new Set());
+
+  const getExponentialVolume = (linearVolume) => {
+    if (linearVolume <= 0) return 0;
+    const e = Math.E;
+    return (Math.pow(e, linearVolume) - 1) / (e - 1);
+  };
 
   useEffect(() => {
     if (!pianoEnabled || !synthesizer || !isPlaying) return;
@@ -35,9 +41,9 @@ export function useKeyboardInput(synthesizer, isPlaying, pianoEnabled) {
       } else if (event.key === 'ArrowRight') {
         octaveRef.current = Math.min(9, octaveRef.current + 1);
       } else if (event.key === 'ArrowUp') {
-        volumeRef.current = Math.min(1, volumeRef.current + 0.005); // Increase volume
+        volumeRef.current = Math.min(1, volumeRef.current + 0.02); // Increase volume
       } else if (event.key === 'ArrowDown') {
-        volumeRef.current = Math.max(0.0, volumeRef.current - 0.005); // Decrease volume
+        volumeRef.current = Math.max(0.0, volumeRef.current - 0.02); // Decrease volume
       } else if (event.key === ' ') {
         synthesizer.stopAllNotes();
         return;
@@ -72,7 +78,7 @@ export function useKeyboardInput(synthesizer, isPlaying, pianoEnabled) {
 
   return {
     currentOctave: octaveRef.current,
-    currentVolume: volumeRef.current,
+    currentVolume: getExponentialVolume(volumeRef.current),
   };
 }
 
