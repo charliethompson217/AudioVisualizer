@@ -185,7 +185,13 @@ export default function VisualizationToggles({
         <select
           value={meydaBufferSize}
           onChange={() => setMeydaBufferSize(parseInt(e.target.value, 10))}
-          style={{ paddingLeft: '5px', paddingRight: '5px' }}
+          style={{
+            paddingLeft: '5px',
+            paddingRight: '5px',
+            backgroundColor: '#1e1e1e',
+            color: 'rgb(170, 170, 170)',
+            border: '1px solid #444',
+          }}
         >
           {[512, 1024, 2048, 4096, 8192, 16384].map((size) => (
             <option key={size} value={size}>

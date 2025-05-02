@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
+import React, { useRef } from 'react';
 
 export default function FileUploader({
   onFileUpload,
@@ -26,6 +26,8 @@ export default function FileUploader({
   setPianoEnabled,
   setSelectedSongFileName,
 }) {
+  const fileInputRef = useRef(null);
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -48,15 +50,44 @@ export default function FileUploader({
     }
   };
 
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
   return (
-    <label>
-      mp3, wav, ogg, midi -
+    <div
+      style={{
+        maxWidth: '30vw',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '10px',
+      }}
+    >
+      <button
+        style={{
+          backgroundColor: '#1e1e1e',
+          color: 'rgb(170, 170, 170)',
+          padding: '10px',
+          border: '1px solid #444',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '16px',
+          transition: 'background-color 0.3s ease',
+        }}
+        onClick={triggerFileInput}
+        onMouseOver={(e) => (e.target.style.backgroundColor = '#444')}
+        onMouseOut={(e) => (e.target.style.backgroundColor = '#1e1e1e')}
+      >
+        Upload Audio or MIDI
+      </button>
       <input
-        className="file-input"
+        ref={fileInputRef}
         type="file"
         accept="audio/mp3,audio/wav,audio/ogg,audio/midi"
         onChange={handleFileUpload}
+        style={{ display: 'none' }}
       />
-    </label>
+    </div>
   );
 }

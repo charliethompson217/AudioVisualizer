@@ -20,7 +20,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 export default function Footer() {
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '200px' }}>
       <Link to="/about" style={{ color: '#0077cc', textDecoration: 'none' }}>
         About
       </Link>

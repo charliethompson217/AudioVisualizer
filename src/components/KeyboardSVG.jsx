@@ -21,7 +21,7 @@ import React, { useState, useEffect } from 'react';
 const KeyboardSVG = ({ noteHues }) => {
   const [showNoteLabels, setShowNoteLabels] = useState(true);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
-  const svgWidth = 850;
+  const svgWidth = 800;
 
   useEffect(() => {
     const handleResize = () => {
@@ -34,11 +34,7 @@ const KeyboardSVG = ({ noteHues }) => {
 
   // Don't render if screen is too narrow
   if (windowWidth < svgWidth) {
-    return (
-      <div style={{ padding: '20px', textAlign: 'center', color: 'white' }}>
-        This app is intended to be viewed on a larger screen.
-      </div>
-    );
+    return <></>;
   }
 
   const keyboardData = {
@@ -87,10 +83,10 @@ const KeyboardSVG = ({ noteHues }) => {
   const startY = 50;
 
   return (
-    <div>
+    <div className="keyboard-svg">
       <label>
         <input type="checkbox" checked={showNoteLabels} onChange={() => setShowNoteLabels(!showNoteLabels)} />
-        Show Keyboard Labels
+        Show Synthesizer controls
       </label>
       {showNoteLabels && (
         <div>

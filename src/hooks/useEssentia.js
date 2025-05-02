@@ -83,7 +83,7 @@ export function useEssentia(audioContext, isPlaying, mp3File, bpmAndKey = true, 
   }, [mp3File, bpmAndKey]);
 
   useEffect(() => {
-    if (!isPlaying || !audioContext || !source) return;
+    if (!isPlaying || !audioContext || !source || mp3File) return;
 
     const worker = new Worker('/essentiaWorker.js');
     worker.postMessage({ type: 'init', sampleRate: audioContext.sampleRate });
@@ -93,6 +93,10 @@ export function useEssentia(audioContext, isPlaying, mp3File, bpmAndKey = true, 
 
     const setupWorklet = async () => {
       try {
+        if (!audioContext.audioWorklet) {
+          setWarning('AudioWorklet is not supported in this browser.');
+          return;
+        }
         await audioContext.audioWorklet.addModule('/audio-processor.js');
 
         workletNode = new AudioWorkletNode(audioContext, 'audio-processor');

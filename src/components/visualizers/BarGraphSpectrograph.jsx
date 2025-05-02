@@ -72,8 +72,8 @@ export default function BarGraphSpectrograph({
 
       const updateCanvasSize = () => {
         let vw = Math.min(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-        let vh = Math.min(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-        const canvasWidth = 0.99 * vw;
+        let vh = window.innerHeight || 0;
+        const canvasWidth = vw;
         const canvasHeight = Math.min((vw / 16) * 10, vh);
         p.resizeCanvas(canvasWidth, canvasHeight);
       };
@@ -81,8 +81,8 @@ export default function BarGraphSpectrograph({
       p.setup = () => {
         p.pixelDensity(3);
         let vw = Math.min(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-        let vh = Math.min(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-        const canvasWidth = 0.99 * vw;
+        let vh = window.innerHeight || 0;
+        const canvasWidth = vw;
         const canvasHeight = Math.min((vw / 16) * 10, vh);
         canvas = p.createCanvas(canvasWidth, canvasHeight);
         canvas.parent(sketchRef.current);
@@ -226,21 +226,21 @@ export default function BarGraphSpectrograph({
         }
 
         // Display slider labels
-        p.noStroke();
-        p.fill(255);
-        p.textAlign(p.LEFT, p.BOTTOM);
-        p.text(
-          `Min Freq: ${minFreq.toFixed(2)} Hz (Semitone: ${minSemitoneRef.current} - ${getNoteName(minSemitoneRef.current)})`,
-          10,
-          p.height - 60
-        );
-        p.text(
-          `Max Freq: ${maxFreq.toFixed(2)} Hz (Semitone: ${maxSemitoneRef.current} - ${getNoteName(maxSemitoneRef.current)})`,
-          p.width / 2 + 10,
-          p.height - 60
-        );
-        p.text(`Brightness: ${brightnessRef.current.toFixed(2)}`, p.width - 150, 1500);
-        p.text(`Length Power: ${lengthPowerRef.current.toFixed(2)}`, p.width - 150, 1530);
+        if (showLabelsRef.current) {
+          p.noStroke();
+          p.fill(255);
+          p.textAlign(p.LEFT, p.BOTTOM);
+          p.text(
+            `Min Freq: ${minFreq.toFixed(2)} Hz (Semitone: ${minSemitoneRef.current} - ${getNoteName(minSemitoneRef.current)})`,
+            10,
+            p.height - 60
+          );
+          p.text(
+            `Max Freq: ${maxFreq.toFixed(2)} Hz (Semitone: ${maxSemitoneRef.current} - ${getNoteName(maxSemitoneRef.current)})`,
+            p.width / 2 + 10,
+            p.height - 60
+          );
+        }
       };
     };
 
@@ -259,8 +259,10 @@ export default function BarGraphSpectrograph({
       <h2>Bar Graph Spectrograph</h2>
       {/* Sliders */}
       <div className="has-border" style={{ width: '90%' }}>
-        <div style={{ margin: '20px 40px' }}>
-          <label htmlFor="minFreqSlider">Min Frequency Semitone: {minSemitone}</label>
+        <div style={{ margin: '10px 10px' }}>
+          <label htmlFor="minFreqSlider" className="control-label">
+            Min Frequency Semitone: {minSemitone}
+          </label>
           <input
             id="minFreqSlider"
             type="range"
@@ -272,8 +274,10 @@ export default function BarGraphSpectrograph({
             style={{ width: '100%' }}
           />
         </div>
-        <div style={{ margin: '20px 40px' }}>
-          <label htmlFor="maxFreqSlider">Max Frequency Semitone: {maxSemitone}</label>
+        <div style={{ margin: '10px 10px' }}>
+          <label htmlFor="maxFreqSlider" className="control-label">
+            Max Frequency Semitone: {maxSemitone}
+          </label>
           <input
             id="maxFreqSlider"
             type="range"
@@ -285,8 +289,10 @@ export default function BarGraphSpectrograph({
             style={{ width: '100%' }}
           />
         </div>
-        <div style={{ margin: '20px 40px' }}>
-          <label htmlFor="brightnessSlider">Brightness exponent: {brightness.toFixed(2)}</label>
+        <div style={{ margin: '10px 10px' }}>
+          <label htmlFor="brightnessSlider" className="control-label">
+            Brightness exponent: {brightness.toFixed(2)}
+          </label>
           <input
             id="brightnessSlider"
             type="range"
@@ -298,8 +304,10 @@ export default function BarGraphSpectrograph({
             style={{ width: '100%' }}
           />
         </div>
-        <div style={{ margin: '20px 40px' }}>
-          <label htmlFor="lengthPowerSlider">Length exponent: {lengthPower.toFixed(2)}</label>
+        <div style={{ margin: '10px 10px' }}>
+          <label htmlFor="lengthPowerSlider" className="control-label">
+            Length exponent: {lengthPower.toFixed(2)}
+          </label>
           <input
             id="lengthPowerSlider"
             type="range"

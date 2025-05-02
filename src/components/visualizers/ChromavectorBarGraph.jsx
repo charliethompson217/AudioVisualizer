@@ -37,7 +37,8 @@ export default function ChromavectorBarGraph({
     const sketch = (p) => {
       let canvas;
       let width;
-      const baseHeight = 400;
+      let vh = Math.min(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+      let baseHeight = Math.min(400, vh);
       const maxComponentWidth = 800;
 
       p.setup = () => {
@@ -51,6 +52,8 @@ export default function ChromavectorBarGraph({
 
       p.windowResized = () => {
         width = Math.min(sketchRef.current.offsetWidth, maxComponentWidth);
+        vh = Math.min(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+        baseHeight = Math.min(400, vh);
         p.resizeCanvas(width, baseHeight);
       };
 

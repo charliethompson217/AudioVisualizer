@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import useMetadataExtractor from '../hooks/useMetadataExtractor';
 
 export default function SongInfo({ currentSongName, isProcessing, bpm, scaleKey, essentiaFeatures, mp3File }) {
@@ -32,7 +32,7 @@ export default function SongInfo({ currentSongName, isProcessing, bpm, scaleKey,
         alignItems: 'center',
       }}
     >
-      <div className="SongTitle" style={{ color: 'white', padding: '20px' }}>
+      <div className="SongTitle" style={{ color: 'white', padding: '20px', minWidth: '300px' }}>
         {isLoading && <p>Extracting metadata...</p>}
         {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
@@ -58,15 +58,19 @@ export default function SongInfo({ currentSongName, isProcessing, bpm, scaleKey,
 
         {isProcessing && <p>Analyzing audio...</p>}
 
-        <div className="audio-info" style={{ visibility: scaleKey && bpm ? 'visible' : 'hidden', marginTop: '10px' }}>
-          <p>BPM: {Math.round(bpm)}</p>
-          <p>Key: {scaleKey}</p>
-        </div>
+        {bpm && scaleKey && (
+          <div className="audio-info" style={{ marginTop: '10px' }}>
+            <p>BPM: {Math.round(bpm)}</p>
+            <p>Key: {scaleKey}</p>
+          </div>
+        )}
 
-        <div className="audio-info" style={{ visibility: essentiaFeatures ? 'visible' : 'hidden', marginTop: '10px' }}>
-          <p>Current BPM estimate: {essentiaFeatures ? Math.round(essentiaFeatures.bpm) : 'N/A'}</p>
-          <p>Current Key prediction: {essentiaFeatures ? essentiaFeatures.scaleKey : 'N/A'}</p>
-        </div>
+        {!bpm && !scaleKey && essentiaFeatures && (
+          <div className="audio-info" style={{ marginTop: '10px' }}>
+            <p>Current BPM estimate: {essentiaFeatures ? Math.round(essentiaFeatures.bpm) : 'N/A'}</p>
+            <p>Current Key prediction: {essentiaFeatures ? essentiaFeatures.scaleKey : 'N/A'}</p>
+          </div>
+        )}
       </div>
       {metadata.lyrics && (
         <div className="lyrics">

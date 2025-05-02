@@ -103,8 +103,10 @@ export default function Waveform({ audio }) {
 
       {/* Slider for Horizontal Stretch Factor */}
       <div className="has-border" style={{ width: '90%' }}>
-        <div style={{ margin: '20px 40px' }}>
-          <label htmlFor="horizontalStretchSlider">Horizontal Stretch coefficient: {stretchFactor.toFixed(2)}x</label>
+        <div style={{ margin: '10px 10px' }}>
+          <label htmlFor="horizontalStretchSlider" className="control-label">
+            Horizontal Stretch coefficient: {stretchFactor.toFixed(2)}x
+          </label>
           <input
             id="horizontalStretchSlider"
             type="range"
@@ -118,8 +120,8 @@ export default function Waveform({ audio }) {
         </div>
 
         {/* Slider for Vertical Stretch Factor */}
-        <div style={{ margin: '20px 40px' }}>
-          <label htmlFor="verticalStretchSlider">
+        <div style={{ margin: '10px 10px' }}>
+          <label htmlFor="verticalStretchSlider" className="control-label">
             Vertical Stretch coefficient: {verticalStretchFactor.toFixed(2)}x
           </label>
           <input

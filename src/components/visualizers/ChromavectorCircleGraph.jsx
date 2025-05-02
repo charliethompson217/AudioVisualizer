@@ -36,7 +36,8 @@ export default function ChromavectorCircleGraph({
     const sketch = (p) => {
       let canvas;
       let width;
-      const baseHeight = 400;
+      let vh = Math.min(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+      let baseHeight = Math.min(400, vh);
 
       p.setup = () => {
         width = sketchRef.current.offsetWidth;
@@ -49,6 +50,8 @@ export default function ChromavectorCircleGraph({
 
       p.windowResized = () => {
         width = sketchRef.current.offsetWidth;
+        vh = Math.min(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+        baseHeight = Math.min(400, vh);
         p.resizeCanvas(width, baseHeight);
       };
 

@@ -153,8 +153,8 @@ export default function ChromevectorLineGraph({
         <>
           <h2>Chroma Line Graph</h2>
           <div className="has-border" style={{ width: '90%' }}>
-            <div style={{ margin: '20px 40px' }}>
-              <label htmlFor="horizontalStretchSlider">
+            <div style={{ margin: '10px 10px' }}>
+              <label htmlFor="horizontalStretchSlider" className="control-label">
                 Horizontal Stretch coefficient: {stretchFactor.toFixed(2)}x
               </label>
               <input
@@ -169,8 +169,8 @@ export default function ChromevectorLineGraph({
               />
             </div>
 
-            <div style={{ margin: '20px 40px' }}>
-              <label htmlFor="verticalStretchSlider">
+            <div style={{ margin: '10px 10px' }}>
+              <label htmlFor="verticalStretchSlider" className="control-label">
                 Vertical Stretch coefficient: {verticalStretchFactor.toFixed(2)}x
               </label>
               <input
@@ -185,8 +185,10 @@ export default function ChromevectorLineGraph({
               />
             </div>
 
-            <div style={{ margin: '20px 40px' }}>
-              <label htmlFor="verticalStretchExponentSlider">Vertical Exponent: {verticleExponent.toFixed(2)}x</label>
+            <div style={{ margin: '10px 10px' }}>
+              <label htmlFor="verticalStretchExponentSlider" className="control-label">
+                Vertical Exponent: {verticleExponent.toFixed(2)}x
+              </label>
               <input
                 id="verticalStretchExponentSlider"
                 type="range"

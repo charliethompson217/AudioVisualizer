@@ -364,7 +364,7 @@ export default function CoreApp() {
             )}
           </div>
         </div>
-        {isPlaying && (
+        {(isPlaying || currentSongName) && (
           <SongInfo
             currentSongName={currentSongName}
             isProcessing={isProcessing}
