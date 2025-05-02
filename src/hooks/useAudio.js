@@ -16,13 +16,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { useAudioContext } from './useAudioContext';
 import { useAudioAnalyzer } from './useAudioAnalyzer';
 import { useSynthesizer } from './useSynthesizer';
 import { useMidiPlayer } from './useMidiPlayer';
 import { useKeyboardInput } from './useKeyboardInput';
-import { convertAudioToMidi } from '../utils/midiConversion.js';
+import { convertAudioToPosteriorgrams, buildNotes } from '../utils/midiConversion.js';
 
 export function useAudio(
   mp3File,
@@ -50,6 +50,7 @@ export function useAudio(
 
   // States for MIDI conversion
   const [convertedMidiNotes, setConvertedMidiNotes] = useState(null);
+  const [basicPitchData, setBasicPitchData] = useState(null);
   const [isConverting, setIsConverting] = useState(false);
   const [conversionComplete, setConversionComplete] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -125,18 +126,37 @@ export function useAudio(
     }
   }, [currentVolume]);
 
-  // Convert mp3 to MIDI when mp3File changes
+  // Memoize buildNotes to avoid redundant computations
+  const memoizedBuildNotes = useCallback((frames, onsets, contours, onset, frame, minDur) => {
+    return buildNotes(frames, onsets, contours, onset, frame, minDur);
+  }, []);
+
+  function debounce(func, wait) {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), wait);
+    };
+  }
+
+  const debouncedConvertMidi = useRef(
+    debounce((frames, onsets, contours, onset, frame, minDur) => {
+      const notes = memoizedBuildNotes(frames, onsets, contours, onset, frame, minDur);
+      setConvertedMidiNotes(notes);
+    }, 300)
+  ).current;
+
+  // Convert mp3 to posteriorgrams
   useEffect(() => {
     if (!mp3File || !generateBrowserMIDI) return;
 
-    const convertMidi = async () => {
+    const getData = async () => {
       setIsConverting(true);
       setConversionComplete(false);
 
       try {
-        const notes = await convertAudioToMidi(mp3File, setProgress, onsetThreshold, frameThreshold, minDurationSec);
-
-        setConvertedMidiNotes(notes);
+        const data = await convertAudioToPosteriorgrams(mp3File, setProgress);
+        setBasicPitchData(data);
         setConversionComplete(true);
       } catch (error) {
         console.error('Conversion failed:', error);
@@ -147,8 +167,17 @@ export function useAudio(
       }
     };
 
-    convertMidi();
-  }, [mp3File, generateBrowserMIDI, onsetThreshold, frameThreshold, minDurationSec]);
+    getData();
+  }, [mp3File, generateBrowserMIDI, setWarning]);
+
+  // Update MIDI notes when thresholds or basicPitchData change
+  useEffect(() => {
+    if (!basicPitchData || !generateBrowserMIDI) return;
+    const { frames, onsets, contours } = basicPitchData;
+    if (frames && onsets && contours) {
+      debouncedConvertMidi(frames, onsets, contours, onsetThreshold, frameThreshold, minDurationSec);
+    }
+  }, [basicPitchData, onsetThreshold, frameThreshold, minDurationSec, debouncedConvertMidi, generateBrowserMIDI]);
 
   return {
     analyser,
@@ -160,6 +189,7 @@ export function useAudio(
     seek,
     getCurrentTime,
     midiNotes: midiFile ? midiNotes : convertedMidiNotes,
+    basicPitchData,
     chroma,
     rms,
     spectralCentroid,

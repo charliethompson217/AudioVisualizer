@@ -34,25 +34,9 @@ const SAMPLE_RATE = 22050;
 const HOP_LENGTH = 256;
 const FRAME_DURATION = HOP_LENGTH / SAMPLE_RATE;
 
-function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, minDurationSec) {
+export function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, minDurationSec) {
   const notes = [];
   const activeNotes = new Map();
-
-  function isSafari() {
-    let isSafariBrowser =
-      /^((?!chrome|android).)*safari/i.test(navigator.userAgent) &&
-      navigator.vendor === 'Apple Computer, Inc.' &&
-      !window.chrome;
-    return isSafariBrowser;
-  }
-  let offset = 0;
-  try {
-    if (isSafari()) {
-      offset = 0.7;
-    }
-  } catch (e) {
-    console.error(e);
-  }
 
   for (let i = 0; i < frames.length; i++) {
     for (let pitch = 0; pitch < frames[i].length; pitch++) {
@@ -65,8 +49,8 @@ function buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, mi
 
       if (frameValue < frameThreshold && activeNotes.has(pitch)) {
         const startFrame = activeNotes.get(pitch);
-        const startSec = startFrame * FRAME_DURATION + offset;
-        const endSec = i * FRAME_DURATION + offset;
+        const startSec = startFrame * FRAME_DURATION;
+        const endSec = i * FRAME_DURATION;
         const durationSec = endSec - startSec;
 
         if (durationSec >= minDurationSec) {
@@ -126,7 +110,7 @@ function convertToMono(audioBuffer) {
   return monoBuffer;
 }
 
-export async function convertAudioToMidi(mp3File, progressCallback, onsetThreshold, frameThreshold, minDurationSec) {
+export async function convertAudioToPosteriorgrams(mp3File, progressCallback) {
   await initializeModel();
   const arrayBuffer = await mp3File.arrayBuffer();
   const audioContext = new AudioContext();
@@ -152,5 +136,5 @@ export async function convertAudioToMidi(mp3File, progressCallback, onsetThresho
     (p) => progressCallback(p * 100)
   );
 
-  return buildNotes(frames, onsets, contours, onsetThreshold, frameThreshold, minDurationSec);
+  return { frames, onsets, contours };
 }

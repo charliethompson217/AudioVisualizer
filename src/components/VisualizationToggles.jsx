@@ -49,6 +49,10 @@ export default function VisualizationToggles({
   setMeydaBufferSize,
   meydaFeaturesToExtract,
   setMeydaFeaturesToExtract,
+  generateBrowserMIDI,
+  setGenerateBrowserMIDI,
+  showPosteriorgram,
+  setShowPosteriorgram,
 }) {
   useEffect(() => {
     const newFeatures = [];
@@ -86,15 +90,37 @@ export default function VisualizationToggles({
   return (
     <div className="visualization-toggles">
       {!isPlaying && (
-        <div className="control-label">
-          <input
-            className="control-checkbox"
-            type="checkbox"
-            checked={bpmAndKey}
-            onChange={() => setBpmAndKey(!bpmAndKey)}
-          />
-          <label style={{ pointerEvents: 'none', cursor: 'default' }}>BPM and Key</label>
-        </div>
+        <>
+          <div className="control-label">
+            <input
+              className="control-checkbox"
+              type="checkbox"
+              checked={generateBrowserMIDI}
+              onChange={() => setGenerateBrowserMIDI(!generateBrowserMIDI)}
+            />
+            <label style={{ pointerEvents: 'none', cursor: 'default' }}>Generate MIDI</label>
+          </div>
+          {generateBrowserMIDI && (
+            <div className="control-label">
+              <input
+                className="control-checkbox"
+                type="checkbox"
+                checked={showPosteriorgram}
+                onChange={() => setShowPosteriorgram(!showPosteriorgram)}
+              />
+              <label style={{ pointerEvents: 'none', cursor: 'default' }}>Show Posteriorgram</label>
+            </div>
+          )}
+          <div className="control-label">
+            <input
+              className="control-checkbox"
+              type="checkbox"
+              checked={bpmAndKey}
+              onChange={() => setBpmAndKey(!bpmAndKey)}
+            />
+            <label style={{ pointerEvents: 'none', cursor: 'default' }}>BPM and Key</label>
+          </div>
+        </>
       )}
       <div className="control-label">
         <input

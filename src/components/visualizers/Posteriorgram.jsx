@@ -17,21 +17,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 import React, { useEffect, useRef, useState } from 'react';
-import BasicPitchSettings from '../BasicPitchSettings';
 
 const baseNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-export default function PianoRoll({
-  notes,
+export default function Posteriorgram({
   isPlaying,
+  basicPitchData,
   noteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330],
-  generateBrowserMIDI,
-  onsetThreshold,
-  setOnsetThreshold,
-  frameThreshold,
-  setFrameThreshold,
-  minDurationSec,
-  setMinDurationSec,
 }) {
   function isSafari() {
     let isSafariBrowser =
@@ -40,102 +32,140 @@ export default function PianoRoll({
       !window.chrome;
     return isSafariBrowser;
   }
+
+  const { frames } = basicPitchData;
   const screenHeight = window.innerHeight;
   const screenWidth = window.innerWidth;
   const rollHeight = Math.min(screenHeight * 2, screenWidth * 2);
   const noteRange = 108 - 12;
   const noteHeight = rollHeight / noteRange;
-  const [timeScale, setTimeScale] = useState(50);
-  const [timeOffset, setTimeOffset] = isSafari && generateBrowserMIDI ? useState(-0.5) : useState(0);
   const [showLabels, setShowLabels] = useState(true);
+  const [timeOffset, setTimeOffset] = isSafari ? useState(-0.5) : useState(0);
   const showLabelsRef = useRef(showLabels);
-  const timeScaleRef = useRef(timeScale);
   const timeOffsetRef = useRef(timeOffset);
+  const noteHuesRef = useRef(noteHues);
   const containerRef = useRef(null);
   const p5InstanceRef = useRef(null);
-  const notesRef = useRef(notes);
+  const framesRef = useRef(frames);
+  const HOP_LENGTH = 256;
+  const SAMPLE_RATE = 22050;
+  const FRAME_DURATION = HOP_LENGTH / SAMPLE_RATE;
+  const BUFFER_DURATION = 80;
+  const RERENDER_THRESHOLD = 40;
+  const TIME_SCALE = 50;
 
   useEffect(() => {
-    notesRef.current = notes;
-  }, [notes]);
+    framesRef.current = frames;
+  }, [frames]);
 
   useEffect(() => {
     showLabelsRef.current = showLabels;
   }, [showLabels]);
 
   useEffect(() => {
-    timeScaleRef.current = timeScale;
-  }, [timeScale]);
-
-  useEffect(() => {
     timeOffsetRef.current = timeOffset;
   }, [timeOffset]);
 
   useEffect(() => {
+    noteHuesRef.current = noteHues;
+  }, [noteHues]);
+
+  useEffect(() => {
     const sketch = (p) => {
-      let canvas;
+      let canvas, frameBuffer, labelBuffer;
       let width;
       let startTime = null;
+      let bufferStartTime = 0;
+      let bufferEndTime = BUFFER_DURATION;
 
       p.setup = () => {
         width = containerRef.current.offsetWidth;
+        const bufferWidth = Math.ceil(BUFFER_DURATION * TIME_SCALE) + width;
         canvas = p.createCanvas(width, rollHeight);
+        frameBuffer = p.createGraphics(bufferWidth, rollHeight);
+        labelBuffer = p.createGraphics(width, rollHeight);
         canvas.parent(containerRef.current);
         p.pixelDensity(window.devicePixelRatio || 1);
-        p.frameRate(240);
+        p.frameRate(30);
+        renderFrameBuffer();
+        renderLabelBuffer();
+      };
+
+      const renderFrameBuffer = () => {
+        frameBuffer.background(0);
+        frameBuffer.noStroke();
+        const startFrameIndex = Math.floor(bufferStartTime / FRAME_DURATION);
+        const endFrameIndex = Math.min(Math.ceil((bufferStartTime + BUFFER_DURATION) / FRAME_DURATION), frames.length);
+
+        for (let frameIndex = startFrameIndex; frameIndex < endFrameIndex; frameIndex++) {
+          if (frameIndex >= frames.length) continue;
+
+          const frame = frames[frameIndex];
+          frame.forEach((strength, pitchIndex) => {
+            const noteNumber = pitchIndex + 21;
+            if (noteNumber < 12 || noteNumber > 108) return;
+            const yPos = rollHeight - (noteNumber - 12 + 1) * noteHeight;
+            const xPos = (frameIndex * FRAME_DURATION - bufferStartTime) * TIME_SCALE;
+            const rectWidth = FRAME_DURATION * TIME_SCALE;
+            frameBuffer.fill(`hsl(${noteHuesRef.current[noteNumber % 12]}, 100%, ${strength * 50}%)`);
+            frameBuffer.rect(xPos, yPos, rectWidth, noteHeight);
+          });
+        }
+      };
+
+      const renderLabelBuffer = () => {
+        labelBuffer.background(0, 0, 0, 0);
+        labelBuffer.fill(255);
+        for (let noteNumber = 12; noteNumber <= 108; noteNumber++) {
+          const yPos = rollHeight - (noteNumber - 12 + 1) * noteHeight;
+          labelBuffer.text(
+            `${baseNotes[noteNumber % 12]} ${Math.floor(noteNumber / 12) - 1}`,
+            0,
+            yPos + noteHeight / 2 + labelBuffer.textSize() / 3
+          );
+        }
       };
 
       p.draw = () => {
-        const scale = timeScaleRef.current;
         p.background(0);
-        p.noStroke();
 
         if (isPlaying && startTime === null) {
           startTime = p.millis();
         }
 
         const elapsedTime = isPlaying ? (p.millis() - startTime) / 1000 + timeOffsetRef.current : 0;
-        const scrollX = elapsedTime * scale;
+        const scrollX = elapsedTime * TIME_SCALE;
 
-        notesRef.current.forEach((note) => {
-          const yPos = rollHeight - (note.noteNumber - 12 + 1) * noteHeight;
-          const xPos = note.startSec * scale - scrollX + p.width / 2;
-          const rectWidth = note.durationSec * scale;
-          const noteIsActive =
-            isPlaying && elapsedTime >= note.startSec && elapsedTime <= note.startSec + note.durationSec;
-          const index = note.noteNumber % 12;
-          let color = `hsl(${noteHues[index]}, 100%, 35%)`;
-          if (noteIsActive) {
-            color = `hsl(${noteHues[index]}, 100%, 60%)`;
-          }
-          p.fill(color);
-          p.rect(xPos, yPos, rectWidth, noteHeight);
-        });
+        if (isPlaying && elapsedTime > bufferEndTime - RERENDER_THRESHOLD) {
+          bufferStartTime = Math.max(0, elapsedTime - RERENDER_THRESHOLD / 2);
+          bufferEndTime = bufferStartTime + BUFFER_DURATION;
+          renderFrameBuffer();
+        }
 
-        notesRef.current.forEach((note) => {
-          const yPos = rollHeight - (note.noteNumber - 12 + 1) * noteHeight;
-          const xPos = note.startSec * scale - scrollX + p.width / 2;
-          if (showLabelsRef.current) {
-            p.fill(255);
-            p.text(
-              `${baseNotes[note.noteNumber % 12]} ${Math.floor(note.noteNumber / 12) - 1} `,
-              xPos,
-              yPos + noteHeight / 2 + p.textSize() / 3
-            );
-          }
-        });
+        const bufferX = -scrollX + p.width / 2 + bufferStartTime * TIME_SCALE;
+        p.image(frameBuffer, bufferX, 0);
+
+        if (showLabelsRef.current) {
+          p.image(labelBuffer, p.width / 2, 0);
+        }
 
         if (isPlaying) {
-          const currentX = p.width / 2;
           p.stroke(255, 0, 0);
-          p.line(currentX, 0, currentX, rollHeight);
+          p.line(p.width / 2, 0, p.width / 2, rollHeight);
         }
       };
 
       p.windowResized = () => {
         width = containerRef.current.offsetWidth;
         p.resizeCanvas(width, rollHeight);
+        const bufferWidth = Math.ceil(BUFFER_DURATION * TIME_SCALE) + width;
+        frameBuffer = p.createGraphics(bufferWidth, rollHeight);
+        labelBuffer = p.createGraphics(width, rollHeight);
+        renderFrameBuffer();
+        renderLabelBuffer();
       };
+
+      p.renderFrameBuffer = renderFrameBuffer;
     };
 
     p5InstanceRef.current = new window.p5(sketch);
@@ -146,11 +176,11 @@ export default function PianoRoll({
         p5InstanceRef.current = null;
       }
     };
-  }, [isPlaying, noteHues]);
+  }, [isPlaying, frames]);
 
   return (
     <div ref={containerRef} style={{ width: '100%', maxWidth: '100vw', overflow: 'hidden' }}>
-      <h2>Piano Roll</h2>
+      <h2>Posteriorgram</h2>
       <div
         style={{
           display: 'flex',
@@ -160,23 +190,9 @@ export default function PianoRoll({
           margin: '0 auto 20px',
         }}
       >
-        <label style={{ marginBottom: '8px' }}>Time Scale</label>
+        <label style={{ marginBottom: '8px' }}>Time Offset (seconds)</label>
         <input
-          className="Piano-Roll-Time-Scale"
-          type="range"
-          min="1"
-          max="3000"
-          value={timeScale}
-          onChange={(e) => {
-            const newScale = Number(e.target.value);
-            setTimeScale(newScale);
-            timeScaleRef.current = newScale;
-          }}
-          style={{ width: '100%' }}
-        />
-        <label style={{ marginTop: '10px', marginBottom: '8px' }}>Time Offset (seconds)</label>
-        <input
-          className="Piano-Roll-Time-Offset"
+          className="Posteriorgram-Time-Offset"
           type="range"
           min="-2"
           max="2"
@@ -195,15 +211,6 @@ export default function PianoRoll({
             Show Labels
           </label>
         </div>
-        <BasicPitchSettings
-          generateBrowserMIDI={generateBrowserMIDI}
-          onsetThreshold={onsetThreshold}
-          setOnsetThreshold={setOnsetThreshold}
-          frameThreshold={frameThreshold}
-          setFrameThreshold={setFrameThreshold}
-          minDurationSec={minDurationSec}
-          setMinDurationSec={setMinDurationSec}
-        />
       </div>
     </div>
   );

@@ -29,7 +29,6 @@ import PlaybackControls from './components/PlaybackControls.jsx';
 import VisualizersContainer from './components/VisualizersContainer.jsx';
 import SongInfo from './components/SongInfo.jsx';
 import Footer from './components/Footer.jsx';
-import BasicPitchSettings from './components/BasicPitchSettings.jsx';
 import MidiSelector from './components/MidiSelector.jsx';
 
 export default function CoreApp() {
@@ -150,6 +149,7 @@ export default function CoreApp() {
   const [onsetThreshold, setOnsetThreshold] = useState(0.3);
   const [frameThreshold, setFrameThreshold] = useState(0.3);
   const [minDurationSec, setMinDurationSec] = useState(0.1);
+  const [showPosteriorgram, setShowPosteriorgram] = useState(false);
 
   const [selectedMidiFileName, setSelectedMidiFileName] = useState('');
   const [selectedSongFileName, setSelectedSongFileName] = useState('');
@@ -184,8 +184,17 @@ export default function CoreApp() {
     setWarning
   );
 
-  const { bpm, scaleKey, isProcessing, isConverting, conversionComplete, progress, midiNotes, essentiaFeatures } =
-    audio;
+  const {
+    bpm,
+    scaleKey,
+    isProcessing,
+    isConverting,
+    conversionComplete,
+    progress,
+    midiNotes,
+    basicPitchData,
+    essentiaFeatures,
+  } = audio;
 
   const handleSongSelect = async (selectedFileName, file, songName) => {
     setSelectedSongFileName(selectedFileName);
@@ -303,17 +312,6 @@ export default function CoreApp() {
                 setFetchingMidi={setFetchingSong}
               />
             </div>
-
-            <BasicPitchSettings
-              generateBrowserMIDI={generateBrowserMIDI}
-              setGenerateBrowserMIDI={setGenerateBrowserMIDI}
-              onsetThreshold={onsetThreshold}
-              setOnsetThreshold={setOnsetThreshold}
-              frameThreshold={frameThreshold}
-              setFrameThreshold={setFrameThreshold}
-              minDurationSec={minDurationSec}
-              setMinDurationSec={setMinDurationSec}
-            />
           </div>
         )}
 
@@ -350,6 +348,10 @@ export default function CoreApp() {
               setMeydaBufferSize={setMeydaBufferSize}
               meydaFeaturesToExtract={meydaFeaturesToExtract}
               setMeydaFeaturesToExtract={setMeydaFeaturesToExtract}
+              generateBrowserMIDI={generateBrowserMIDI}
+              setGenerateBrowserMIDI={setGenerateBrowserMIDI}
+              showPosteriorgram={showPosteriorgram}
+              setShowPosteriorgram={setShowPosteriorgram}
             />
 
             <button className="control-button" onClick={() => setShowColorSettings(true)}>
@@ -430,6 +432,15 @@ export default function CoreApp() {
         rms={rms}
         loudness={loudness}
         meydaBufferSize={meydaBufferSize}
+        generateBrowserMIDI={generateBrowserMIDI}
+        onsetThreshold={onsetThreshold}
+        setOnsetThreshold={setOnsetThreshold}
+        frameThreshold={frameThreshold}
+        setFrameThreshold={setFrameThreshold}
+        minDurationSec={minDurationSec}
+        setMinDurationSec={setMinDurationSec}
+        basicPitchData={basicPitchData}
+        showPosteriorgram={showPosteriorgram}
       />
       <Footer />
     </div>

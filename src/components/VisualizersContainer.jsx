@@ -29,6 +29,7 @@ import SpectralSpreadGraph from './visualizers/SpectralSpreadGraph';
 import RMS from './visualizers/RMS';
 import Loudness from './visualizers/Loudness';
 import ChromavectorBarGraph from './visualizers/ChromavectorBarGraph';
+import Posteriorgram from './visualizers/Posteriorgram';
 
 export default function VisualizersContainer({
   isPlaying,
@@ -64,6 +65,15 @@ export default function VisualizersContainer({
   rms,
   loudness,
   meydaBufferSize,
+  generateBrowserMIDI,
+  onsetThreshold,
+  setOnsetThreshold,
+  frameThreshold,
+  setFrameThreshold,
+  minDurationSec,
+  setMinDurationSec,
+  showPosteriorgram,
+  basicPitchData,
 }) {
   return (
     <div className="Visualizers-Container">
@@ -139,9 +149,22 @@ export default function VisualizersContainer({
           presets={presets}
         />
       )}
-
-      {isPlaying && midiNotes && midiNotes.length > 0 && (
-        <PianoRoll notes={midiNotes} isPlaying={isPlaying} noteHues={noteHues} />
+      {generateBrowserMIDI && showPosteriorgram && isPlaying && (
+        <Posteriorgram isPlaying={isPlaying} basicPitchData={basicPitchData} noteHues={noteHues} />
+      )}
+      {isPlaying && (midiNotes || generateBrowserMIDI) && (
+        <PianoRoll
+          notes={midiNotes}
+          isPlaying={isPlaying}
+          noteHues={noteHues}
+          generateBrowserMIDI={generateBrowserMIDI}
+          onsetThreshold={onsetThreshold}
+          setOnsetThreshold={setOnsetThreshold}
+          frameThreshold={frameThreshold}
+          setFrameThreshold={setFrameThreshold}
+          minDurationSec={minDurationSec}
+          setMinDurationSec={setMinDurationSec}
+        />
       )}
     </div>
   );
