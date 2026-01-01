@@ -194,6 +194,7 @@ export default function CoreApp() {
     midiNotes,
     basicPitchData,
     essentiaFeatures,
+    startTabCapture,
   } = audio;
 
   const handleSongSelect = async (selectedFileName, file, songName) => {
@@ -288,6 +289,24 @@ export default function CoreApp() {
         {!isPlaying && (
           <div>
             <div className="song-selector-container" style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
+              <button
+                style={{
+                  backgroundColor: '#1e1e1e',
+                  color: 'rgb(170, 170, 170)',
+                  border: '1px solid #444',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  transition: 'background-color 0.3s ease',
+                }}
+                onClick={() => {
+                  startTabCapture();
+                  handleStartStop();
+                }}
+              >
+                Tab Capture
+              </button>
+
               <FileUploader
                 setCurrentSongName={setCurrentSongName}
                 setMidiFile={setMidiFile}

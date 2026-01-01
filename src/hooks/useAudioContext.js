@@ -25,6 +25,7 @@ export function useAudioContext(mp3File, useMic, muteMic, isPlaying, synthesizer
   const sourceRef = useRef(null);
   const mixerNodeRef = useRef(null);
   const outputGainNodeRef = useRef(null);
+  const tabStreamRef = useRef(null);
 
   const [sampleRate, setSampleRate] = useState(44100);
   const [duration, setDuration] = useState(0);
@@ -177,6 +178,72 @@ export function useAudioContext(mp3File, useMic, muteMic, isPlaying, synthesizer
     return audioElementRef.current ? audioElementRef.current.currentTime : 0;
   }, []);
 
+  const startTabCapture = useCallback(async () => {
+    if (!audioContextRef.current) return;
+
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          mediaSource: 'screen',
+        },
+        audio: true,
+      });
+
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length === 0) {
+        alert('No audio captured. In Chrome/Edge: Make sure to select a tab and check "Share audio/tab sound".');
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+
+      if (sourceRef.current) {
+        try {
+          sourceRef.current.disconnect();
+        } catch (e) {
+          console.error('Error disconnecting previous source during tab capture start:', e);
+        }
+      }
+      if (tabStreamRef.current) {
+        tabStreamRef.current.getTracks().forEach((t) => t.stop());
+      }
+
+      tabStreamRef.current = stream;
+
+      const audioOnlyStream = new MediaStream(audioTracks);
+      const source = audioContextRef.current.createMediaStreamSource(audioOnlyStream);
+      source.connect(mixerNodeRef.current);
+      sourceRef.current = source;
+
+      if (audioContextRef.current.state !== 'running') {
+        await audioContextRef.current.resume();
+      }
+
+      console.log('Tab audio captured successfully!');
+
+      outputGainNodeRef.current.gain.value = 0;
+    } catch (err) {
+      if (err.name !== 'NotAllowedError') {
+        console.error('Tab capture failed:', err);
+        alert(`Capture failed: ${err.message || err.name}`);
+      }
+    }
+  }, []);
+
+  const stopTabCapture = useCallback(() => {
+    if (tabStreamRef.current) {
+      tabStreamRef.current.getTracks().forEach((track) => track.stop());
+      tabStreamRef.current = null;
+    }
+    if (sourceRef.current) {
+      try {
+        sourceRef.current.disconnect();
+      } catch (e) {
+        console.error('Error disconnecting source during tab capture stop:', e);
+      }
+      sourceRef.current = null;
+    }
+  }, []);
+
   return {
     audioContext: audioContextRef.current,
     analyser: analyserRef.current,
@@ -188,5 +255,7 @@ export function useAudioContext(mp3File, useMic, muteMic, isPlaying, synthesizer
     seek,
     getCurrentTime,
     source: mixerNodeRef.current,
+    startTabCapture,
+    stopTabCapture,
   };
 }

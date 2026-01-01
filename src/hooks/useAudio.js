@@ -56,13 +56,19 @@ export function useAudio(
   const [progress, setProgress] = useState(0);
 
   // Setup audio context and basic audio processing
-  const { audioContext, analyser, sampleRate, duration, play, pause, seek, getCurrentTime, source } = useAudioContext(
-    mp3File,
-    useMic,
-    muteMic,
-    isPlaying,
-    synthRef.current
-  );
+  const {
+    audioContext,
+    analyser,
+    sampleRate,
+    duration,
+    play,
+    pause,
+    seek,
+    getCurrentTime,
+    source,
+    startTabCapture,
+    stopTabCapture,
+  } = useAudioContext(mp3File, useMic, muteMic, isPlaying, synthRef.current);
 
   // Initialize and manage synthesizer
   const synthesizer = useSynthesizer(audioContext, analyser, isPlaying, synthesizerSettings, volumeRef);
@@ -216,5 +222,7 @@ export function useAudio(
     conversionComplete,
     progress,
     essentiaFeatures,
+    startTabCapture,
+    stopTabCapture,
   };
 }
