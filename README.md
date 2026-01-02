@@ -31,6 +31,7 @@ Check out the live demo at [AudioVisualizer.org](https://audiovisualizer.org)
     -   **Use Mic**: Click “Use Mic” to visualize audio from your microphone (data from the microphone never leaves your device).
     -   **Audio Files**: Upload local `mp3`, `wav`, or `ogg` files.
     -   **MIDI Files**: Play `midi` files through the synthesizer.
+    -   **Screen Share**: Use audio from other apps such as spotify or youtube. Currently this only works in Chromium based browsers. Safari does not allow screenshare to capture audio and there's no indication it will be supported anytime soon.
 
 -   **Real-time Audio Analysis**: Uses [Meyda](https://github.com/meyda/meyda) and the [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API) to visualize audio input (MP3, WAV, OGG, Microphone) in real-time.
     -   **FFT Analysis**: Adjustable FFT bin sizes, smoothing factors, and frequency range.
