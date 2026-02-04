@@ -69,6 +69,41 @@ export default function BarGraphSpectrograph({
     const sketch = (p) => {
       let canvas;
       const f0 = 8.1758; // Frequency of C-1 in Hz
+      const baseNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+      const mod = (n, m) => ((n % m) + m) % m;
+
+      let cachedMinSemitone = NaN;
+      let cachedMaxSemitone = NaN;
+      let cachedMinFreq = 0;
+      let cachedMaxFreq = 0;
+      let noteFrequencies = [];
+      let noteSemitones = [];
+
+      let dataArray = null;
+
+      const rebuildNoteCacheIfNeeded = () => {
+        const minS = minSemitoneRef.current;
+        const maxS = maxSemitoneRef.current;
+
+        if (minS === cachedMinSemitone && maxS === cachedMaxSemitone) return;
+
+        cachedMinSemitone = minS;
+        cachedMaxSemitone = maxS;
+
+        cachedMinFreq = f0 * Math.pow(2, minS / 12);
+        cachedMaxFreq = f0 * Math.pow(2, maxS / 12);
+
+        noteFrequencies = [];
+        noteSemitones = [];
+        const start = Math.ceil(minS);
+        const end = Math.floor(maxS);
+
+        for (let s = start; s <= end; s += 1) {
+          noteSemitones.push(s);
+          noteFrequencies.push(f0 * Math.pow(2, s / 12));
+        }
+      };
 
       const updateCanvasSize = () => {
         let vw = Math.min(document.documentElement.clientWidth || 0, window.innerWidth || 0);
@@ -87,13 +122,14 @@ export default function BarGraphSpectrograph({
         canvas = p.createCanvas(canvasWidth, canvasHeight);
         canvas.parent(sketchRef.current);
 
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+
         p.windowResized = updateCanvasSize;
       };
 
       const getNoteName = (semitone) => {
-        const baseNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         const octave = Math.floor(semitone / 12) - 1;
-        const noteIndex = Math.floor(semitone % 12);
+        const noteIndex = Math.floor(mod(semitone, 12));
         const noteName = baseNotes[noteIndex];
         const halfSemitone = semitone % 1 === 0.5 ? ' plus half a semitone' : '';
         return `${noteName}${octave}${halfSemitone}`;
@@ -102,32 +138,22 @@ export default function BarGraphSpectrograph({
       p.draw = () => {
         p.background(0);
 
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        // Ensure cache is up to date (only does work when sliders changed)
+        rebuildNoteCacheIfNeeded();
+
+        // Resize dataArray if analyser config changes
+        if (!dataArray || dataArray.length !== analyser.frequencyBinCount) {
+          dataArray = new Uint8Array(analyser.frequencyBinCount);
+        }
         analyser.getByteFrequencyData(dataArray);
         const sampleRate = analyser.context.sampleRate;
 
-        // Recalculate minFreq and maxFreq using current slider values
-        const minFreq = f0 * Math.pow(2, minSemitoneRef.current / 12);
-        const maxFreq = f0 * Math.pow(2, maxSemitoneRef.current / 12);
+        const minFreq = cachedMinFreq;
+        const maxFreq = cachedMaxFreq;
 
         const middle = p.height / 2;
-
-        const noteFrequencies = [];
-        const baseNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
-        // Generate note frequencies up to maxSemitone
-        const maxSemitoneValue = Math.log2(maxFreq / f0) * 12;
-        for (let n = 0; n <= maxSemitoneValue; n++) {
-          const freq = f0 * Math.pow(2, n / 12);
-          noteFrequencies.push(freq);
-        }
-
-        const logScale = (freq) => {
-          const minSemitoneValue = Math.log2(minFreq / f0) * 12;
-          const maxSemitoneValue = Math.log2(maxFreq / f0) * 12;
-          const freqSemitone = Math.log2(freq / f0) * 12;
-          return p.map(freqSemitone, minSemitoneValue, maxSemitoneValue, 0, p.width);
-        };
+        const minS = cachedMinSemitone;
+        const maxS = cachedMaxSemitone;
 
         // Draw frequency spectrum
         for (let i = 0; i < dataArray.length; i++) {
@@ -136,54 +162,44 @@ export default function BarGraphSpectrograph({
 
           const energy = dataArray[i];
 
-          // Find the closest note
-          let closestNoteIndex = 0;
-          let minDiff = Infinity;
-          for (let j = 0; j < noteFrequencies.length; j++) {
-            const diff = Math.abs(noteFrequencies[j] - freq);
-            if (diff < minDiff) {
-              minDiff = diff;
-              closestNoteIndex = j;
-            }
-          }
+          // O(1) closest note:
+          // semitone ≈ 12 * log2(freq / f0)
+          const semitone = Math.log2(freq / f0) * 12;
+          const closestSemitone = Math.round(semitone);
+          const noteIndex = mod(closestSemitone, 12);
 
-          const hue = noteHues[closestNoteIndex % 12];
-          const lightness = p.map(
-            Math.pow(energy, brightnessRef.current),
-            0,
-            Math.pow(255, brightnessRef.current),
-            0,
-            50
-          );
-          const alpha = p.map(Math.pow(energy, brightnessRef.current), 0, Math.pow(255, brightnessRef.current), 0, 255);
+          const hue = noteHues[noteIndex];
+          const brightEnergy = Math.pow(energy, brightnessRef.current);
+          const brightMax = Math.pow(255, brightnessRef.current);
+          const lightness = p.map(brightEnergy, 0, brightMax, 0, 50);
+          const alpha = p.map(brightEnergy, 0, brightMax, 0, 255);
 
           p.stroke(p.color(`hsla(${hue}, 100%, ${lightness}%, ${alpha / 255})`));
           p.strokeWeight(1);
 
-          const x = logScale(freq);
-          const normalizedEnergy = p.map(
-            Math.pow(energy, lengthPowerRef.current),
-            0,
-            Math.pow(255, lengthPowerRef.current),
-            0,
-            middle
-          );
-
+          // Use semitone directly for log-x mapping (no extra log calls)
+          const x = p.map(semitone, minS, maxS, 0, p.width);
+          const lenEnergy = Math.pow(energy, lengthPowerRef.current);
+          const lenMax = Math.pow(255, lengthPowerRef.current);
+          const normalizedEnergy = p.map(lenEnergy, 0, lenMax, 0, middle);
           p.line(x, middle - normalizedEnergy, x, middle + normalizedEnergy);
         }
 
-        // Draw note labels
+        // Draw note labels (uses cached noteFrequencies / semitones)
         if (showLabelsRef.current) {
-          for (let i = 0; i < noteFrequencies.length; i++) {
-            const freq = noteFrequencies[i];
+          const rowHeight = 20;
+
+          for (let k = 0; k < noteFrequencies.length; k++) {
+            const freq = noteFrequencies[k];
+            const s = noteSemitones[k];
+
             if (freq < minFreq || freq > maxFreq) continue;
 
-            const x = logScale(freq);
-            const rowHeight = 20;
-            const rowOffset = i % 12;
+            const x = p.map(s, minS, maxS, 0, p.width);
+            const rowOffset = mod(s, 12);
             const y = middle - rowHeight * (rowOffset + 1) + 6 * rowHeight;
-            const octave = Math.floor(i / 12) - 1;
-            const noteName = `${baseNotes[i % 12]}${octave}`;
+            const octave = Math.floor(s / 12) - 1;
+            const noteName = `${baseNotes[mod(s, 12)]}${octave}`;
 
             p.fill(255);
             p.textAlign(p.CENTER, p.BOTTOM);
@@ -197,23 +213,12 @@ export default function BarGraphSpectrograph({
             p.stroke(255, 255, 255);
             p.line(p.mouseX, 0, p.mouseX, p.height);
 
-            const minSemitone = Math.log2(minFreq / f0) * 12;
-            const maxSemitone = Math.log2(maxFreq / f0) * 12;
-            const mouseSemitone = p.map(p.mouseX, 0, p.width, minSemitone, maxSemitone);
+            const mouseSemitone = p.map(p.mouseX, 0, p.width, minS, maxS);
             const freq = f0 * Math.pow(2, mouseSemitone / 12);
 
-            // Find the closest note
-            let closestNoteIndex = 0;
-            let minDiff = Infinity;
-            for (let i = 0; i < noteFrequencies.length; i++) {
-              const diff = Math.abs(noteFrequencies[i] - freq);
-              if (diff < minDiff) {
-                minDiff = diff;
-                closestNoteIndex = i;
-              }
-            }
-            const octave = Math.floor(closestNoteIndex / 12) - 1;
-            const closestNote = `${baseNotes[closestNoteIndex % 12]}${octave}`;
+            const closestSemitone = Math.round(mouseSemitone);
+            const octave = Math.floor(closestSemitone / 12) - 1;
+            const closestNote = `${baseNotes[mod(closestSemitone, 12)]}${octave}`;
 
             p.fill(255);
             p.noStroke();
