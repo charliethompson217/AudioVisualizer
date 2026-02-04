@@ -23,8 +23,10 @@ export default function VisualizationToggles({
   setBpmAndKey,
   showWaveform,
   setShowWaveform,
-  showSpectrograph,
-  setShowSpectrograph,
+  showBarSpectrograph,
+  setShowBarSpectrograph,
+  showCircleSpectrograph,
+  setShowCircleSpectrograph,
   showWaterfallSpectrograph,
   setShowWaterfallSpectrograph,
   pianoEnabled,
@@ -135,10 +137,19 @@ export default function VisualizationToggles({
         <input
           className="control-checkbox"
           type="checkbox"
-          checked={showSpectrograph}
-          onChange={() => setShowSpectrograph(!showSpectrograph)}
+          checked={showBarSpectrograph}
+          onChange={() => setShowBarSpectrograph(!showBarSpectrograph)}
         />
         <label style={{ pointerEvents: 'none', cursor: 'default' }}>Bar graph Spectrograph</label>
+      </div>
+      <div className="control-label">
+        <input
+          className="control-checkbox"
+          type="checkbox"
+          checked={showCircleSpectrograph}
+          onChange={() => setShowCircleSpectrograph(!showCircleSpectrograph)}
+        />
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Circle graph Spectrograph</label>
       </div>
       <div className="control-label">
         <input

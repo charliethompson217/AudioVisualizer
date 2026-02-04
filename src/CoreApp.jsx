@@ -136,7 +136,8 @@ export default function CoreApp() {
   const [pianoEnabled, setPianoEnabled] = useState(true);
   const [bpmAndKey, setBpmAndKey] = useState(true);
   const [showWaveform, setShowWaveform] = useState(true);
-  const [showSpectrograph, setShowSpectrograph] = useState(true);
+  const [showBarSpectrograph, setShowBarSpectrograph] = useState(false);
+  const [showCircleSpectrograph, setShowCircleSpectrograph] = useState(true);
   const [showWaterfallSpectrograph, setShowWaterfallSpectrograph] = useState(false);
   const [chromaCircle, setChromaCircle] = useState(false);
   const [chromaLine, setChromaLine] = useState(false);
@@ -341,8 +342,10 @@ export default function CoreApp() {
               setBpmAndKey={setBpmAndKey}
               showWaveform={showWaveform}
               setShowWaveform={setShowWaveform}
-              showSpectrograph={showSpectrograph}
-              setShowSpectrograph={setShowSpectrograph}
+              showBarSpectrograph={showBarSpectrograph}
+              setShowBarSpectrograph={setShowBarSpectrograph}
+              showCircleSpectrograph={showCircleSpectrograph}
+              setShowCircleSpectrograph={setShowCircleSpectrograph}
               showWaterfallSpectrograph={showWaterfallSpectrograph}
               setShowWaterfallSpectrograph={setShowWaterfallSpectrograph}
               pianoEnabled={pianoEnabled}
@@ -419,7 +422,8 @@ export default function CoreApp() {
 
       <VisualizersContainer
         isPlaying={isPlaying}
-        showSpectrograph={showSpectrograph}
+        showBarSpectrograph={showBarSpectrograph}
+        showCircleSpectrograph={showCircleSpectrograph}
         showWaterfallSpectrograph={showWaterfallSpectrograph}
         showWaveform={showWaveform}
         bins={bins}
