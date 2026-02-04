@@ -96,7 +96,7 @@ export default function ChromavectorBarGraph({
       {isPlaying && <h2>Chroma Bar Graph</h2>}
       <div
         ref={sketchRef}
-        style={{ maxWidth: '800px', margin: '0 auto', alignSelf: 'center', justifySelf: 'center' }}
+        style={{ width: '100%', maxWidth: '800px', margin: '0 auto', alignSelf: 'center', justifySelf: 'center' }}
       ></div>
     </div>
   );
