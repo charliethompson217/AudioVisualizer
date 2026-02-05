@@ -134,17 +134,17 @@ export default function CoreApp() {
   const [showLabels, setShowLabels] = useState(true);
   const [showScroll, setShowScroll] = useState(true);
   const [pianoEnabled, setPianoEnabled] = useState(true);
-  const [bpmAndKey, setBpmAndKey] = useState(true);
+  const [bpmAndKey, setBpmAndKey] = useState(false);
   const [showWaveform, setShowWaveform] = useState(true);
-  const [showBarSpectrograph, setShowBarSpectrograph] = useState(false);
+  const [showBarSpectrograph, setShowBarSpectrograph] = useState(true);
   const [showCircleSpectrograph, setShowCircleSpectrograph] = useState(false);
-  const [showSpiralSpectrograph, setShowSpiralSpectrograph] = useState(true);
+  const [showSpiralSpectrograph, setShowSpiralSpectrograph] = useState(false);
   const [showWaterfallSpectrograph, setShowWaterfallSpectrograph] = useState(false);
   const [chromaCircle, setChromaCircle] = useState(false);
   const [chromaLine, setChromaLine] = useState(false);
-  const [chromaBar, setChromaBar] = useState(true);
+  const [chromaBar, setChromaBar] = useState(false);
   const [rms, setRms] = useState(false);
-  const [loudness, setLoudness] = useState(true);
+  const [loudness, setLoudness] = useState(false);
   const [spectralSpreadGraph, setSpectralSpreadGraph] = useState(false);
 
   const [generateBrowserMIDI, setGenerateBrowserMIDI] = useState(false);
