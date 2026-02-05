@@ -137,7 +137,8 @@ export default function CoreApp() {
   const [bpmAndKey, setBpmAndKey] = useState(true);
   const [showWaveform, setShowWaveform] = useState(true);
   const [showBarSpectrograph, setShowBarSpectrograph] = useState(false);
-  const [showCircleSpectrograph, setShowCircleSpectrograph] = useState(true);
+  const [showCircleSpectrograph, setShowCircleSpectrograph] = useState(false);
+  const [showSpiralSpectrograph, setShowSpiralSpectrograph] = useState(true);
   const [showWaterfallSpectrograph, setShowWaterfallSpectrograph] = useState(false);
   const [chromaCircle, setChromaCircle] = useState(false);
   const [chromaLine, setChromaLine] = useState(false);
@@ -346,6 +347,8 @@ export default function CoreApp() {
               setShowBarSpectrograph={setShowBarSpectrograph}
               showCircleSpectrograph={showCircleSpectrograph}
               setShowCircleSpectrograph={setShowCircleSpectrograph}
+              showSpiralSpectrograph={showSpiralSpectrograph}
+              setShowSpiralSpectrograph={setShowSpiralSpectrograph}
               showWaterfallSpectrograph={showWaterfallSpectrograph}
               setShowWaterfallSpectrograph={setShowWaterfallSpectrograph}
               pianoEnabled={pianoEnabled}
@@ -424,6 +427,7 @@ export default function CoreApp() {
         isPlaying={isPlaying}
         showBarSpectrograph={showBarSpectrograph}
         showCircleSpectrograph={showCircleSpectrograph}
+        showSpiralSpectrograph={showSpiralSpectrograph}
         showWaterfallSpectrograph={showWaterfallSpectrograph}
         showWaveform={showWaveform}
         bins={bins}

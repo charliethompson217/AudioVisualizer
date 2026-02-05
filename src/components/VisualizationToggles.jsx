@@ -27,6 +27,8 @@ export default function VisualizationToggles({
   setShowBarSpectrograph,
   showCircleSpectrograph,
   setShowCircleSpectrograph,
+  showSpiralSpectrograph,
+  setShowSpiralSpectrograph,
   showWaterfallSpectrograph,
   setShowWaterfallSpectrograph,
   pianoEnabled,
@@ -150,6 +152,15 @@ export default function VisualizationToggles({
           onChange={() => setShowCircleSpectrograph(!showCircleSpectrograph)}
         />
         <label style={{ pointerEvents: 'none', cursor: 'default' }}>Circle graph Spectrograph</label>
+      </div>
+      <div className="control-label">
+        <input
+          className="control-checkbox"
+          type="checkbox"
+          checked={showSpiralSpectrograph}
+          onChange={() => setShowSpiralSpectrograph(!showSpiralSpectrograph)}
+        />
+        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Spiral graph Spectrograph</label>
       </div>
       <div className="control-label">
         <input

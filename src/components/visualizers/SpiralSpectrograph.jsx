@@ -18,7 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React, { useRef, useEffect, useState } from 'react';
 
-export default function CircleGraphSpectrograph({
+export default function SpiralGraphSpectrograph({
   showLabels,
   showScroll,
   brightnessPower = 1,
@@ -34,11 +34,15 @@ export default function CircleGraphSpectrograph({
   const [lengthPower, setLengthPower] = useState(1);
   const [minSemitone, setMinSemitone] = useState(12);
   const [maxSemitone, setMaxSemitone] = useState(108);
+  const [octaveSpacingFactor, setOctaveSpacingFactor] = useState(0.035);
+  const [octaveLaneFill, setOctaveLaneFill] = useState(0.45);
   // Refs to hold current slider values for p5 sketch
   const brightnessRef = useRef(brightness);
   const lengthPowerRef = useRef(lengthPower);
   const minSemitoneRef = useRef(minSemitone);
   const maxSemitoneRef = useRef(maxSemitone);
+  const octaveSpacingFactorRef = useRef(octaveSpacingFactor);
+  const octaveLaneFillRef = useRef(octaveLaneFill);
 
   const showLabelsRef = useRef(showLabels);
   const showScrollRef = useRef(showScroll);
@@ -56,6 +60,12 @@ export default function CircleGraphSpectrograph({
   useEffect(() => {
     maxSemitoneRef.current = maxSemitone;
   }, [maxSemitone]);
+  useEffect(() => {
+    octaveSpacingFactorRef.current = octaveSpacingFactor;
+  }, [octaveSpacingFactor]);
+  useEffect(() => {
+    octaveLaneFillRef.current = octaveLaneFill;
+  }, [octaveLaneFill]);
   useEffect(() => {
     showLabelsRef.current = showLabels;
   }, [showLabels]);
@@ -77,8 +87,8 @@ export default function CircleGraphSpectrograph({
       let cachedMaxSemitone = NaN;
       let cachedMinFreq = 0;
       let cachedMaxFreq = 0;
-      let noteFrequencies = [];
       let noteSemitones = [];
+      let noteFrequencies = [];
 
       let dataArray = null;
 
@@ -94,8 +104,8 @@ export default function CircleGraphSpectrograph({
         cachedMinFreq = f0 * Math.pow(2, minS / 12);
         cachedMaxFreq = f0 * Math.pow(2, maxS / 12);
 
-        noteFrequencies = [];
         noteSemitones = [];
+        noteFrequencies = [];
         const start = Math.ceil(minS);
         const end = Math.floor(maxS);
 
@@ -130,15 +140,15 @@ export default function CircleGraphSpectrograph({
       const getNoteName = (semitone) => {
         const octave = Math.floor(semitone / 12) - 1;
         const noteIndex = Math.floor(mod(semitone, 12));
-        const noteName = baseNotes[noteIndex];
-        const halfSemitone = semitone % 1 === 0.5 ? ' plus half a semitone' : '';
-        return `${noteName}${octave}${halfSemitone}`;
+        return `${baseNotes[noteIndex]}${octave}`;
       };
 
       const normalizeAngle0ToTwoPi = (a) => {
         const t = p.TWO_PI;
         return ((a % t) + t) % t;
       };
+
+      const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 
       p.draw = () => {
         p.background(0);
@@ -164,21 +174,38 @@ export default function CircleGraphSpectrograph({
 
         const minDim = Math.min(p.width, p.height);
 
-        // Ring geometry
-        const baseRadius = minDim * 0.22; // center ring radius
-        const energySpan = minDim * 0.22; // how far energy expands inward/outward
-        const outerRadius = baseRadius + energySpan + minDim * 0.18;
+        // Spiral layout: radius is linear in semitone (like v1 x-position),
+        // angle is semitone on a 360°/octave mapping (mod 2π via sin/cos).
+        const innerR = minDim * 0.08;
+        const maxOuterR = minDim * 0.46;
 
-        // Rotate so the start is at the top
-        const angleOffset = -p.HALF_PI;
+        const k = p.TWO_PI / 12; // 360° per octave
+        const angleOffset = -p.HALF_PI; // put C rays at top (since semitone 0 is C-1)
 
-        // Map semitone -> angle around circle
-        const semitoneToAngle = (s) => p.map(s, minS, maxS, 0, p.TWO_PI) + angleOffset;
+        // Fix 1: pack the spiral using a pixel spacing per octave (bounded so the full range still fits)
+        const octavesVisible = spanS / 12;
+        const octaveSpacingWanted = minDim * octaveSpacingFactorRef.current;
+        const maxAllowedSpacing = octavesVisible > 0 ? (maxOuterR - innerR) / octavesVisible : octaveSpacingWanted;
+        const octaveSpacingPx = Math.max(1, Math.min(octaveSpacingWanted, maxAllowedSpacing));
+        const outerR = innerR + octaveSpacingPx * octavesVisible;
 
-        // Inverse: angle -> semitone
-        const angleToSemitone = (angleNorm) => p.map(angleNorm, 0, p.TWO_PI, minS, maxS);
+        const semitoneToRadius = (s) => innerR + ((s - minS) / 12) * octaveSpacingPx;
+        const semitoneToAngle = (s) => k * s + angleOffset;
 
-        // Draw the circular spectrum
+        // pitch-class rays
+        if (showLabelsRef.current) {
+          p.stroke(60);
+          p.strokeWeight(1);
+          for (let pc = 0; pc < 12; pc += 1) {
+            const theta = k * pc + angleOffset;
+            const x1 = cx + innerR * Math.cos(theta);
+            const y1 = cy + innerR * Math.sin(theta);
+            const x2 = cx + (outerR + 22) * Math.cos(theta);
+            const y2 = cy + (outerR + 22) * Math.sin(theta);
+            p.line(x1, y1, x2, y2);
+          }
+        }
+
         for (let i = 0; i < dataArray.length; i++) {
           const freq = (i * sampleRate) / analyser.fftSize;
           if (freq < minFreq || freq > maxFreq) continue;
@@ -200,16 +227,20 @@ export default function CircleGraphSpectrograph({
           p.stroke(p.color(`hsla(${hue}, 100%, ${lightness}%, ${alpha / 255})`));
           p.strokeWeight(1);
 
+          const r = semitoneToRadius(semitone);
+          const theta = semitoneToAngle(semitone);
+
           // radial length mapping
           const lenEnergy = Math.pow(energy, lengthPowerRef.current);
           const lenMax = Math.pow(255, lengthPowerRef.current);
-          const rDelta = p.map(lenEnergy, 0, lenMax, 0, energySpan);
 
-          const theta = semitoneToAngle(semitone);
+          // Octave lane fill: 0.5 means bars can touch the next octave boundary.
+          // >0.5 intentionally overlaps, <0.5 keeps lanes separated.
+          const rDeltaMax = Math.max(1, octaveSpacingPx * octaveLaneFillRef.current);
+          const rDelta = p.map(lenEnergy, 0, lenMax, 0, rDeltaMax);
 
-          // symmetric around baseRadius
-          const r1 = Math.max(0, baseRadius - rDelta);
-          const r2 = baseRadius + rDelta;
+          const r1 = Math.max(0, r - rDelta);
+          const r2 = r + rDelta;
 
           const x1 = cx + r1 * Math.cos(theta);
           const y1 = cy + r1 * Math.sin(theta);
@@ -219,61 +250,69 @@ export default function CircleGraphSpectrograph({
           p.line(x1, y1, x2, y2);
         }
 
-        // Draw note labels around the ring
+        // Labels (pitch classes at outside)
         if (showLabelsRef.current) {
           p.noStroke();
           p.fill(255);
           p.textAlign(p.CENTER, p.CENTER);
 
-          for (let k = 0; k < noteSemitones.length; k++) {
-            const s = noteSemitones[k];
+          for (let pc = 0; pc < 12; pc += 1) {
+            const theta = k * pc + angleOffset;
+            const lx = cx + (outerR + 40) * Math.cos(theta);
+            const ly = cy + (outerR + 40) * Math.sin(theta);
+            p.text(baseNotes[pc], lx, ly);
+          }
 
+          // Label the C's along the spiral
+          p.textAlign(p.LEFT, p.CENTER);
+          for (let s = Math.ceil(minS); s <= Math.floor(maxS); s += 1) {
+            if (mod(s, 12) !== 0) continue;
+            const r = semitoneToRadius(s);
             const theta = semitoneToAngle(s);
-
-            // stagger labels so they don't overlap
-            const pitchClass = mod(s, 12);
-            const stagger = pitchClass % 3; // 0,1,2
-            const labelRadius = baseRadius + energySpan + 22 + stagger * 14;
-
-            const x = cx + labelRadius * Math.cos(theta);
-            const y = cy + labelRadius * Math.sin(theta);
-
-            const octave = Math.floor(s / 12) - 1;
-            const noteName = `${baseNotes[pitchClass]}${octave}`;
-
-            p.text(noteName, x, y);
+            const x = cx + r * Math.cos(theta);
+            const y = cy + r * Math.sin(theta);
+            p.text(getNoteName(s), x + 6, y);
           }
         }
 
         if (showScrollRef.current) {
           const dx = p.mouseX - cx;
           const dy = p.mouseY - cy;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+          const rm = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist > minDim * 0.05 && dist < outerRadius) {
+          if (rm >= innerR && rm <= outerR) {
             const rawAngle = Math.atan2(dy, dx);
-            const angleNorm = normalizeAngle0ToTwoPi(rawAngle - angleOffset); // normalize in [0..2π] in the *unrotated* space
+            const angU = normalizeAngle0ToTwoPi(rawAngle - angleOffset);
 
-            const mouseSemitone = angleToSemitone(angleNorm);
+            // semitone-within-octave from angle (0..12)
+            const within = angU / k;
+
+            // rough semitone from radius (inverse of semitoneToRadius)
+            const sR = minS + ((rm - innerR) / octaveSpacingPx) * 12;
+
+            // choose octave that best matches radius
+            const n = Math.round((sR - within) / 12);
+            const mouseSemitone = clamp(within + 12 * n, minS, maxS);
+
             const freq = f0 * Math.pow(2, mouseSemitone / 12);
-
             const closestSemitone = Math.round(mouseSemitone);
             const octave = Math.floor(closestSemitone / 12) - 1;
             const closestNote = `${baseNotes[mod(closestSemitone, 12)]}${octave}`;
 
-            // cursor ray
-            const theta = rawAngle;
-            p.stroke(255, 255, 255);
-            p.strokeWeight(1);
-            p.line(cx, cy, cx + outerRadius * Math.cos(theta), cy + outerRadius * Math.sin(theta));
+            const r = semitoneToRadius(mouseSemitone);
+            const theta = semitoneToAngle(mouseSemitone);
+            const x = cx + r * Math.cos(theta);
+            const y = cy + r * Math.sin(theta);
 
-            // info box near mouse
+            p.stroke(255);
+            p.noFill();
+            p.circle(x, y, 10);
+
             p.noStroke();
             p.fill(255);
             p.textAlign(p.LEFT, p.BOTTOM);
-
             const tx = p.mouseX + 10;
-            const ty = p.mouseY - 20;
+            const ty = p.mouseY - 10;
             p.text(`${freq.toFixed(2)} Hz`, tx, ty);
             p.text(`${closestNote}`, tx, ty + 15);
             p.text(`${mouseSemitone.toFixed(1)} st`, tx, ty + 30);
@@ -284,7 +323,6 @@ export default function CircleGraphSpectrograph({
           p.noStroke();
           p.fill(255);
           p.textAlign(p.LEFT, p.BOTTOM);
-
           p.text(
             `Min Freq: ${minFreq.toFixed(2)} Hz (Semitone: ${minSemitoneRef.current} - ${getNoteName(
               minSemitoneRef.current
@@ -292,7 +330,6 @@ export default function CircleGraphSpectrograph({
             10,
             p.height - 60
           );
-
           p.text(
             `Max Freq: ${maxFreq.toFixed(2)} Hz (Semitone: ${maxSemitoneRef.current} - ${getNoteName(
               maxSemitoneRef.current
@@ -316,7 +353,7 @@ export default function CircleGraphSpectrograph({
 
   return (
     <div>
-      <h2>Circle Graph Spectrograph</h2>
+      <h2>Spiral Graph Spectrograph</h2>
 
       {/* Sliders */}
       <div className="has-border" style={{ width: '90%' }}>
@@ -377,6 +414,36 @@ export default function CircleGraphSpectrograph({
             step="0.01"
             value={lengthPower}
             onChange={(e) => setLengthPower(parseFloat(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
+        <div style={{ margin: '10px 10px' }}>
+          <label htmlFor="octaveSpacingSlider" className="control-label">
+            Octave spacing factor: {octaveSpacingFactor.toFixed(3)}
+          </label>
+          <input
+            id="octaveSpacingSlider"
+            type="range"
+            min="0.005"
+            max="0.08"
+            step="0.001"
+            value={octaveSpacingFactor}
+            onChange={(e) => setOctaveSpacingFactor(parseFloat(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
+        <div style={{ margin: '10px 10px' }}>
+          <label htmlFor="octaveLaneFillSlider" className="control-label">
+            Octave lane fill: {octaveLaneFill.toFixed(2)}
+          </label>
+          <input
+            id="octaveLaneFillSlider"
+            type="range"
+            min="0.05"
+            max="1.5"
+            step="0.01"
+            value={octaveLaneFill}
+            onChange={(e) => setOctaveLaneFill(parseFloat(e.target.value))}
             style={{ width: '100%' }}
           />
         </div>

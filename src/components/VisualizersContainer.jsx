@@ -31,11 +31,13 @@ import Loudness from './visualizers/Loudness';
 import ChromavectorBarGraph from './visualizers/ChromavectorBarGraph';
 import Posteriorgram from './visualizers/Posteriorgram';
 import CircleGraphSpectrograph from './visualizers/CircleGraphSpectrograph';
+import SpiralSpectrograph from './visualizers/SpiralSpectrograph';
 
 export default function VisualizersContainer({
   isPlaying,
   showBarSpectrograph,
   showCircleSpectrograph,
+  showSpiralSpectrograph,
   showWaterfallSpectrograph,
   showWaveform,
   bins,
@@ -101,7 +103,7 @@ export default function VisualizersContainer({
 
           {loudness && <Loudness loudness={audio.loudness} isPlaying={isPlaying} />}
 
-          {(showBarSpectrograph || showWaterfallSpectrograph || showCircleSpectrograph) && (
+          {(showBarSpectrograph || showWaterfallSpectrograph || showCircleSpectrograph || showSpiralSpectrograph) && (
             <>
               <SpectrographControls
                 bins={bins}
@@ -129,6 +131,16 @@ export default function VisualizersContainer({
 
               {showCircleSpectrograph && (
                 <CircleGraphSpectrograph
+                  showLabels={showLabels}
+                  showScroll={showScroll}
+                  audio={audio}
+                  noteHues={noteHues}
+                />
+              )}
+
+              {showSpiralSpectrograph && (
+                <SpiralSpectrograph
+                  isSpiral={true}
                   showLabels={showLabels}
                   showScroll={showScroll}
                   audio={audio}
