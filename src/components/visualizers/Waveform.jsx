@@ -16,113 +16,157 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import { createWaveformHistory } from '../../utils/waveformHistory';
+
+const MAX_SAMPLES = 1048576;
+const modules = new WeakMap();
 
 export default function Waveform({ audio }) {
-  const sketchRef = useRef();
-  const { analyser, dataArray } = audio;
-  const p5InstanceRef = useRef(null);
-
-  const [stretchFactor, setStretchFactor] = useState(1);
-
+  const sketchRef = useRef(null);
+  const { analyser } = audio;
+  const historyRef = useRef(null);
+  if (!historyRef.current) historyRef.current = createWaveformHistory(MAX_SAMPLES);
+  const [windowSamples, setWindowSamples] = useState(2048);
   const [verticalStretchFactor, setVerticalStretchFactor] = useState(1);
-
-  const stretchFactorRef = useRef(stretchFactor);
-  const verticalStretchFactorRef = useRef(verticalStretchFactor);
-
-  useEffect(() => {
-    stretchFactorRef.current = stretchFactor;
-  }, [stretchFactor]);
+  const [error, setError] = useState('');
+  const settingsRef = useRef(null);
+  const sampleRate = analyser?.context.sampleRate || audio.sampleRate || 44100;
 
   useEffect(() => {
-    verticalStretchFactorRef.current = verticalStretchFactor;
-  }, [verticalStretchFactor]);
+    settingsRef.current = { windowSamples, verticalStretchFactor };
+  }, [windowSamples, verticalStretchFactor]);
 
   useEffect(() => {
-    if (!analyser || !dataArray) return;
-
-    const sketch = (p) => {
-      let canvas;
-      let width;
-      const baseHeight = 400;
-
-      p.setup = () => {
-        width = sketchRef.current.offsetWidth;
-        canvas = p.createCanvas(width, baseHeight);
-        canvas.parent(sketchRef.current);
-        p.pixelDensity(window.devicePixelRatio || 1);
-        p.frameRate(120);
-      };
-
-      p.windowResized = () => {
-        width = sketchRef.current.offsetWidth;
-        p.resizeCanvas(width, baseHeight);
-      };
-
-      p.draw = () => {
-        const currentStretchFactor = stretchFactorRef.current;
-        const currentVerticalStretchFactor = verticalStretchFactorRef.current;
-        p.background(0);
-
-        p.push();
-        p.translate(-p.width * (currentStretchFactor - 1), (-baseHeight * (currentVerticalStretchFactor - 1)) / 2);
-        p.scale(currentStretchFactor, currentVerticalStretchFactor);
-
-        analyser.getByteTimeDomainData(dataArray);
-        const middle = p.height / 2;
-
-        p.stroke(255, 255, 255);
-        p.strokeWeight(1);
-        p.noFill();
-        p.beginShape();
-
-        for (let i = 0; i < dataArray.length; i++) {
-          const x = (i / dataArray.length) * p.width;
-          const y = middle + ((dataArray[i] - 128) / 128) * middle;
-          p.curveVertex(x, y);
+    if (!analyser) return;
+    const context = analyser.context;
+    let cancelled = false;
+    let node;
+    historyRef.current = createWaveformHistory(MAX_SAMPLES);
+    setError('');
+    async function connect() {
+      try {
+        if (!context.audioWorklet) throw new Error('AudioWorklet unavailable');
+        if (!modules.has(context)) {
+          const loading = context.audioWorklet.addModule(`${import.meta.env.BASE_URL}waveform-processor.js`);
+          modules.set(context, loading);
+          loading.catch(() => modules.delete(context));
         }
-        p.endShape();
-        p.pop();
-      };
-    };
-
-    p5InstanceRef.current = new window.p5(sketch);
-
+        await modules.get(context);
+        if (cancelled) return;
+        node = new AudioWorkletNode(context, 'waveform-processor', {
+          channelCount: 1,
+          channelCountMode: 'explicit',
+        });
+        node.port.onmessage = ({ data }) => historyRef.current.append(data);
+        analyser.connect(node);
+        node.connect(context.destination);
+      } catch {
+        if (!cancelled)
+          setError('Waveform capture could not start. Try reloading in a browser with AudioWorklet support.');
+      }
+    }
+    connect();
     return () => {
-      if (p5InstanceRef.current) {
-        p5InstanceRef.current.remove();
-        p5InstanceRef.current = null;
+      cancelled = true;
+      if (node) {
+        analyser.disconnect(node);
+        node.disconnect();
+        node.port.onmessage = null;
+        node.port.close();
       }
     };
-  }, [analyser, dataArray]);
+  }, [analyser]);
+
+  useEffect(() => {
+    const container = sketchRef.current;
+    let resize;
+    const sketch = (p) => {
+      const height = 400;
+      p.setup = () => {
+        const canvas = p.createCanvas(Math.max(1, container.offsetWidth), height);
+        canvas.parent(container);
+        canvas.style('display', 'block');
+        canvas.attribute('aria-hidden', 'true');
+        p.pixelDensity(window.devicePixelRatio || 1);
+        p.frameRate(60);
+        resize = new ResizeObserver(([entry]) => {
+          p.resizeCanvas(Math.max(1, entry.contentRect.width), height);
+        });
+        resize.observe(container);
+      };
+      p.draw = () => {
+        const { windowSamples, verticalStretchFactor } = settingsRef.current;
+        const { envelope, points } = historyRef.current.view(windowSamples, p.width);
+        const middle = height / 2;
+        const y = (sample) => middle - sample * middle * verticalStretchFactor;
+        p.background(0);
+        p.stroke(255);
+        p.strokeWeight(1);
+        p.noFill();
+        if (envelope) {
+          // Every sample contributes to its pixel's range, preserving peaks when zoomed out.
+          const xAt = (i) => (points.length === 1 ? p.width / 2 : (i / (points.length - 1)) * (p.width - 1));
+          for (let i = 0; i < points.length; i++) {
+            const x = xAt(i);
+            // Join consecutive buckets at their boundary samples. Single-sample buckets
+            // have zero-height ranges, so isolated min/max bars would leave gaps.
+            if (i > 0) {
+              p.line(xAt(i - 1), y(points[i - 1].last), x, y(points[i].first));
+            }
+            p.line(x, y(points[i].min), x, y(points[i].max));
+          }
+        } else if (points.length === 1) {
+          p.line(0, y(points[0].min), p.width, y(points[0].min));
+        } else {
+          p.beginShape();
+          for (let i = 0; i < points.length; i++) {
+            const x = (i / (points.length - 1)) * p.width;
+            p.vertex(x, y(points[i].min));
+          }
+          p.endShape();
+        }
+      };
+    };
+    const instance = new window.p5(sketch);
+    return () => {
+      resize?.disconnect();
+      instance.remove();
+    };
+  }, []);
 
   return (
     <div style={{ marginBottom: '200px' }}>
-      {/* Waveform Canvas */}
       <h2>Waveform</h2>
-
-      {/* Slider for Horizontal Stretch Factor */}
       <div className="has-border" style={{ width: '90%' }}>
         <div style={{ margin: '10px 10px' }}>
-          <label htmlFor="horizontalStretchSlider" className="control-label">
-            Horizontal Stretch coefficient: {stretchFactor.toFixed(2)}x
+          <label htmlFor="waveformWindowSlider" className="control-label">
+            Visible window: {windowSamples.toLocaleString()} samples ·{' '}
+            {((windowSamples / sampleRate) * 1000).toFixed(2)} ms
           </label>
           <input
-            id="horizontalStretchSlider"
+            id="waveformWindowSlider"
             type="range"
-            min="0.5"
-            max="20"
-            step="0.01"
-            value={stretchFactor}
-            onChange={(e) => setStretchFactor(parseFloat(e.target.value))}
+            min="0"
+            max="1"
+            step="any"
+            value={Math.sqrt((windowSamples - 1) / (MAX_SAMPLES - 1))}
+            aria-valuetext={`${windowSamples.toLocaleString()} samples, ${((windowSamples / sampleRate) * 1000).toFixed(2)} milliseconds`}
+            onChange={(e) => {
+              // A quadratic curve gives small windows more slider travel without abrupt changes.
+              const position = Number(e.target.value);
+              setWindowSamples(1 + Math.round(position ** 2 * (MAX_SAMPLES - 1)));
+            }}
+            onKeyDown={(e) => {
+              // Suppress native slider movement without stopping synthesizer key events.
+              if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault();
+            }}
             style={{ width: '100%' }}
           />
         </div>
-
-        {/* Slider for Vertical Stretch Factor */}
         <div style={{ margin: '10px 10px' }}>
           <label htmlFor="verticalStretchSlider" className="control-label">
-            Vertical Stretch coefficient: {verticalStretchFactor.toFixed(2)}x
+            Vertical scale: {verticalStretchFactor.toFixed(2)}×
           </label>
           <input
             id="verticalStretchSlider"
@@ -136,7 +180,13 @@ export default function Waveform({ audio }) {
           />
         </div>
       </div>
-      <div ref={sketchRef} style={{ width: '100%' }}></div>
+      {error && <p role="alert">{error}</p>}
+      <div
+        ref={sketchRef}
+        role="img"
+        aria-label="Audio waveform, oldest samples on the left and latest on the right"
+        style={{ width: '100%' }}
+      />
     </div>
   );
 }
