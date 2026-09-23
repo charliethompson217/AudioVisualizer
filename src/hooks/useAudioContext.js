@@ -178,7 +178,7 @@ export function useAudioContext(mp3File, useMic, muteMic, isPlaying, synthesizer
     return audioElementRef.current ? audioElementRef.current.currentTime : 0;
   }, []);
 
-  const startTabCapture = useCallback(async () => {
+  const startScreenCapture = useCallback(async () => {
     if (!audioContextRef.current) return;
 
     try {
@@ -200,7 +200,7 @@ export function useAudioContext(mp3File, useMic, muteMic, isPlaying, synthesizer
         try {
           sourceRef.current.disconnect();
         } catch (e) {
-          console.error('Error disconnecting previous source during tab capture start:', e);
+          console.error('Error disconnecting previous source during screen capture start:', e);
         }
       }
       if (tabStreamRef.current) {
@@ -223,13 +223,13 @@ export function useAudioContext(mp3File, useMic, muteMic, isPlaying, synthesizer
       outputGainNodeRef.current.gain.value = 0;
     } catch (err) {
       if (err.name !== 'NotAllowedError') {
-        console.error('Tab capture failed:', err);
+        console.error('Screen capture failed:', err);
         alert(`Capture failed: ${err.message || err.name}`);
       }
     }
   }, []);
 
-  const stopTabCapture = useCallback(() => {
+  const stopScreenCapture = useCallback(() => {
     if (tabStreamRef.current) {
       tabStreamRef.current.getTracks().forEach((track) => track.stop());
       tabStreamRef.current = null;
@@ -238,7 +238,7 @@ export function useAudioContext(mp3File, useMic, muteMic, isPlaying, synthesizer
       try {
         sourceRef.current.disconnect();
       } catch (e) {
-        console.error('Error disconnecting source during tab capture stop:', e);
+        console.error('Error disconnecting source during screen capture stop:', e);
       }
       sourceRef.current = null;
     }
@@ -255,7 +255,7 @@ export function useAudioContext(mp3File, useMic, muteMic, isPlaying, synthesizer
     seek,
     getCurrentTime,
     source: mixerNodeRef.current,
-    startTabCapture,
-    stopTabCapture,
+    startScreenCapture,
+    stopScreenCapture,
   };
 }

@@ -66,8 +66,8 @@ export function useAudio(
     seek,
     getCurrentTime,
     source,
-    startTabCapture,
-    stopTabCapture,
+    startScreenCapture,
+    stopScreenCapture,
   } = useAudioContext(mp3File, useMic, muteMic, isPlaying, synthRef.current);
 
   // Initialize and manage synthesizer
@@ -222,7 +222,7 @@ export function useAudio(
     conversionComplete,
     progress,
     essentiaFeatures,
-    startTabCapture,
-    stopTabCapture,
+    startScreenCapture,
+    stopScreenCapture,
   };
 }

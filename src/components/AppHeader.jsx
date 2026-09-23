@@ -16,17 +16,27 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-export default function Footer() {
+import { NavLink } from 'react-router-dom';
+
+export default function AppHeader() {
   return (
-    <footer className="app-footer">
-      <span>
-        Audio Visualizer <span aria-hidden="true">/</span> An open exploration of sound.
-      </span>
-      <Link to="/about">
-        About & credits <span aria-hidden="true">↗</span>
-      </Link>
-    </footer>
+    <header className="app-header">
+      <NavLink to="/" className="app-brand" aria-label="Audio Visualizer home">
+        <span className="brand-mark" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+        </span>
+        <span>Audio Visualizer</span>
+      </NavLink>
+      <nav aria-label="Main navigation">
+        <NavLink to="/" end>
+          Workspace
+        </NavLink>
+        <NavLink to="/about">About</NavLink>
+      </nav>
+    </header>
   );
 }

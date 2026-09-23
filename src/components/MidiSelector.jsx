@@ -72,20 +72,10 @@ export default function MidiSelector({
   };
 
   return (
-    <div style={{ maxWidth: '100%' }}>
-      <label style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-        Select MIDI:
-        <select
-          value={selectedMidiFileName}
-          onChange={handleMidiSelect}
-          style={{
-            marginTop: '5px',
-            width: '100%',
-            maxWidth: '100%',
-            boxSizing: 'border-box',
-          }}
-          className="song-select"
-        >
+    <div className="library-selector">
+      <label className="source-label">
+        MIDI library
+        <select value={selectedMidiFileName} onChange={handleMidiSelect} className="song-select">
           <option value="">Choose from library</option>
           {midis
             .sort((a, b) => a.title.localeCompare(b.title))
@@ -97,7 +87,7 @@ export default function MidiSelector({
         </select>
       </label>
       {isLoading && <p>Loading MIDI...</p>}
-      <p style={{ maxWidth: '100%', wordWrap: 'break-word' }}>
+      <p className="field-hint">
         All MIDI files are from <a href="https://www.mutopiaproject.org">Mutopia Project</a>
       </p>
     </div>

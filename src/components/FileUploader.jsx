@@ -55,32 +55,11 @@ export default function FileUploader({
   };
 
   return (
-    <div
-      style={{
-        maxWidth: '30vw',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '10px',
-      }}
-    >
-      <button
-        style={{
-          backgroundColor: '#1e1e1e',
-          color: 'rgb(170, 170, 170)',
-          padding: '10px',
-          border: '1px solid #444',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontSize: '16px',
-          transition: 'background-color 0.3s ease',
-        }}
-        onClick={triggerFileInput}
-        onMouseOver={(e) => (e.target.style.backgroundColor = '#444')}
-        onMouseOut={(e) => (e.target.style.backgroundColor = '#1e1e1e')}
-      >
-        Upload Audio or MIDI
+    <div className="file-uploader">
+      <button className="control-button upload-button" onClick={triggerFileInput}>
+        <span aria-hidden="true">↑</span> Upload audio or MIDI
       </button>
+      <span className="field-hint">MP3, WAV, OGG, MID</span>
       <input
         ref={fileInputRef}
         type="file"

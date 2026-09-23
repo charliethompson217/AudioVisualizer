@@ -18,33 +18,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import AppHeader from '../components/AppHeader.jsx';
+import Footer from '../components/Footer.jsx';
 
 export default function NotFound() {
   return (
-    <div
-      style={{
-        padding: '20px',
-        maxWidth: '600px',
-        margin: '100px auto',
-        textAlign: 'center',
-      }}
-    >
-      <h1>404 - Page Not Found</h1>
-      <p>The page you are looking for doesn't exist or has been moved.</p>
-      <div style={{ marginTop: '30px' }}>
-        <Link
-          to="/"
-          style={{
-            color: '#0077cc',
-            textDecoration: 'none',
-            padding: '10px 20px',
-            background: '#f2f2f2',
-            borderRadius: '4px',
-          }}
-        >
-          Return to Home
-        </Link>
-      </div>
-    </div>
+    <>
+      <AppHeader />
+      <main className="information-page not-found">
+        <p className="eyebrow">404 / Out of range</p>
+        <h1>404 - Page Not Found</h1>
+        <p>The page you are looking for doesn't exist or has been moved.</p>
+        <div style={{ marginTop: '30px' }}>
+          <Link to="/" className="control-button back-link">
+            Return to Home
+          </Link>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

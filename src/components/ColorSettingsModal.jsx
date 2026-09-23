@@ -76,8 +76,8 @@ export default function ColorSettingsModal({ noteHues, setNoteHues, setShowColor
 
   return (
     <div className="color-settings-modal">
-      <div className="color-settings-content">
-        <h2>Note Color Settings</h2>
+      <div className="color-settings-content" role="dialog" aria-modal="true" aria-labelledby="color-settings-title">
+        <h2 id="color-settings-title">Note color settings</h2>
         <div
           className="color-sliders"
           style={{

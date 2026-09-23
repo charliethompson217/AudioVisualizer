@@ -91,170 +91,95 @@ export default function VisualizationToggles({
     setMeydaFeaturesToExtract,
   ]);
 
+  const groups = [
+    {
+      title: 'Spectrum',
+      items: [
+        ['Waveform', showWaveform, setShowWaveform],
+        ['Bar spectrograph', showBarSpectrograph, setShowBarSpectrograph],
+        ['Circle spectrograph', showCircleSpectrograph, setShowCircleSpectrograph],
+        ['Spiral spectrograph', showSpiralSpectrograph, setShowSpiralSpectrograph],
+        ['Waterfall spectrograph', showWaterfallSpectrograph, setShowWaterfallSpectrograph],
+      ],
+    },
+    {
+      title: 'Pitch & synthesis',
+      items: [
+        ['Synthesizer', pianoEnabled, setPianoEnabled],
+        ['Chroma circle', chromaCircle, setChromaCircle],
+        ['Chroma line', chromaLine, setChromaLine],
+        ['Chroma bars', chromaBar, setChromaBar],
+      ],
+    },
+    {
+      title: 'Measurements',
+      items: [
+        ['RMS', rms, setRms],
+        ['Spectral centroid + spread', spectralSpreadGraph, setSpectralSpreadGraph],
+        ['Perceptual loudness', loudness, setLoudness],
+      ],
+    },
+  ];
+
   return (
     <div className="visualization-toggles">
-      {!isPlaying && (
-        <>
-          <div className="control-label">
-            <input
-              className="control-checkbox"
-              type="checkbox"
-              checked={generateBrowserMIDI}
-              onChange={() => setGenerateBrowserMIDI(!generateBrowserMIDI)}
-            />
-            <label style={{ pointerEvents: 'none', cursor: 'default' }}>Generate MIDI</label>
-          </div>
-          {generateBrowserMIDI && (
-            <div className="control-label">
+      <div className="toggle-groups">
+        {groups.map(({ title, items }) => (
+          <fieldset className="toggle-group" key={title}>
+            <legend>{title}</legend>
+            {items.map(([label, checked, setChecked]) => (
+              <label className="toggle-option" key={label}>
+                <input type="checkbox" checked={checked} onChange={() => setChecked(!checked)} />
+                <span>{label}</span>
+              </label>
+            ))}
+          </fieldset>
+        ))}
+      </div>
+      <div className="analysis-options">
+        {!isPlaying && (
+          <>
+            <label className="toggle-option">
               <input
-                className="control-checkbox"
                 type="checkbox"
-                checked={showPosteriorgram}
-                onChange={() => setShowPosteriorgram(!showPosteriorgram)}
+                checked={generateBrowserMIDI}
+                onChange={() => setGenerateBrowserMIDI(!generateBrowserMIDI)}
               />
-              <label style={{ pointerEvents: 'none', cursor: 'default' }}>Show Posteriorgram</label>
-            </div>
-          )}
-          <div className="control-label">
-            <input
-              className="control-checkbox"
-              type="checkbox"
-              checked={bpmAndKey}
-              onChange={() => setBpmAndKey(!bpmAndKey)}
-            />
-            <label style={{ pointerEvents: 'none', cursor: 'default' }}>BPM and Key</label>
-          </div>
-        </>
-      )}
-      <div className="control-label">
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={showWaveform}
-          onChange={() => setShowWaveform(!showWaveform)}
-        />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Waveform</label>
+              <span>Generate MIDI</span>
+            </label>
+            {generateBrowserMIDI && (
+              <label className="toggle-option">
+                <input
+                  type="checkbox"
+                  checked={showPosteriorgram}
+                  onChange={() => setShowPosteriorgram(!showPosteriorgram)}
+                />
+                <span>Show posteriorgram</span>
+              </label>
+            )}
+            <label className="toggle-option">
+              <input type="checkbox" checked={bpmAndKey} onChange={() => setBpmAndKey(!bpmAndKey)} />
+              <span>BPM & key</span>
+            </label>
+          </>
+        )}
+        <label className="buffer-control">
+          <span>Meyda buffer size</span>
+          <select value={meydaBufferSize} onChange={(e) => setMeydaBufferSize(parseInt(e.target.value, 10))}>
+            {[512, 1024, 2048, 4096, 8192, 16384].map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
+        </label>
+        {useMic && (
+          <label className="toggle-option">
+            <input type="checkbox" checked={muteMic} onChange={() => setMuteMic(!muteMic)} />
+            <span>Mute microphone</span>
+          </label>
+        )}
       </div>
-      <div className="control-label">
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={showBarSpectrograph}
-          onChange={() => setShowBarSpectrograph(!showBarSpectrograph)}
-        />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Bar graph Spectrograph</label>
-      </div>
-      <div className="control-label">
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={showCircleSpectrograph}
-          onChange={() => setShowCircleSpectrograph(!showCircleSpectrograph)}
-        />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Circle graph Spectrograph</label>
-      </div>
-      <div className="control-label">
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={showSpiralSpectrograph}
-          onChange={() => setShowSpiralSpectrograph(!showSpiralSpectrograph)}
-        />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Spiral graph Spectrograph</label>
-      </div>
-      <div className="control-label">
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={showWaterfallSpectrograph}
-          onChange={() => setShowWaterfallSpectrograph(!showWaterfallSpectrograph)}
-        />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Waterfall Spectrograph</label>
-      </div>
-      <div className="control-label">
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={pianoEnabled}
-          onChange={() => setPianoEnabled(!pianoEnabled)}
-        />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Synthesizer</label>
-      </div>
-      <div className="control-label">
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={chromaCircle}
-          onChange={() => setChromaCircle(!chromaCircle)}
-        />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Chroma Circle Graph</label>
-      </div>
-      <div className="control-label">
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={chromaLine}
-          onChange={() => setChromaLine(!chromaLine)}
-        />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Chroma Line Graph</label>
-      </div>
-      <div className="control-label">
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={chromaBar}
-          onChange={() => setChromaBar(!chromaBar)}
-        />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Chroma Bar Graph</label>
-      </div>
-      <div className="control-label">
-        <input className="control-checkbox" type="checkbox" checked={rms} onChange={() => setRms(!rms)} />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>RMS</label>
-      </div>
-      <div className="control-label">
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={spectralSpreadGraph}
-          onChange={() => setSpectralSpreadGraph(!spectralSpreadGraph)}
-        />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Spectral Centroid + Spread Graph</label>
-      </div>
-      <div className="control-label">
-        <input
-          className="control-checkbox"
-          type="checkbox"
-          checked={loudness}
-          onChange={() => setLoudness(!loudness)}
-        />
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Perceptual Loudness</label>
-      </div>
-      <div className="control-label">
-        <select
-          value={meydaBufferSize}
-          onChange={() => setMeydaBufferSize(parseInt(e.target.value, 10))}
-          style={{
-            paddingLeft: '5px',
-            paddingRight: '5px',
-            backgroundColor: '#1e1e1e',
-            color: 'rgb(170, 170, 170)',
-            border: '1px solid #444',
-          }}
-        >
-          {[512, 1024, 2048, 4096, 8192, 16384].map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-        <label style={{ pointerEvents: 'none', cursor: 'default' }}>Meyda Buffer Size</label>
-      </div>
-      {useMic && (
-        <div className="control-label">
-          <input className="control-checkbox" type="checkbox" checked={muteMic} onChange={() => setMuteMic(!muteMic)} />
-          <label style={{ pointerEvents: 'none', cursor: 'default' }}>Mute</label>
-        </div>
-      )}
     </div>
   );
 }

@@ -30,6 +30,7 @@ import VisualizersContainer from './components/VisualizersContainer.jsx';
 import SongInfo from './components/SongInfo.jsx';
 import Footer from './components/Footer.jsx';
 import MidiSelector from './components/MidiSelector.jsx';
+import AppHeader from './components/AppHeader.jsx';
 
 export default function CoreApp() {
   const defaultNoteHues = [0, 25, 45, 75, 110, 166, 190, 210, 240, 270, 300, 330];
@@ -196,7 +197,7 @@ export default function CoreApp() {
     midiNotes,
     basicPitchData,
     essentiaFeatures,
-    startTabCapture,
+    startScreenCapture,
   } = audio;
 
   const handleSongSelect = async (selectedFileName, file, songName) => {
@@ -276,8 +277,112 @@ export default function CoreApp() {
     };
   }, [isPlaying, isPaused, audio.duration, audio.getCurrentTime]);
 
+  // Stable keys preserve control state when the session changes the panel order.
+  const displayControls = (
+    <div key="display-controls" className={`responsive-controls-container ${pianoEnabled ? 'with-keyboard' : ''}`}>
+      <section className="controls-panel" aria-labelledby="views-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">02 / Display</p>
+            <h2 id="views-title">Make it visible</h2>
+          </div>
+          <button className="text-button" onClick={() => setShowColorSettings(true)}>
+            Color settings <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+        <VisualizationToggles
+          bpmAndKey={bpmAndKey}
+          setBpmAndKey={setBpmAndKey}
+          showWaveform={showWaveform}
+          setShowWaveform={setShowWaveform}
+          showBarSpectrograph={showBarSpectrograph}
+          setShowBarSpectrograph={setShowBarSpectrograph}
+          showCircleSpectrograph={showCircleSpectrograph}
+          setShowCircleSpectrograph={setShowCircleSpectrograph}
+          showSpiralSpectrograph={showSpiralSpectrograph}
+          setShowSpiralSpectrograph={setShowSpiralSpectrograph}
+          showWaterfallSpectrograph={showWaterfallSpectrograph}
+          setShowWaterfallSpectrograph={setShowWaterfallSpectrograph}
+          pianoEnabled={pianoEnabled}
+          setPianoEnabled={setPianoEnabled}
+          chromaCircle={chromaCircle}
+          setChromaCircle={setChromaCircle}
+          chromaLine={chromaLine}
+          setChromaLine={setChromaLine}
+          chromaBar={chromaBar}
+          setChromaBar={setChromaBar}
+          rms={rms}
+          setRms={setRms}
+          loudness={loudness}
+          setLoudness={setLoudness}
+          spectralSpreadGraph={spectralSpreadGraph}
+          setSpectralSpreadGraph={setSpectralSpreadGraph}
+          isPlaying={isPlaying}
+          useMic={useMic}
+          muteMic={muteMic}
+          setMuteMic={setMuteMic}
+          meydaBufferSize={meydaBufferSize}
+          setMeydaBufferSize={setMeydaBufferSize}
+          meydaFeaturesToExtract={meydaFeaturesToExtract}
+          setMeydaFeaturesToExtract={setMeydaFeaturesToExtract}
+          generateBrowserMIDI={generateBrowserMIDI}
+          setGenerateBrowserMIDI={setGenerateBrowserMIDI}
+          showPosteriorgram={showPosteriorgram}
+          setShowPosteriorgram={setShowPosteriorgram}
+        />
+      </section>
+      {pianoEnabled && (
+        <section className="keyboard-panel" aria-labelledby="keyboard-title">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">03 / Play an instrument</p>
+              <h2 id="keyboard-title">At your fingertips</h2>
+            </div>
+          </div>
+          <p className="keyboard-hint">Start playback, then use your computer keyboard to play.</p>
+          <div className="keyboard-container">
+            <KeyboardSVG noteHues={noteHues} />
+          </div>
+        </section>
+      )}
+    </div>
+  );
+  const sessionInfo = (
+    <div key="session-info">
+      {(isPlaying || currentSongName) && (
+        <SongInfo
+          currentSongName={currentSongName}
+          isProcessing={isProcessing}
+          bpm={bpm}
+          scaleKey={scaleKey}
+          essentiaFeatures={essentiaFeatures}
+          mp3File={mp3File}
+        />
+      )}
+      <PlaybackControls
+        isPlaying={isPlaying}
+        isPaused={isPaused}
+        handleStartStop={handleStartStop}
+        handlePauseResume={handlePauseResume}
+        currentTime={currentTime}
+        duration={audio.duration}
+        seek={audio.seek}
+        conversionComplete={conversionComplete}
+        fetchingSong={fetchingSong}
+        progress={progress}
+        isConverting={isConverting}
+        useMic={useMic}
+        setUseMic={setUseMic}
+        setMp3File={setMp3File}
+        setMidiFile={setMidiFile}
+        handleStartStopWithMic={handleStartStopWithMic}
+      />
+    </div>
+  );
+
   return (
     <div className="App">
+      <AppHeader />
       <div className="main-container">
         {showColorSettings && (
           <ColorSettingsModal
@@ -289,34 +394,34 @@ export default function CoreApp() {
         )}
 
         {!isPlaying && (
-          <div>
-            <div className="song-selector-container" style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
-              <button
-                style={{
-                  backgroundColor: '#1e1e1e',
-                  color: 'rgb(170, 170, 170)',
-                  border: '1px solid #444',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  transition: 'background-color 0.3s ease',
-                }}
-                onClick={() => {
-                  startTabCapture();
-                  handleStartStop();
-                }}
-              >
-                Tab Capture
-              </button>
+          <section className="source-panel" aria-labelledby="source-title">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">01 / Audio source</p>
+                <h2 id="source-title">Choose your sound</h2>
+              </div>
+              <p>Open a file, explore the library, or capture live audio.</p>
+            </div>
+            <div className="source-grid">
+              <div className="source-actions">
+                <FileUploader
+                  setCurrentSongName={setCurrentSongName}
+                  setMidiFile={setMidiFile}
+                  setMp3File={setMp3File}
+                  setPianoEnabled={setPianoEnabled}
+                  setSelectedSongFileName={setSelectedSongFileName}
+                />
 
-              <FileUploader
-                setCurrentSongName={setCurrentSongName}
-                setMidiFile={setMidiFile}
-                setMp3File={setMp3File}
-                setPianoEnabled={setPianoEnabled}
-                setSelectedSongFileName={setSelectedSongFileName}
-              />
-
+                <button
+                  className="control-button capture-button"
+                  onClick={() => {
+                    startScreenCapture();
+                    handleStartStop();
+                  }}
+                >
+                  <span aria-hidden="true">↗</span> Screen Capture
+                </button>
+              </div>
               <SongSelector
                 onSongSelect={handleSongSelect}
                 selectedSongFileName={selectedSongFileName}
@@ -333,94 +438,15 @@ export default function CoreApp() {
                 setFetchingMidi={setFetchingSong}
               />
             </div>
-          </div>
+          </section>
         )}
 
-        <div className="responsive-controls-container">
-          <div className="controls-panel">
-            <VisualizationToggles
-              bpmAndKey={bpmAndKey}
-              setBpmAndKey={setBpmAndKey}
-              showWaveform={showWaveform}
-              setShowWaveform={setShowWaveform}
-              showBarSpectrograph={showBarSpectrograph}
-              setShowBarSpectrograph={setShowBarSpectrograph}
-              showCircleSpectrograph={showCircleSpectrograph}
-              setShowCircleSpectrograph={setShowCircleSpectrograph}
-              showSpiralSpectrograph={showSpiralSpectrograph}
-              setShowSpiralSpectrograph={setShowSpiralSpectrograph}
-              showWaterfallSpectrograph={showWaterfallSpectrograph}
-              setShowWaterfallSpectrograph={setShowWaterfallSpectrograph}
-              pianoEnabled={pianoEnabled}
-              setPianoEnabled={setPianoEnabled}
-              chromaCircle={chromaCircle}
-              setChromaCircle={setChromaCircle}
-              chromaLine={chromaLine}
-              setChromaLine={setChromaLine}
-              chromaBar={chromaBar}
-              setChromaBar={setChromaBar}
-              rms={rms}
-              setRms={setRms}
-              loudness={loudness}
-              setLoudness={setLoudness}
-              spectralSpreadGraph={spectralSpreadGraph}
-              setSpectralSpreadGraph={setSpectralSpreadGraph}
-              isPlaying={isPlaying}
-              useMic={useMic}
-              muteMic={muteMic}
-              setMuteMic={setMuteMic}
-              meydaBufferSize={meydaBufferSize}
-              setMeydaBufferSize={setMeydaBufferSize}
-              meydaFeaturesToExtract={meydaFeaturesToExtract}
-              setMeydaFeaturesToExtract={setMeydaFeaturesToExtract}
-              generateBrowserMIDI={generateBrowserMIDI}
-              setGenerateBrowserMIDI={setGenerateBrowserMIDI}
-              showPosteriorgram={showPosteriorgram}
-              setShowPosteriorgram={setShowPosteriorgram}
-            />
-
-            <button className="control-button" onClick={() => setShowColorSettings(true)}>
-              Color Settings
-            </button>
+        {isPlaying ? [displayControls, sessionInfo] : [sessionInfo, displayControls]}
+        {warning && (
+          <div className="notice" role="status">
+            {warning}
           </div>
-          <div className="keyboard-panel">
-            {pianoEnabled && (
-              <div className="keyboard-container">
-                <KeyboardSVG noteHues={noteHues} />
-              </div>
-            )}
-          </div>
-        </div>
-        {(isPlaying || currentSongName) && (
-          <SongInfo
-            currentSongName={currentSongName}
-            isProcessing={isProcessing}
-            bpm={bpm}
-            scaleKey={scaleKey}
-            essentiaFeatures={essentiaFeatures}
-            mp3File={mp3File}
-          />
         )}
-        <PlaybackControls
-          isPlaying={isPlaying}
-          isPaused={isPaused}
-          handleStartStop={handleStartStop}
-          handlePauseResume={handlePauseResume}
-          currentTime={currentTime}
-          duration={audio.duration}
-          seek={audio.seek}
-          conversionComplete={conversionComplete}
-          fetchingSong={fetchingSong}
-          progress={progress}
-          isConverting={isConverting}
-          useMic={useMic}
-          setUseMic={setUseMic}
-          setMp3File={setMp3File}
-          setMidiFile={setMidiFile}
-          handleStartStopWithMic={handleStartStopWithMic}
-        />
-
-        {warning && <div>{warning}</div>}
       </div>
 
       <VisualizersContainer

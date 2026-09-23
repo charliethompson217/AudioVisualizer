@@ -89,7 +89,7 @@ export default function SynthesizerSettings({
 
   if (!showSettings) {
     return (
-      <label>
+      <label className="synthesizer-collapsed">
         <input type="checkbox" checked={showSettings} onChange={() => setShowSettings(!showSettings)} />
         Show Synthesizer Settings
       </label>
@@ -98,10 +98,15 @@ export default function SynthesizerSettings({
 
   return (
     <div className="synthesizer-settings">
-      <h2>
-        Synthesizer Settings
-        <input type="checkbox" checked={showSettings} onChange={() => setShowSettings(!showSettings)} />
-      </h2>
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Instrument / Sound design</p>
+          <h2>Synthesizer settings</h2>
+        </div>
+        <label className="settings-visibility">
+          <input type="checkbox" checked={showSettings} onChange={() => setShowSettings(!showSettings)} /> Show settings
+        </label>
+      </div>
 
       {/* Synthesis Mode Selection */}
       <div className="synthesis-mode">
@@ -157,79 +162,81 @@ export default function SynthesizerSettings({
               ))}
             </div>
           </div>
-          <h3>ADSR Envelopes</h3>
-          <div>
-            <label>
-              Attack Time: {attackTime.toFixed(4)}s
-              <input
-                type="range"
-                min="0.001"
-                max="2"
-                step="0.001"
-                value={attackTime}
-                onChange={(e) => updateSetting('attackTime', parseFloat(e.target.value))}
-                className="harmonic-slider"
-              />
-            </label>
-            <div className="curve-selection">
+          <section className="envelope-controls">
+            <h3>ADSR envelopes</h3>
+            <div>
               <label>
+                Attack Time: {attackTime.toFixed(4)}s
                 <input
-                  type="radio"
-                  name="attackCurve"
-                  value="linear"
-                  checked={attackCurve === 'linear'}
-                  onChange={() => updateSetting('attackCurve', 'linear')}
+                  type="range"
+                  min="0.001"
+                  max="2"
+                  step="0.001"
+                  value={attackTime}
+                  onChange={(e) => updateSetting('attackTime', parseFloat(e.target.value))}
+                  className="harmonic-slider"
                 />
-                Linear
               </label>
-              <label>
-                <input
-                  type="radio"
-                  name="attackCurve"
-                  value="exponential"
-                  checked={attackCurve === 'exponential'}
-                  onChange={() => updateSetting('attackCurve', 'exponential')}
-                />
-                Exponential
-              </label>
+              <div className="curve-selection">
+                <label>
+                  <input
+                    type="radio"
+                    name="attackCurve"
+                    value="linear"
+                    checked={attackCurve === 'linear'}
+                    onChange={() => updateSetting('attackCurve', 'linear')}
+                  />
+                  Linear
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="attackCurve"
+                    value="exponential"
+                    checked={attackCurve === 'exponential'}
+                    onChange={() => updateSetting('attackCurve', 'exponential')}
+                  />
+                  Exponential
+                </label>
+              </div>
             </div>
-          </div>
-          <div>
-            <label>
-              Release Time: {releaseTime.toFixed(4)}s
-              <input
-                type="range"
-                min="0.001"
-                max="5"
-                step="0.001"
-                value={releaseTime}
-                onChange={(e) => updateSetting('releaseTime', parseFloat(e.target.value))}
-                className="harmonic-slider"
-              />
-            </label>
-            <div className="curve-selection">
+            <div>
               <label>
+                Release Time: {releaseTime.toFixed(4)}s
                 <input
-                  type="radio"
-                  name="releaseCurve"
-                  value="linear"
-                  checked={releaseCurve === 'linear'}
-                  onChange={() => updateSetting('releaseCurve', 'linear')}
+                  type="range"
+                  min="0.001"
+                  max="5"
+                  step="0.001"
+                  value={releaseTime}
+                  onChange={(e) => updateSetting('releaseTime', parseFloat(e.target.value))}
+                  className="harmonic-slider"
                 />
-                Linear
               </label>
-              <label>
-                <input
-                  type="radio"
-                  name="releaseCurve"
-                  value="exponential"
-                  checked={releaseCurve === 'exponential'}
-                  onChange={() => updateSetting('releaseCurve', 'exponential')}
-                />
-                Exponential
-              </label>
+              <div className="curve-selection">
+                <label>
+                  <input
+                    type="radio"
+                    name="releaseCurve"
+                    value="linear"
+                    checked={releaseCurve === 'linear'}
+                    onChange={() => updateSetting('releaseCurve', 'linear')}
+                  />
+                  Linear
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="releaseCurve"
+                    value="exponential"
+                    checked={releaseCurve === 'exponential'}
+                    onChange={() => updateSetting('releaseCurve', 'exponential')}
+                  />
+                  Exponential
+                </label>
+              </div>
             </div>
-          </div>
+          </section>
         </>
       ) : (
         <>
@@ -287,192 +294,195 @@ export default function SynthesizerSettings({
             )}
           </div>
 
-          <h3>ADSR Envelopes</h3>
-          {/* ADSR sliders */}
-          <div>
-            <label>
-              Attack Time: {attackTime.toFixed(4)}s
-              <input
-                type="range"
-                min="0.001"
-                max="2"
-                step="0.001"
-                value={attackTime}
-                onChange={(e) => updateSetting('attackTime', parseFloat(e.target.value))}
-                className="harmonic-slider"
-              />
-            </label>
-            <div className="curve-selection">
+          <section className="envelope-controls">
+            <h3>ADSR envelopes</h3>
+            {/* ADSR sliders */}
+            <div>
               <label>
+                Attack Time: {attackTime.toFixed(4)}s
                 <input
-                  type="radio"
-                  name="attackCurve"
-                  value="linear"
-                  checked={attackCurve === 'linear'}
-                  onChange={() => updateSetting('attackCurve', 'linear')}
+                  type="range"
+                  min="0.001"
+                  max="2"
+                  step="0.001"
+                  value={attackTime}
+                  onChange={(e) => updateSetting('attackTime', parseFloat(e.target.value))}
+                  className="harmonic-slider"
                 />
-                Linear
               </label>
+              <div className="curve-selection">
+                <label>
+                  <input
+                    type="radio"
+                    name="attackCurve"
+                    value="linear"
+                    checked={attackCurve === 'linear'}
+                    onChange={() => updateSetting('attackCurve', 'linear')}
+                  />
+                  Linear
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="attackCurve"
+                    value="exponential"
+                    checked={attackCurve === 'exponential'}
+                    onChange={() => updateSetting('attackCurve', 'exponential')}
+                  />
+                  Exponential
+                </label>
+              </div>
+            </div>
+            <div>
               <label>
+                Decay Time: {decayTime.toFixed(4)}s
                 <input
-                  type="radio"
-                  name="attackCurve"
-                  value="exponential"
-                  checked={attackCurve === 'exponential'}
-                  onChange={() => updateSetting('attackCurve', 'exponential')}
+                  type="range"
+                  min="0.001"
+                  max="2"
+                  step="0.001"
+                  value={decayTime}
+                  onChange={(e) => updateSetting('decayTime', parseFloat(e.target.value))}
+                  className="harmonic-slider"
                 />
-                Exponential
+              </label>
+              <div className="curve-selection">
+                <label>
+                  <input
+                    type="radio"
+                    name="decayCurve"
+                    value="linear"
+                    checked={decayCurve === 'linear'}
+                    onChange={() => updateSetting('decayCurve', 'linear')}
+                  />
+                  Linear
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="decayCurve"
+                    value="exponential"
+                    checked={decayCurve === 'exponential'}
+                    onChange={() => updateSetting('decayCurve', 'exponential')}
+                  />
+                  Exponential
+                </label>
+              </div>
+            </div>
+            <div>
+              <label>
+                Sustain Level: {sustainLevel.toFixed(4)}
+                <input
+                  type="range"
+                  min="0.001"
+                  max="1"
+                  step="0.001"
+                  value={sustainLevel}
+                  onChange={(e) => updateSetting('sustainLevel', parseFloat(e.target.value))}
+                  className="harmonic-slider"
+                />
               </label>
             </div>
-          </div>
-          <div>
-            <label>
-              Decay Time: {decayTime.toFixed(4)}s
-              <input
-                type="range"
-                min="0.001"
-                max="2"
-                step="0.001"
-                value={decayTime}
-                onChange={(e) => updateSetting('decayTime', parseFloat(e.target.value))}
-                className="harmonic-slider"
-              />
-            </label>
-            <div className="curve-selection">
+            <div>
               <label>
+                Release Time: {releaseTime.toFixed(4)}s
                 <input
-                  type="radio"
-                  name="decayCurve"
-                  value="linear"
-                  checked={decayCurve === 'linear'}
-                  onChange={() => updateSetting('decayCurve', 'linear')}
+                  type="range"
+                  min="0.001"
+                  max="5"
+                  step="0.001"
+                  value={releaseTime}
+                  onChange={(e) => updateSetting('releaseTime', parseFloat(e.target.value))}
+                  className="harmonic-slider"
                 />
-                Linear
               </label>
+              <div className="curve-selection">
+                <label>
+                  <input
+                    type="radio"
+                    name="releaseCurve"
+                    value="linear"
+                    checked={releaseCurve === 'linear'}
+                    onChange={() => updateSetting('releaseCurve', 'linear')}
+                  />
+                  Linear
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="releaseCurve"
+                    value="exponential"
+                    checked={releaseCurve === 'exponential'}
+                    onChange={() => updateSetting('releaseCurve', 'exponential')}
+                  />
+                  Exponential
+                </label>
+              </div>
+            </div>
+          </section>
+          <section className="modulation-controls">
+            <h3>Modulation</h3>
+            {/* Vibrato Sliders */}
+            <div>
               <label>
+                Vibrato Depth: {vibratoDepth.toFixed(4)}
                 <input
-                  type="radio"
-                  name="decayCurve"
-                  value="exponential"
-                  checked={decayCurve === 'exponential'}
-                  onChange={() => updateSetting('decayCurve', 'exponential')}
+                  type="range"
+                  min="0.000"
+                  max="100.00"
+                  step="0.001"
+                  value={vibratoDepth}
+                  onChange={(e) => updateSetting('vibratoDepth', parseFloat(e.target.value))}
+                  className="harmonic-slider"
                 />
-                Exponential
               </label>
             </div>
-          </div>
-          <div>
-            <label>
-              Sustain Level: {sustainLevel.toFixed(4)}
-              <input
-                type="range"
-                min="0.001"
-                max="1"
-                step="0.001"
-                value={sustainLevel}
-                onChange={(e) => updateSetting('sustainLevel', parseFloat(e.target.value))}
-                className="harmonic-slider"
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Release Time: {releaseTime.toFixed(4)}s
-              <input
-                type="range"
-                min="0.001"
-                max="5"
-                step="0.001"
-                value={releaseTime}
-                onChange={(e) => updateSetting('releaseTime', parseFloat(e.target.value))}
-                className="harmonic-slider"
-              />
-            </label>
-            <div className="curve-selection">
+            <div>
               <label>
+                Vibrato Rate: {vibratoRate.toFixed(4)} Hz
                 <input
-                  type="radio"
-                  name="releaseCurve"
-                  value="linear"
-                  checked={releaseCurve === 'linear'}
-                  onChange={() => updateSetting('releaseCurve', 'linear')}
+                  type="range"
+                  min="0.000"
+                  max="20.00"
+                  step="0.001"
+                  value={vibratoRate}
+                  onChange={(e) => updateSetting('vibratoRate', parseFloat(e.target.value))}
+                  className="harmonic-slider"
                 />
-                Linear
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="releaseCurve"
-                  value="exponential"
-                  checked={releaseCurve === 'exponential'}
-                  onChange={() => updateSetting('releaseCurve', 'exponential')}
-                />
-                Exponential
               </label>
             </div>
-          </div>
-          <h3>Modulation</h3>
-          {/* Vibrato Sliders */}
-          <div>
-            <label>
-              Vibrato Depth: {vibratoDepth.toFixed(4)}
-              <input
-                type="range"
-                min="0.000"
-                max="100.00"
-                step="0.001"
-                value={vibratoDepth}
-                onChange={(e) => updateSetting('vibratoDepth', parseFloat(e.target.value))}
-                className="harmonic-slider"
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Vibrato Rate: {vibratoRate.toFixed(4)} Hz
-              <input
-                type="range"
-                min="0.000"
-                max="20.00"
-                step="0.001"
-                value={vibratoRate}
-                onChange={(e) => updateSetting('vibratoRate', parseFloat(e.target.value))}
-                className="harmonic-slider"
-              />
-            </label>
-          </div>
-          {/* Tremolo Sliders */}
-          <div>
-            <label>
-              Tremolo Depth: {tremoloDepth.toFixed(4)}
-              <input
-                type="range"
-                min="0.000"
-                max="1.00"
-                step="0.001"
-                value={tremoloDepth}
-                onChange={(e) => updateSetting('tremoloDepth', parseFloat(e.target.value))}
-                className="harmonic-slider"
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Tremolo Rate: {tremoloRate.toFixed(4)} Hz
-              <input
-                type="range"
-                min="0.000"
-                max="20.00"
-                step="0.001"
-                value={tremoloRate}
-                onChange={(e) => updateSetting('tremoloRate', parseFloat(e.target.value))}
-                className="harmonic-slider"
-              />
-            </label>
-          </div>
+            {/* Tremolo Sliders */}
+            <div>
+              <label>
+                Tremolo Depth: {tremoloDepth.toFixed(4)}
+                <input
+                  type="range"
+                  min="0.000"
+                  max="1.00"
+                  step="0.001"
+                  value={tremoloDepth}
+                  onChange={(e) => updateSetting('tremoloDepth', parseFloat(e.target.value))}
+                  className="harmonic-slider"
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Tremolo Rate: {tremoloRate.toFixed(4)} Hz
+                <input
+                  type="range"
+                  min="0.000"
+                  max="20.00"
+                  step="0.001"
+                  value={tremoloRate}
+                  onChange={(e) => updateSetting('tremoloRate', parseFloat(e.target.value))}
+                  className="harmonic-slider"
+                />
+              </label>
+            </div>
+          </section>
         </>
       )}
-      <br />
     </div>
   );
 }

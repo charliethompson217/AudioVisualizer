@@ -23,21 +23,14 @@ export default function SongInfo({ currentSongName, isProcessing, bpm, scaleKey,
   const { metadata, isLoading, error } = useMetadataExtractor(mp3File);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <div className="SongTitle" style={{ color: 'white', padding: '20px', minWidth: '300px' }}>
+    <div className="song-info">
+      <div className="SongTitle">
+        {(metadata.title || currentSongName) && <p className="eyebrow">Current sound</p>}
         {isLoading && <p>Extracting metadata...</p>}
-        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+        {error && <p className="notice">Error: {error}</p>}
 
-        {metadata.title && <h1>{metadata.title}</h1>}
-        {!metadata.title && currentSongName && <h1>{currentSongName}</h1>}
+        {metadata.title && <h2>{metadata.title}</h2>}
+        {!metadata.title && currentSongName && <h2>{currentSongName}</h2>}
 
         {(metadata.artist || metadata.album) && (
           <div className="metadata-info">

@@ -36,17 +36,25 @@ export default function PlaybackControls({
   setMidiFile,
   handleStartStopWithMic,
 }) {
+  const formatTime = (time) =>
+    `${String(Math.floor(time / 60)).padStart(2, '0')}:${String(Math.floor(time % 60)).padStart(2, '0')}`;
+
   return (
-    <div style={{ display: 'block', overflow: 'visible', height: 'auto' }}>
-      <div
-        className="controls-row"
-        style={{
-          overflow: 'visible',
-          height: 'auto',
-          display: 'flex',
-          flexWrap: 'wrap',
-        }}
-      >
+    <section className="playback-panel" aria-label="Playback controls">
+      <div className="transport-actions">
+        <button
+          className="control-button play-button"
+          onClick={handleStartStop}
+          disabled={(!conversionComplete && !useMic) || fetchingSong}
+        >
+          <span aria-hidden="true">{isPlaying ? '□' : '▷'}</span>
+          {isPlaying ? 'Stop' : 'Play'}
+        </button>
+        {isPlaying && (
+          <button className="control-button" onClick={handlePauseResume}>
+            {isPaused ? 'Resume' : 'Pause'}
+          </button>
+        )}
         {!isPlaying && (
           <button
             className="control-button"
@@ -57,78 +65,46 @@ export default function PlaybackControls({
               handleStartStopWithMic();
             }}
           >
-            Use Mic
+            Use mic
           </button>
         )}
-
-        {progress < 100 && isConverting && (
-          <div style={{ width: '100%', overflow: 'visible' }}>
-            <p>Converting audio to MIDI... {progress.toFixed(2)}%</p>
-            <progress value={progress} max="100" />
-          </div>
-        )}
-
-        <button
-          className="control-button"
-          onClick={handleStartStop}
-          disabled={(!conversionComplete && !useMic) || fetchingSong}
-        >
-          {isPlaying ? 'Stop' : 'Play'}
-        </button>
-
-        {isPlaying && (
-          <>
-            <button className="control-button" onClick={handlePauseResume}>
-              {isPaused ? 'Resume' : 'Pause'}
-            </button>
-
-            {duration > 0 && (
-              <div
-                className="seek-slider-container"
-                style={{
-                  width: '100%',
-                  marginTop: '15px',
-                  overflow: 'visible',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    width: '95%',
-                    maxWidth: '1200px',
-                    margin: '0 auto',
-                    overflow: 'visible',
-                  }}
-                >
-                  <span>
-                    {String(Math.floor(currentTime / 60)).padStart(2, '0')}:
-                    {String(Math.floor(currentTime % 60)).padStart(2, '0')}
-                  </span>
-                  <div className="seek-slider" style={{ flex: 1, margin: '0 15px' }}>
-                    <input
-                      type="range"
-                      min="0"
-                      max={duration}
-                      step="0.001"
-                      value={currentTime}
-                      onChange={(e) => {
-                        const time = parseFloat(e.target.value);
-                        seek(time);
-                      }}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                  <span>
-                    {String(Math.floor(duration / 60)).padStart(2, '0')}:
-                    {String(Math.floor(duration % 60)).padStart(2, '0')}
-                  </span>
-                </div>
-              </div>
-            )}
-          </>
-        )}
       </div>
-    </div>
+      {isPlaying && duration > 0 ? (
+        <div className="seek-slider-container">
+          <span className="timecode">{formatTime(currentTime)}</span>
+          <div className="seek-slider">
+            <input
+              aria-label="Playback position"
+              type="range"
+              min="0"
+              max={duration}
+              step="0.001"
+              value={currentTime}
+              onChange={(e) => {
+                const time = parseFloat(e.target.value);
+                seek(time);
+              }}
+            />
+          </div>
+          <span className="timecode">{formatTime(duration)}</span>
+        </div>
+      ) : (
+        <p className="transport-hint">
+          {fetchingSong
+            ? 'Loading your sound…'
+            : isPlaying
+              ? useMic
+                ? 'Listening to your microphone'
+                : 'Live session'
+              : 'Press play to begin your session.'}
+        </p>
+      )}
+      {progress < 100 && isConverting && (
+        <div className="conversion-progress" role="status">
+          <p>Converting audio to MIDI… {progress.toFixed(2)}%</p>
+          <progress aria-label="Audio to MIDI conversion" value={progress} max="100" />
+        </div>
+      )}
+    </section>
   );
 }
