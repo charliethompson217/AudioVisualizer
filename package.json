@@ -3,14 +3,22 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
+    "predev": "npm run build -w @audiovisualizer/spectrum",
     "dev": "vite",
+    "prebuild": "npm run build -w @audiovisualizer/spectrum",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "format": "prettier --write \"src/**/*.{js,jsx,json,css,html}\""
+    "format": "prettier --write \"src/**/*.{js,jsx,json,css,html}\" \"packages/spectrum/{src,test,scripts}/**/*.{ts,tsx,js,mjs}\"",
+    "test": "npm test -w @audiovisualizer/spectrum",
+    "test:package": "npm run test:package -w @audiovisualizer/spectrum"
   },
   "dependencies": {
+    "@audiovisualizer/spectrum": "0.1.0",
     "@spotify/basic-pitch": "^1.0.1",
     "js-cookie": "^3.0.5",
     "meyda": "^5.6.3",

@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": ".test-build",
+    "declaration": false,
+    "types": ["node", "react", "react-dom"]
+  },
+  "include": ["src", "test"]
+}

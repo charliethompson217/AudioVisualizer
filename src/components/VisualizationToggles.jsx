@@ -96,7 +96,7 @@ export default function VisualizationToggles({
       title: 'Spectrum',
       items: [
         ['Waveform', showWaveform, setShowWaveform],
-        ['Bar spectrograph', showBarSpectrograph, setShowBarSpectrograph],
+        ['Spectrum', showBarSpectrograph, setShowBarSpectrograph],
         ['Circle spectrograph', showCircleSpectrograph, setShowCircleSpectrograph],
         ['Spiral spectrograph', showSpiralSpectrograph, setShowSpiralSpectrograph],
         ['Waterfall spectrograph', showWaterfallSpectrograph, setShowWaterfallSpectrograph],

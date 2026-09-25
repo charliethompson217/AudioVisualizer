@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 import React from 'react';
-import BarGraphSpectrograph from './visualizers/BarGraphSpectrograph';
+import Spectrum from './visualizers/Spectrum';
 import WaterfallSpectrograph from './visualizers/WaterfallSpectrograph';
 import Waveform from './visualizers/Waveform';
 import PianoRoll from './visualizers/PianoRoll';
@@ -121,12 +121,7 @@ export default function VisualizersContainer({
               />
 
               {showBarSpectrograph && (
-                <BarGraphSpectrograph
-                  showLabels={showLabels}
-                  showScroll={showScroll}
-                  audio={audio}
-                  noteHues={noteHues}
-                />
+                <Spectrum showLabels={showLabels} showScroll={showScroll} audio={audio} noteHues={noteHues} />
               )}
 
               {showCircleSpectrograph && (
