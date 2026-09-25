@@ -20,9 +20,15 @@ try {
   const [packed] = JSON.parse(run('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', consumer], root));
   assert.ok(
     packed.files.every(
-      ({ path }) => path === 'LICENSE' || path === 'README.md' || path === 'package.json' || path.startsWith('dist/')
+      ({ path }) =>
+        path === 'LICENSE' ||
+        path === 'README.md' ||
+        path === 'package.json' ||
+        path.startsWith('dist/') ||
+        path.startsWith('src/')
     )
   );
+  assert.ok(packed.files.some(({ path }) => path === 'src/index.ts'));
   writeFileSync(join(consumer, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
   run('npm', ['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', join(consumer, packed.filename)]);
   writeFileSync(

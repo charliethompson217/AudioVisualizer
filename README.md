@@ -1,10 +1,21 @@
 # Audio Visualizer and Synthesizer Application
 
-This application provides advanced audio visualization and synthesis.  
+This application provides advanced audio visualization and synthesis.
 Check out the live demo at [AudioVisualizer.org](https://audiovisualizer.org)
+
+## Stand-alone spectrum visualizer
+
+The real-time frequency spectrum visualizer is also available as the framework-independent [`@audiovisualizer/spectrum`](https://www.npmjs.com/package/@audiovisualizer/spectrum) package with an optional React component:
+
+```sh
+npm install @audiovisualizer/spectrum
+```
+
+See the [`@audiovisualizer/spectrum` documentation](packages/spectrum/README.md) for examples and the complete API.
 
 ## Table of Contents
 
+-   [Stand-alone spectrum visualizer](#stand-alone-spectrum-visualizer)
 -   [Features and Usage](#features-and-usage)
 -   [Prerequisites](#prerequisites)
 -   [Installation](#installation)

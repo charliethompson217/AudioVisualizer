@@ -18,7 +18,7 @@
     "test:package": "npm run test:package -w @audiovisualizer/spectrum"
   },
   "dependencies": {
-    "@audiovisualizer/spectrum": "0.1.0",
+    "@audiovisualizer/spectrum": "0.1.1",
     "@spotify/basic-pitch": "^1.0.1",
     "js-cookie": "^3.0.5",
     "meyda": "^5.6.3",

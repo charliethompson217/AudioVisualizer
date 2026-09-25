@@ -1,6 +1,6 @@
 {
   "name": "@audiovisualizer/spectrum",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Framework-independent TypeScript frequency-spectrum visualizer with an optional React adapter",
   "repository": {
     "type": "git",
@@ -14,6 +14,7 @@
   "sideEffects": false,
   "files": [
     "dist",
+    "src",
     "LICENSE",
     "README.md"
   ],
